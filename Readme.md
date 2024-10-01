@@ -1,7 +1,7 @@
 # Проект «Большое путешествие»
 
 * Студент: [Роман Третьяков](https://up.htmlacademy.ru/ecmascript-individual/2/user/1525795).
-* Наставник: `Неизвестно`.
+* Наставник: [Олег Глущенко](https://htmlacademy.ru/profile/id305355).
 
 ---
 
