@@ -1,22 +1,70 @@
 import { getRandomArrayItem } from '../util.js';
 
 
-export const destinations = {
-  0: {
-    name: 'Amsterdam',
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra.',
-    photos: []
+export const destinations = [
+  {
+    'id': '1',
+    'description': 'Chamonix, is a beautiful city, a true asian pearl, with crowded streets.',
+    'name': 'Chamonix',
+    'pictures': [
+      {
+        'src': 'http://picsum.photos/300/200?r=0.0762563005163317',
+        'description': 'Chamonix parliament building'
+      }
+    ]
   },
-  1: {
-    name: 'Chamonix',
-    description: 'Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui.',
-    photos: []
+  {
+    'id': '2',
+    'description': '',
+    'name': 'Amsterdam',
+    'pictures': [
+      {
+        'src': 'http://picsum.photos/300/200?r=0.0762563005163317',
+        'description': 'Chamonix parliament building'
+      }
+    ]
   },
-  2: {
-    name: 'Geneva',
-    description: 'Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.',
-    photos: []
+  {
+    'id': '3',
+    'description': '',
+    'name': 'Geneva',
+    'pictures': [
+      {
+        'src': 'http://picsum.photos/300/200?r=0.0762563005163317',
+        'description': 'Chamonix parliament building'
+      }
+    ]
+  },
+  {
+    'id': '4',
+    'description': '',
+    'name': 'Paris',
+    'pictures': [
+    ]
   }
+];
+
+
+export const getRandomDestination = () => getRandomArrayItem(destinations).id;
+
+
+export const getDestinationById = (id) => {
+  for (let i = 0; i < destinations.length; i++) {
+    if (destinations[i].id === id) {
+      return destinations[i];
+    }
+  }
+
+  return null;
 };
 
-export const getRandomDestination = () => getRandomArrayItem(destinations);
+
+export const getDestinationByName = (name) => {
+  for (let i = 0; i < destinations.length; i++) {
+    if (destinations[i].name.toLowerCase() === name.toLowerCase()) {
+      return destinations[i];
+    }
+  }
+
+  return null;
+};

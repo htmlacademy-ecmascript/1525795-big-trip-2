@@ -7,11 +7,10 @@ export const getRandomInteger = (min, max) => {
 };
 
 
-export const getRandomArrayItem = (items) => {
-  const arrayItems = Object.keys(items);
-  const item = Math.floor(Math.random() * arrayItems.length);
+export const getRandomArrayItem = (itemsArray) => {
+  const item = Math.floor(Math.random() * itemsArray.length);
 
-  return arrayItems[item];
+  return itemsArray[item];
 };
 
 
