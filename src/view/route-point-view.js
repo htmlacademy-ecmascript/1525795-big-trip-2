@@ -15,15 +15,12 @@ const getFormattedLength = (eventLength) => {
 
   let formattedLength = '';
   if (days) {
-    // eslint-disable-next-line prefer-template
-    formattedLength += String(days) + 'D ';
+    formattedLength += `${String(days)}D `;
   }
 
-  // eslint-disable-next-line prefer-template
-  formattedLength += String(hours).padStart(2, '0') + 'H ';
+  formattedLength += `${String(hours).padStart(2, '0')}H `;
 
-  // eslint-disable-next-line prefer-template
-  formattedLength += String(minutes).padStart(2, '0') + 'M';
+  formattedLength += `${String(minutes).padStart(2, '0')}M`;
 
   return formattedLength;
 };

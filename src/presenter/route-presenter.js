@@ -41,6 +41,7 @@ export default class RoutePresenter {
     // С вложенным reduce слишком не читаемое будет выражение
     for (let i = 0; i < this.routePoints.length; i++) {
       cost += this.routePoints[i].base_price;
+
       if (this.routePoints[i].offers && this.routePoints[i].offers.length) {
         for (let j = 0; j < this.routePoints[i].offers.length; j++) {
           cost += getOfferById(this.routePoints[i].offers[j]).price;
@@ -51,21 +52,19 @@ export default class RoutePresenter {
     return cost;
   }
 
-
   updateTripInfo() {
-    const tripInfoTitle = document.querySelector('.trip-info__title');
-    const tripInfoDates = document.querySelector('.trip-info__dates');
-    const tripInfoCost = document.querySelector('.trip-info__cost-value');
+    document.querySelector('.trip-info__title').textContent = this.getTripTitle();
+    document.querySelector('.trip-info__dates').textContent = this.getTripDates();
+    document.querySelector('.trip-info__cost-value').textContent = this.getTripCost();
 
-    tripInfoTitle.textContent = this.getTripTitle();
-    tripInfoDates.textContent = this.getTripDates();
-    tripInfoCost.textContent = this.getTripCost();
+    // tripInfoTitle.textContent = this.getTripTitle();
+    // tripInfoDates.textContent = this.getTripDates();
+    // tripInfoCost.textContent = this.getTripCost();
   }
 
   init() {
     render(this.routeComponent, this.routeContainer);
     render(new UpdatePointView(), this.routeComponent.getElement());
-    // console.log(this.routePoints);
 
     const routeLength = this.routePoints.length;
     for (let i = 0; i < routeLength; i++) {

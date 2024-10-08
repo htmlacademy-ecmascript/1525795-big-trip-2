@@ -3,39 +3,39 @@ import { getRandomArrayItem } from '../util.js';
 
 export const pointTypes = [
   {
-    'id': '10',
+    'id': '1',
     'name': 'Taxi'
   },
   {
-    'id': '20',
+    'id': '2',
     'name': 'Bus'
   },
   {
-    'id': '30',
+    'id': '3',
     'name': 'Train'
   },
   {
-    'id': '40',
+    'id': '4',
     'name': 'Ship'
   },
   {
-    'id': '50',
+    'id': '5',
     'name': 'Drive'
   },
   {
-    'id': '60',
+    'id': '6',
     'name': 'Flight'
   },
   {
-    'id': '70',
+    'id': '7',
     'name': 'Check-in'
   },
   {
-    'id': '80',
+    'id': '8',
     'name': 'Sightseeing'
   },
   {
-    'id': '90',
+    'id': '9',
     'name': 'Restaurant'
   }
 ];

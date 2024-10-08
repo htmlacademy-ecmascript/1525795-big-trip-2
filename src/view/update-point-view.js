@@ -11,8 +11,10 @@ function getPointTypesList(defaultPointTypeName) {
     const checked = pointTypes[i].name.toLowerCase() === defaultPointTypeName.toLowerCase() ? 'checked' : '';
     pointTypesList += `
       <div class="event__type-item">
-        <input id="event-type-${pointTypes[i].name.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointTypes[i].name.toLowerCase()}" ${checked}>
-        <label class="event__type-label  event__type-label--${pointTypes[i].name.toLowerCase()}" for="event-type-${pointTypes[i].name.toLowerCase()}-1">${pointTypes[i].name}</label>
+        <input id="event-type-${pointTypes[i].name.toLowerCase()}-1" class="event__type-input  visually-hidden"
+        type="radio" name="event-type" value="${pointTypes[i].name.toLowerCase()}" ${checked}>
+        <label class="event__type-label  event__type-label--${pointTypes[i].name.toLowerCase()}"
+        for="event-type-${pointTypes[i].name.toLowerCase()}-1">${pointTypes[i].name}</label>
       </div>`;
   }
   return pointTypesList;
@@ -38,7 +40,8 @@ function getAvailableOffers(pointTypeName) {
       for (let j = 0; j < offers[i].offers.length; j++) {
         offersList += `
           <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[i].offers[j].id}" type="checkbox" name="event-offer-${offers[i].offers[j].id}">
+            <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[i].offers[j].id}"
+            type="checkbox" name="event-offer-${offers[i].offers[j].id}">
             <label class="event__offer-label" for="event-offer-${offers[i].offers[j].id}">
               <span class="event__offer-title">${offers[i].offers[j].title}</span>
               &plus;&euro;&nbsp;
@@ -81,7 +84,8 @@ function createUpdatePointTemplate() {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${defaultPointTypeName}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${defaultDestinationName}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination"
+            value="${defaultDestinationName}" list="destination-list-1">
             <datalist id="destination-list-1">
               ${getDestinationsList()}
             </datalist>
