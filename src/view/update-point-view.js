@@ -4,13 +4,14 @@ import { offers } from '../mock/offer.js';
 import { createElement } from '../render.js';
 
 
-function getPointTypesList() {
-  const pointTypesLength = Object.keys(pointTypes).length;
+function getPointTypesList(defaultPointTypeName) {
+  // Список видов точек маршрута
   let pointTypesList = '';
-  for (let i = 0; i < pointTypesLength; i++) {
+  for (let i = 0; i < pointTypes.length; i++) {
+    const checked = pointTypes[i].name.toLowerCase() === defaultPointTypeName.toLowerCase() ? 'checked' : '';
     pointTypesList += `
       <div class="event__type-item">
-        <input id="event-type-${pointTypes[i].name.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointTypes[i].name.toLowerCase()}">
+        <input id="event-type-${pointTypes[i].name.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointTypes[i].name.toLowerCase()}" ${checked}>
         <label class="event__type-label  event__type-label--${pointTypes[i].name.toLowerCase()}" for="event-type-${pointTypes[i].name.toLowerCase()}-1">${pointTypes[i].name}</label>
       </div>`;
   }
@@ -20,9 +21,8 @@ function getPointTypesList() {
 
 function getDestinationsList() {
   // Список пунктов назначения для выпадающего списка в форме редактирования
-  const destinationsLength = Object.keys(destinations).length;
   let destinationsList = '';
-  for (let i = 0; i < destinationsLength; i++) {
+  for (let i = 0; i < destinations.length; i++) {
     destinationsList += `<option value="${destinations[i].name}"></option>`;
   }
   return destinationsList;
@@ -30,6 +30,7 @@ function getDestinationsList() {
 
 
 function getAvailableOffers(pointTypeName) {
+  // Список дополнительных опций для вида точки маршрута
   let offersList = '';
 
   for (let i = 0; i < offers.length; i++) {
@@ -37,8 +38,8 @@ function getAvailableOffers(pointTypeName) {
       for (let j = 0; j < offers[i].offers.length; j++) {
         offersList += `
           <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage">
-            <label class="event__offer-label" for="event-offer-luggage-1">
+            <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[i].offers[j].id}" type="checkbox" name="event-offer-${offers[i].offers[j].id}">
+            <label class="event__offer-label" for="event-offer-${offers[i].offers[j].id}">
               <span class="event__offer-title">${offers[i].offers[j].title}</span>
               &plus;&euro;&nbsp;
               <span class="event__offer-price">${offers[i].offers[j].price}</span>
@@ -54,6 +55,9 @@ function getAvailableOffers(pointTypeName) {
 
 
 function createUpdatePointTemplate() {
+  const defaultPointTypeName = 'Flight';
+  const defaultDestinationName = 'Chamonix';
+
   return `
     <li class="trip-events__item">
       <form class="event event--edit" action="#" method="post">
@@ -68,16 +72,16 @@ function createUpdatePointTemplate() {
             <div class="event__type-list">
               <fieldset class="event__type-group">
                 <legend class="visually-hidden">Event type</legend>
-                ${getPointTypesList()}
+                ${getPointTypesList(defaultPointTypeName)}
               </fieldset>
             </div>
           </div>
 
           <div class="event__field-group  event__field-group--destination">
             <label class="event__label  event__type-output" for="event-destination-1">
-              Flight
+              ${defaultPointTypeName}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="Chamonix" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${defaultDestinationName}" list="destination-list-1">
             <datalist id="destination-list-1">
               ${getDestinationsList()}
             </datalist>

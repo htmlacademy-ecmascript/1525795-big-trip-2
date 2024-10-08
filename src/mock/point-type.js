@@ -42,22 +42,10 @@ export const pointTypes = [
 
 export const getRandomPointType = () => getRandomArrayItem(pointTypes).id;
 
-export const getPointTypeById = (id) => {
-  for (let i = 0; i < pointTypes.length; i++) {
-    if (pointTypes[i].id === id) {
-      return pointTypes[i];
-    }
-  }
 
-  return null;
-};
+export const getPointTypeById = (id) =>
+  pointTypes[pointTypes.findIndex((item) => item.id === id)];
 
-export const getPointTypeByName = (name) => {
-  for (let i = 0; i < pointTypes.length; i++) {
-    if (pointTypes[i].name.toLowerCase() === name.toLowerCase()) {
-      return pointTypes[i];
-    }
-  }
 
-  return null;
-};
+export const getPointTypeByName = (name) =>
+  pointTypes[pointTypes.findIndex((item) => item.name.toLowerCase() === name.toLowerCase())];

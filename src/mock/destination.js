@@ -48,23 +48,9 @@ export const destinations = [
 export const getRandomDestination = () => getRandomArrayItem(destinations).id;
 
 
-export const getDestinationById = (id) => {
-  for (let i = 0; i < destinations.length; i++) {
-    if (destinations[i].id === id) {
-      return destinations[i];
-    }
-  }
-
-  return null;
-};
+export const getDestinationById = (id) =>
+  destinations[destinations.findIndex((item) => item.id === id)];
 
 
-export const getDestinationByName = (name) => {
-  for (let i = 0; i < destinations.length; i++) {
-    if (destinations[i].name.toLowerCase() === name.toLowerCase()) {
-      return destinations[i];
-    }
-  }
-
-  return null;
-};
+export const getDestinationByName = (name) =>
+  destinations[destinations.findIndex((item) => item.name.toLowerCase() === name.toLowerCase())];

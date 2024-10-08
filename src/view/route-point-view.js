@@ -5,28 +5,10 @@ import { getFormattedDate } from '../util.js';
 import { getOfferById } from '../mock/offer.js';
 
 
-// const getFormattedLength = (days, hours, minutes) => {
-//   let formattedLength = '';
-//   if (days) {
-//     // eslint-disable-next-line prefer-template
-//     formattedLength += String(days) + 'D ';
-//   }
-
-//   if (hours) {
-//     // eslint-disable-next-line prefer-template
-//     formattedLength += String(hours).padStart(2, '0') + 'H ';
-//   }
-
-//   if (minutes) {
-//     // eslint-disable-next-line prefer-template
-//     formattedLength += String(minutes).padStart(2, '0') + 'M';
-//   }
-
-//   return formattedLength;
-// };
-
 const getFormattedLength = (eventLength) => {
+  // Из разницы в датах убираем миллисекунды и секунды
   eventLength = eventLength / 1000 / 60;
+  // Вычисляем разницу в днях, часах, минутах
   const days = Math.floor(eventLength / 1440);
   const hours = Math.floor((eventLength - days * 1440) / 60);
   const minutes = eventLength % 60;
@@ -56,11 +38,6 @@ function createRoutePointTemplate(routePoint) {
 
   const startDateTime = new Date(dateFrom);
   const endDateTime = new Date(dateTo);
-  // const eventLength = new Date(endDateTime - startDateTime);
-  // const eventDays = eventLength.getDate();
-  // const eventHours = eventLength.getHours();
-  // const eventMinutes = eventLength.getMinutes();
-  // const formattedEventLength = getFormattedLength(eventDays, eventHours, eventMinutes);
   const formattedEventLength = getFormattedLength(new Date(endDateTime - startDateTime));
 
   const pointTypeItem = getPointTypeByName(pointType);

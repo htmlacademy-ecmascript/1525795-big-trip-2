@@ -19,7 +19,6 @@ export default class RoutePresenter {
     render(this.routeComponent, this.routeContainer);
     render(new UpdatePointView(), this.routeComponent.getElement());
 
-    console.log('route', this.routePoints);
     const routeLength = this.routePoints.length;
     for (let i = 0; i < routeLength; i++) {
       render(new RoutePointView(this.routePoints[i]), this.routeComponent.getElement());
