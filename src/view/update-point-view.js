@@ -1,16 +1,20 @@
 import { pointTypes } from '../mock/point-type.js';
-import { destinations } from '../mock/destination.js';
+import { destinations, getDestinationByName } from '../mock/destination.js';
+import { offers } from '../mock/offer.js';
 import { createElement } from '../render.js';
 
 
-function getPointTypesList() {
-  const pointTypesLength = Object.keys(pointTypes).length;
+function getPointTypesList(defaultPointTypeName) {
+  // Список видов точек маршрута
   let pointTypesList = '';
-  for (let i = 0; i < pointTypesLength; i++) {
+  for (let i = 0; i < pointTypes.length; i++) {
+    const checked = pointTypes[i].name.toLowerCase() === defaultPointTypeName.toLowerCase() ? 'checked' : '';
     pointTypesList += `
       <div class="event__type-item">
-        <input id="event-type-${pointTypes[i].toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointTypes[i].toLowerCase()}">
-        <label class="event__type-label  event__type-label--${pointTypes[i].toLowerCase()}" for="event-type-${pointTypes[i].toLowerCase()}-1">${pointTypes[i]}</label>
+        <input id="event-type-${pointTypes[i].name.toLowerCase()}-1" class="event__type-input  visually-hidden"
+        type="radio" name="event-type" value="${pointTypes[i].name.toLowerCase()}" ${checked}>
+        <label class="event__type-label  event__type-label--${pointTypes[i].name.toLowerCase()}"
+        for="event-type-${pointTypes[i].name.toLowerCase()}-1">${pointTypes[i].name}</label>
       </div>`;
   }
   return pointTypesList;
@@ -18,16 +22,45 @@ function getPointTypesList() {
 
 
 function getDestinationsList() {
-  const destinationsLength = Object.keys(destinations).length;
+  // Список пунктов назначения для выпадающего списка в форме редактирования
   let destinationsList = '';
-  for (let i = 0; i < destinationsLength; i++) {
+  for (let i = 0; i < destinations.length; i++) {
     destinationsList += `<option value="${destinations[i].name}"></option>`;
   }
   return destinationsList;
 }
 
 
+function getAvailableOffers(pointTypeName) {
+  // Список дополнительных опций для вида точки маршрута
+  let offersList = '';
+
+  for (let i = 0; i < offers.length; i++) {
+    if (offers[i].type.toLowerCase() === pointTypeName.toLowerCase()) {
+      for (let j = 0; j < offers[i].offers.length; j++) {
+        offersList += `
+          <div class="event__offer-selector">
+            <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[i].offers[j].id}"
+            type="checkbox" name="event-offer-${offers[i].offers[j].id}">
+            <label class="event__offer-label" for="event-offer-${offers[i].offers[j].id}">
+              <span class="event__offer-title">${offers[i].offers[j].title}</span>
+              &plus;&euro;&nbsp;
+              <span class="event__offer-price">${offers[i].offers[j].price}</span>
+            </label>
+          </div>
+        `;
+      }
+    }
+  }
+
+  return offersList;
+}
+
+
 function createUpdatePointTemplate() {
+  const defaultPointTypeName = 'Flight';
+  const defaultDestinationName = 'Chamonix';
+
   return `
     <li class="trip-events__item">
       <form class="event event--edit" action="#" method="post">
@@ -42,16 +75,17 @@ function createUpdatePointTemplate() {
             <div class="event__type-list">
               <fieldset class="event__type-group">
                 <legend class="visually-hidden">Event type</legend>
-                ${getPointTypesList()}
+                ${getPointTypesList(defaultPointTypeName)}
               </fieldset>
             </div>
           </div>
 
           <div class="event__field-group  event__field-group--destination">
             <label class="event__label  event__type-output" for="event-destination-1">
-              Flight
+              ${defaultPointTypeName}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="Chamonix" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination"
+            value="${defaultDestinationName}" list="destination-list-1">
             <datalist id="destination-list-1">
               ${getDestinationsList()}
             </datalist>
@@ -84,56 +118,13 @@ function createUpdatePointTemplate() {
             <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
             <div class="event__available-offers">
-              <div class="event__offer-selector">
-                <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
-                <label class="event__offer-label" for="event-offer-luggage-1">
-                  <span class="event__offer-title">Add luggage</span>
-                  &plus;&euro;&nbsp;
-                  <span class="event__offer-price">50</span>
-                </label>
-              </div>
-
-              <div class="event__offer-selector">
-                <input class="event__offer-checkbox  visually-hidden" id="event-offer-comfort-1" type="checkbox" name="event-offer-comfort" checked>
-                <label class="event__offer-label" for="event-offer-comfort-1">
-                  <span class="event__offer-title">Switch to comfort</span>
-                  &plus;&euro;&nbsp;
-                  <span class="event__offer-price">80</span>
-                </label>
-              </div>
-
-              <div class="event__offer-selector">
-                <input class="event__offer-checkbox  visually-hidden" id="event-offer-meal-1" type="checkbox" name="event-offer-meal">
-                <label class="event__offer-label" for="event-offer-meal-1">
-                  <span class="event__offer-title">Add meal</span>
-                  &plus;&euro;&nbsp;
-                  <span class="event__offer-price">15</span>
-                </label>
-              </div>
-
-              <div class="event__offer-selector">
-                <input class="event__offer-checkbox  visually-hidden" id="event-offer-seats-1" type="checkbox" name="event-offer-seats">
-                <label class="event__offer-label" for="event-offer-seats-1">
-                  <span class="event__offer-title">Choose seats</span>
-                  &plus;&euro;&nbsp;
-                  <span class="event__offer-price">5</span>
-                </label>
-              </div>
-
-              <div class="event__offer-selector">
-                <input class="event__offer-checkbox  visually-hidden" id="event-offer-train-1" type="checkbox" name="event-offer-train">
-                <label class="event__offer-label" for="event-offer-train-1">
-                  <span class="event__offer-title">Travel by train</span>
-                  &plus;&euro;&nbsp;
-                  <span class="event__offer-price">40</span>
-                </label>
-              </div>
+              ${getAvailableOffers('Flight')}
             </div>
           </section>
 
           <section class="event__section  event__section--destination">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-            <p class="event__destination-description">Chamonix-Mont-Blanc (usually shortened to Chamonix) is a resort area near the junction of France, Switzerland and Italy. At the base of Mont Blanc, the highest summit in the Alps, it's renowned for its skiing.</p>
+            <p class="event__destination-description">${getDestinationByName('Chamonix').description}</p>
           </section>
         </section>
       </form>

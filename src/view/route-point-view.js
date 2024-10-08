@@ -1,27 +1,57 @@
 import { createElement } from '../render.js';
-import { pointTypes } from '../mock/point-type.js';
-import { destinations } from '../mock/destination.js';
+import { getPointTypeByName } from '../mock/point-type.js';
+import { getDestinationById } from '../mock/destination.js';
 import { getFormattedDate } from '../util.js';
-import { optionTypes } from '../mock/option-type.js';
+import { getOfferById } from '../mock/offer.js';
+
+
+const getFormattedLength = (eventLength) => {
+  // Из разницы в датах убираем миллисекунды и секунды
+  eventLength = eventLength / 1000 / 60;
+  // Вычисляем разницу в днях, часах, минутах
+  const days = Math.floor(eventLength / 1440);
+  const hours = Math.floor((eventLength - days * 1440) / 60);
+  const minutes = eventLength % 60;
+
+  let formattedLength = '';
+  if (days) {
+    formattedLength += `${String(days)}D `;
+  }
+
+  formattedLength += `${String(hours).padStart(2, '0')}H `;
+
+  formattedLength += `${String(minutes).padStart(2, '0')}M`;
+
+  return formattedLength;
+};
 
 
 function createRoutePointTemplate(routePoint) {
-  const { pointType, destination, startDateTime, endDateTime, price, options } = routePoint;
-  const startDate = startDateTime.split('T')[0];
+  const { type: pointType, destination, date_from: dateFrom, date_to: dateTo, base_price: price, offers: pointOffers } = routePoint;
+  const startDate = dateFrom.split('T')[0];
   const formattedStartDate = getFormattedDate(startDate);
-  const startTime = startDateTime.split('T')[1];
-  const endTime = endDateTime.split('T')[1];
+  const startTime = dateFrom.split('T')[1].slice(0, 5);
+  const endTime = dateTo.split('T')[1].slice(0, 5);
 
-  const optionsLength = options.length;
-  let optionsList = '';
-  for (let i = 0; i < optionsLength; i++) {
-    optionsList += `
-      <li class="event__offer">
-      <span class="event__offer-title">${optionTypes[options[i]].name}</span>
-      &plus;&euro;&nbsp;
-      <span class="event__offer-price">${optionTypes[options[i]].price}</span>
-    </li>
-  `;
+  const startDateTime = new Date(dateFrom);
+  const endDateTime = new Date(dateTo);
+  const formattedEventLength = getFormattedLength(new Date(endDateTime - startDateTime));
+
+  const pointTypeItem = getPointTypeByName(pointType);
+  const destinationItem = getDestinationById(destination);
+
+  let offersList = '';
+  if (pointOffers && pointOffers.length) {
+    for (let i = 0; i < pointOffers.length; i++) {
+      const offerItem = getOfferById(pointOffers[i]);
+      offersList += `
+        <li class="event__offer">
+        <span class="event__offer-title">${offerItem.title}</span>
+        &plus;&euro;&nbsp;
+        <span class="event__offer-price">${offerItem.price}</span>
+      </li>
+    `;
+    }
   }
 
   return `
@@ -29,23 +59,23 @@ function createRoutePointTemplate(routePoint) {
       <div class="event">
         <time class="event__date" datetime="${startDate}">${formattedStartDate}</time>
         <div class="event__type">
-          <img class="event__type-icon" width="42" height="42" src="img/icons/taxi.png" alt="Event type icon">
+          <img class="event__type-icon" width="42" height="42" src="img/icons/${pointTypeItem.name}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">${pointTypes[pointType]} ${destinations[destination].name}</h3>
+        <h3 class="event__title">${pointTypeItem.name} ${destinationItem.name}</h3>
         <div class="event__schedule">
           <p class="event__time">
-            <time class="event__start-time" datetime="${startDateTime}">${startTime}</time>
+            <time class="event__start-time" datetime="${dateFrom}">${startTime}</time>
             &mdash;
-            <time class="event__end-time" datetime="${endDateTime}">${endTime}</time>
+            <time class="event__end-time" datetime="${dateTo}">${endTime}</time>
           </p>
-          <p class="event__duration">30M</p>
+          <p class="event__duration">${formattedEventLength}</p>
         </div>
         <p class="event__price">
           &euro;&nbsp;<span class="event__price-value">${price}</span>
         </p>
         <h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">
-          ${optionsList}
+          ${offersList}
         </ul>
         <button class="event__favorite-btn event__favorite-btn--active" type="button">
           <span class="visually-hidden">Add to favorite</span>
