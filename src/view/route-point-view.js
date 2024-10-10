@@ -1,5 +1,4 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { createElement } from '../render.js';
 import { getPointTypeByName } from '../mock/point-type.js';
 import { getDestinationById } from '../mock/destination.js';
 import { getFormattedDate } from '../util.js';

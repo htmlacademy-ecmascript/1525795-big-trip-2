@@ -56,10 +56,6 @@ export default class RoutePresenter {
     document.querySelector('.trip-info__title').textContent = this.getTripTitle();
     document.querySelector('.trip-info__dates').textContent = this.getTripDates();
     document.querySelector('.trip-info__cost-value').textContent = this.getTripCost();
-
-    // tripInfoTitle.textContent = this.getTripTitle();
-    // tripInfoDates.textContent = this.getTripDates();
-    // tripInfoCost.textContent = this.getTripCost();
   }
 
   init() {
