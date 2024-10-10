@@ -1,18 +1,39 @@
-import { getRandomPointType } from './point-type.js';
+import { getRandomPointType, getPointTypeById } from './point-type.js';
 import { getRandomDestination } from './destination.js';
-import { getRandomOptionsArray } from './option-type.js';
+import { getRandomOffers } from './offer.js';
 import { getRandomInteger } from '../util.js';
 
 
+const getFormattedTime = (minutes) => {
+  const hours = Math.floor(minutes / 60);
+  minutes = minutes % 60;
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00.0Z`;
+};
+
+
 export const getRandomPoint = () => {
-  const genPoint = {
-    pointType: getRandomPointType(),
-    destination: getRandomDestination(),
-    startDateTime: '2024-01-01T00:00',
-    endDateTime: '2024-12-31T23:59',
-    price: getRandomInteger(0, 100), // Здесь пока не понятно, к чему относится это свойство - к точке маршрута или к стоимости доставки до точки маршрута
-    options: getRandomOptionsArray()
+  const pointType = getRandomPointType();
+  const pointTypeObj = getPointTypeById(pointType);
+  const randomOffers = getRandomOffers(pointTypeObj);
+
+  const startDay = getRandomInteger(1, 15); // Стартуем с 1 половины месяца
+  const startTime = getRandomInteger(0, 1440);
+  const formattedStartTime = getFormattedTime(startTime);
+  const endDay = startDay + getRandomInteger(0, 7);
+  const endTime = getRandomInteger(startTime, 1440);
+  const formattedEndTime = getFormattedTime(endTime);
+
+  const generatedPoint = {
+    'id': getRandomInteger(1, 100000), // Вместо UUID
+    'base_price': getRandomInteger(1, 1000),
+    'date_from': `2024-08-${String(startDay).padStart(2, '0')}T${formattedStartTime}`,
+    'date_to': `2024-08-${String(endDay).padStart(2, '0')}T${formattedEndTime}`,
+    'destination': getRandomDestination(),
+    'is_favorite': false,
+    'offers': randomOffers,
+    'type': pointTypeObj.name.toLowerCase()
   };
 
-  return genPoint;
+  return generatedPoint;
 };
