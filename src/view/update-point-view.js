@@ -1,6 +1,6 @@
+import AbstractView from '../framework/view/abstract-view.js';
 import { pointTypes } from '../mock/point-type.js';
 import { destinations } from '../mock/destination.js';
-import { createElement } from '../render.js';
 
 
 function getPointTypesList() {
@@ -141,20 +141,8 @@ function createUpdatePointTemplate() {
   `;
 }
 
-export default class UpdatePointView {
-  getTemplate() {
+export default class UpdatePointView extends AbstractView {
+  get template() {
     return createUpdatePointTemplate();
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
   }
 }
