@@ -18,7 +18,7 @@ export const getTripDates = (route) => {
   const startDate = new Date(copyRoute[0].date_from);
   const endDate = new Date(copyRoute.slice(-1)[0].date_to);
 
-  return `${getFormattedRangeDate(startDate.getDate(), startDate.getMonth() + 1, endDate.getDate(), endDate.getMonth() + 1)}`;
+  return `${getFormattedRangeDate(startDate.getUTCDate(), startDate.getUTCMonth() + 1, endDate.getUTCDate(), endDate.getUTCMonth() + 1)}`;
 };
 
 

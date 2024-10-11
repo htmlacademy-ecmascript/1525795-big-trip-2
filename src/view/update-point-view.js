@@ -1,6 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import { pointTypes } from '../mock/point-type.js';
-import { destinations, getDestinationByName } from '../mock/destination.js';
+import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
 import { offers } from '../mock/offer.js';
 
 
@@ -31,7 +31,7 @@ function getDestinationsList() {
 }
 
 
-function getAvailableOffers(pointTypeName) {
+function getOffers(pointTypeName, pointOffers) {
   // Список дополнительных опций для вида точки маршрута
   let offersList = '';
 
@@ -41,7 +41,7 @@ function getAvailableOffers(pointTypeName) {
         offersList += `
           <div class="event__offer-selector">
             <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[i].offers[j].id}"
-            type="checkbox" name="event-offer-${offers[i].offers[j].id}">
+            type="checkbox" name="event-offer-${offers[i].offers[j].id}" ${pointOffers.includes(offers[i].offers[j].id) ? 'checked' : ''}>
             <label class="event__offer-label" for="event-offer-${offers[i].offers[j].id}">
               <span class="event__offer-title">${offers[i].offers[j].title}</span>
               &plus;&euro;&nbsp;
@@ -57,9 +57,23 @@ function getAvailableOffers(pointTypeName) {
 }
 
 
-function createUpdatePointTemplate() {
-  const defaultPointTypeName = 'Flight';
-  const defaultDestinationName = 'Chamonix';
+const getFormattedDate = (date) => {
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = String(date.getUTCFullYear()).slice(2, 4);
+
+  const hours = String(date.getUTCHours()).padStart(2, '0');
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
+
+
+function createUpdatePointTemplate(routePoint) {
+  const pointTypeName = routePoint.type;
+  const destinationName = getDestinationById(routePoint.destination).name;
+  const dateFrom = getFormattedDate(new Date(routePoint.date_from));
+  const dateTo = getFormattedDate(new Date(routePoint.date_to));
 
   return `
     <li class="trip-events__item">
@@ -75,17 +89,17 @@ function createUpdatePointTemplate() {
             <div class="event__type-list">
               <fieldset class="event__type-group">
                 <legend class="visually-hidden">Event type</legend>
-                ${getPointTypesList(defaultPointTypeName)}
+                ${getPointTypesList(pointTypeName)}
               </fieldset>
             </div>
           </div>
 
           <div class="event__field-group  event__field-group--destination">
             <label class="event__label  event__type-output" for="event-destination-1">
-              ${defaultPointTypeName}
+              ${pointTypeName}
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination"
-            value="${defaultDestinationName}" list="destination-list-1">
+            value="${destinationName}" list="destination-list-1">
             <datalist id="destination-list-1">
               ${getDestinationsList()}
             </datalist>
@@ -93,10 +107,10 @@ function createUpdatePointTemplate() {
 
           <div class="event__field-group  event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="18/03/19 12:25">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateFrom}">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="18/03/19 13:35">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateTo}">
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -104,7 +118,7 @@ function createUpdatePointTemplate() {
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="160">
+            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${routePoint.base_price}">
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -118,13 +132,13 @@ function createUpdatePointTemplate() {
             <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
             <div class="event__available-offers">
-              ${getAvailableOffers('Flight')}
+              ${getOffers(pointTypeName, routePoint.offers)}
             </div>
           </section>
 
           <section class="event__section  event__section--destination">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-            <p class="event__destination-description">${getDestinationByName('Chamonix').description}</p>
+            <p class="event__destination-description">${getDestinationByName(destinationName).description}</p>
           </section>
         </section>
       </form>
@@ -133,7 +147,14 @@ function createUpdatePointTemplate() {
 }
 
 export default class UpdatePointView extends AbstractView {
+  #routePoint = null;
+
+  constructor(routePoint) {
+    super();
+    this.#routePoint = routePoint;
+  }
+
   get template() {
-    return createUpdatePointTemplate();
+    return createUpdatePointTemplate(this.#routePoint);
   }
 }
