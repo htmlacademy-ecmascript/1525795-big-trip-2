@@ -1,51 +1,78 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
+
+const getEventLength = (dateFrom, dateTo) => {
+  const startDateTime = new Date(dateFrom);
+  const endDateTime = new Date(dateTo);
+
+  return endDateTime - startDateTime;
+};
+
+const getEventStartDate = (dateFrom) => new Date(dateFrom);
+export const sortByPrice = (a, b) => b.base_price - a.base_price;
+export const sortByDate = (a, b) => getEventStartDate(a.date_from) - getEventStartDate(b.date_from);
+const sortByTime = (a, b) => getEventLength(b.date_from, b.date_to) - getEventLength(a.date_from, a.date_to);
+
+
+export const sortArray = [
+  {
+    sortName: 'Day',
+    isDisabled: false,
+    isChecked: false,
+    sortMethod: sortByDate
+  },
+  {
+    sortName: 'Event',
+    isDisabled: true,
+    isChecked: false,
+  },
+  {
+    sortName: 'Time',
+    isDisabled: false,
+    isChecked: false,
+    sortMethod: sortByTime
+  },
+  {
+    sortName: 'Price',
+    isDisabled: false,
+    isChecked: true,
+    sortMethod: sortByPrice
+  },
+  {
+    sortName: 'Offers',
+    isDisabled: true,
+    isChecked: false
+  },
+];
+
+
+function createSortItemTemplate({sortName, isDisabled, isChecked}) {
+  return `
+      <div class="trip-sort__item  trip-sort__item--${sortName.toLowerCase()}">
+        <input id="sort-${sortName.toLowerCase()}" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-${sortName.toLowerCase()}"
+        ${isDisabled ? 'disabled' : ''}
+        ${isChecked ? 'checked' : ''}>
+        <label class="trip-sort__btn" for="sort-${sortName.toLowerCase()}">${sortName}</label>
+      </div>
+  `;
+}
 
 
 function createSortTemplate() {
+  const siteSort = Array.from(sortArray, (item) => createSortItemTemplate(item)).join('');
+
   return `
     <form class="trip-events__trip-sort  trip-sort" action="#" method="get">
-      <div class="trip-sort__item  trip-sort__item--day">
-        <input id="sort-day" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-day">
-        <label class="trip-sort__btn" for="sort-day">Day</label>
-      </div>
-
-      <div class="trip-sort__item  trip-sort__item--event">
-        <input id="sort-event" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-event" disabled>
-        <label class="trip-sort__btn" for="sort-event">Event</label>
-      </div>
-
-      <div class="trip-sort__item  trip-sort__item--time">
-        <input id="sort-time" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-time">
-        <label class="trip-sort__btn" for="sort-time">Time</label>
-      </div>
-
-      <div class="trip-sort__item  trip-sort__item--price">
-        <input id="sort-price" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-price" checked>
-        <label class="trip-sort__btn" for="sort-price">Price</label>
-      </div>
-
-      <div class="trip-sort__item  trip-sort__item--offer">
-        <input id="sort-offer" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-offer" disabled>
-        <label class="trip-sort__btn" for="sort-offer">Offers</label>
-      </div>
+      ${siteSort}
     </form>
   `;
 }
 
-export default class SortView {
-  getTemplate() {
+export default class SortView extends AbstractView {
+  constructor() {
+    super();
+  }
+
+  get template() {
     return createSortTemplate();
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
   }
 }

@@ -1,4 +1,4 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 
 function createRouteTemplate() {
@@ -9,20 +9,8 @@ function createRouteTemplate() {
 }
 
 
-export default class RouteView {
-  getTemplate() {
+export default class RouteView extends AbstractView {
+  get template() {
     return createRouteTemplate();
-  }
-
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
   }
 }
