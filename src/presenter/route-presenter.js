@@ -70,12 +70,28 @@ export default class RoutePresenter {
   }
 
   #renderPoint(point) {
+    // Два компонента
+    // Строка с точкой маршрута
     const routePoint = new RoutePointView(point);
+    // ... и форма редактирования точки маршрута
     const updateComponent = new UpdatePointView(point);
+
+    // Отрисовываем строки с точками маршрута
     render(routePoint, this.#routeComponent.element);
 
     routePoint.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
       replace(updateComponent, routePoint);
     });
+
+    updateComponent.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
+      replace(routePoint, updateComponent);
+    });
+
+    // document.addEventListener('keydown', (evt) => {
+    //   if (evt.key === 'Escape') {
+    //     evt.preventDefault();
+    //     replace(routePoint, updateComponent);
+    //   }
+    // });
   }
 }
