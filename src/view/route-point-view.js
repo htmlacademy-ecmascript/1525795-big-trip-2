@@ -4,7 +4,6 @@ import { getDestinationById } from '../mock/destination.js';
 import { getFormattedDate } from '../util.js';
 import { getOfferById } from '../mock/offer.js';
 
-import { replace } from '../framework/render.js';
 
 const getFormattedLength = (eventLength) => {
   // Из разницы в датах убираем миллисекунды и секунды
