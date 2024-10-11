@@ -1,19 +1,22 @@
 import RouteView from '../view/route-view.js';
 import RoutePointView from '../view/route-point-view.js';
 import RouteModel from '../model/route-model.js';
-import UpdatePointView from '../view/update-point-view.js';
+import { sortArray } from '../view/sort-view.js';
+import SortView from '../view/sort-view.js';
+// import UpdatePointView from '../view/update-point-view.js';
 import { getDestinationById } from '../mock/destination.js';
-import { sortByDate } from '../model/route-model.js';
+import { sortByDate, sortByPrice } from '../view/sort-view.js';
 import { getFormattedRangeDate } from '../util.js';
 import { getOfferById } from '../mock/offer.js';
 
-import { render } from '../framework/render.js';
+import { render, remove } from '../framework/render.js';
 
 
 export default class RoutePresenter {
   routeComponent = new RouteView();
   route = new RouteModel();
-  routePoints = this.route.getRoute();
+  routePoints = null;
+  sortComponent = new SortView(this.routePoints);
 
   constructor({routeContainer}) {
     this.routeContainer = routeContainer;
@@ -21,7 +24,6 @@ export default class RoutePresenter {
 
   getTripTitle() {
     const copyRoutePoints = this.routePoints.slice();
-    copyRoutePoints.sort(sortByDate);
     const routeDestinations = Array.from(copyRoutePoints, (item) => getDestinationById(item.destination).name);
     const uniqueDestinations = new Set(routeDestinations);
 
@@ -58,15 +60,41 @@ export default class RoutePresenter {
     document.querySelector('.trip-info__cost-value').textContent = this.getTripCost();
   }
 
+  #renderSort() {
+    render(this.sortComponent, this.routeContainer, 'afterbegin');
+
+    sortArray.forEach(({sortName, isDisabled, cb}) => {
+      if (!isDisabled) {
+        this.sortComponent.element.querySelector(`#sort-${sortName.toLowerCase()}`).addEventListener('click', () => {
+          this.sortComponent.element.querySelector(`#sort-${sortName.toLowerCase()}`).checked = true;
+          this.routePoints.sort(cb);
+          this.#renderRoutePoints();
+        });
+      }
+    });
+  }
+
+
   init() {
     render(this.routeComponent, this.routeContainer);
-    render(new UpdatePointView(), this.routeComponent.element);
+    this.#renderSort();
 
-    const routeLength = this.routePoints.length;
-    for (let i = 0; i < routeLength; i++) {
+    this.routePoints = this.route.getRoute();
+
+    this.routePoints.sort(sortByPrice);
+    this.#renderRoutePoints();
+
+    this.updateTripInfo();
+  }
+
+  #renderRoutePoints() {
+    remove(this.routeComponent);
+    this.routeComponent = new RouteView();
+    render(this.routeComponent, this.routeContainer);
+
+    for (let i = 0; i < this.routePoints.length; i++) {
       render(new RoutePointView(this.routePoints[i]), this.routeComponent.element);
     }
 
-    this.updateTripInfo();
   }
 }

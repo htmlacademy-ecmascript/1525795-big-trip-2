@@ -22,34 +22,6 @@ export const filtersArray = [
 ];
 
 
-export const sortArray = [
-  {
-    sortName: 'Day',
-    isDisabled: false,
-    isChecked: false
-  },
-  {
-    sortName: 'Event',
-    isDisabled: true,
-    isChecked: false
-  },
-  {
-    sortName: 'Time',
-    isDisabled: false,
-    isChecked: false
-  },
-  {
-    sortName: 'Price',
-    isDisabled: false,
-    isChecked: true
-  },
-  {
-    sortName: 'Offers',
-    isDisabled: true,
-    isChecked: false
-  },
-];
-
 export const getRandomInteger = (min, max) => {
   const lower = Math.ceil(Math.min(Math.abs(min), Math.abs(max)));
   const upper = Math.floor(Math.max(Math.abs(min), Math.abs(max)));

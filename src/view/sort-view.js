@@ -1,5 +1,48 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { sortArray } from '../util.js';
+
+const getEventLength = (dateFrom, dateTo) => {
+  const startDateTime = new Date(dateFrom);
+  const endDateTime = new Date(dateTo);
+
+  return endDateTime - startDateTime;
+};
+
+const getEventStartDate = (dateFrom) => new Date(dateFrom);
+export const sortByPrice = (a, b) => b.base_price - a.base_price;
+export const sortByDate = (a, b) => getEventStartDate(a.date_from) - getEventStartDate(b.date_from);
+const sortByTime = (a, b) => getEventLength(b.date_from, b.date_to) - getEventLength(a.date_from, a.date_to);
+
+
+export const sortArray = [
+  {
+    sortName: 'Day',
+    isDisabled: false,
+    isChecked: false,
+    cb: sortByDate
+  },
+  {
+    sortName: 'Event',
+    isDisabled: true,
+    isChecked: false,
+  },
+  {
+    sortName: 'Time',
+    isDisabled: false,
+    isChecked: false,
+    cb: sortByTime
+  },
+  {
+    sortName: 'Price',
+    isDisabled: false,
+    isChecked: true,
+    cb: sortByPrice
+  },
+  {
+    sortName: 'Offers',
+    isDisabled: true,
+    isChecked: false
+  },
+];
 
 
 function createSortItemTemplate({sortName, isDisabled, isChecked}) {
@@ -25,6 +68,10 @@ function createSortTemplate() {
 }
 
 export default class SortView extends AbstractView {
+  constructor() {
+    super();
+  }
+
   get template() {
     return createSortTemplate();
   }
