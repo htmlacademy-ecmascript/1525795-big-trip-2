@@ -3,6 +3,7 @@ import { getPointTypeByName } from '../mock/point-type.js';
 import { getDestinationById } from '../mock/destination.js';
 import { getFormattedDate } from '../util.js';
 import { getOfferById } from '../mock/offer.js';
+import { replace } from '../framework/render.js';
 
 
 const getFormattedLength = (eventLength) => {
@@ -99,5 +100,9 @@ export default class RoutePointView extends AbstractView {
 
   get template() {
     return createRoutePointTemplate(this.routePoint);
+  }
+
+  replaceRowToForm(updateComponent, routePoint) {
+    replace(updateComponent, routePoint);
   }
 }

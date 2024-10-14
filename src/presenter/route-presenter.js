@@ -8,7 +8,7 @@ import { sortArray } from '../view/sort-view.js';
 import { sortByPrice } from '../view/sort-view.js';
 import { getTripTitle, getTripDates, getTripCost } from '../utils/common.js';
 
-import { render, remove, replace } from '../framework/render.js';
+import { render, remove } from '../framework/render.js';
 
 
 export default class RoutePresenter {
@@ -80,12 +80,13 @@ export default class RoutePresenter {
     // Отрисовываем строки с точками маршрута
     render(routePoint, this.#routeComponent.element);
 
+    // На каждую строку маршрута - listener для вызова формы редактирования строки
     routePoint.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
-      replace(updateComponent, routePoint);
+      routePoint.replaceRowToForm(updateComponent, routePoint);
     });
 
     updateComponent.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
-      replace(routePoint, updateComponent);
+      updateComponent.replaceFormToRow(routePoint, updateComponent);
     });
 
     // document.addEventListener('keydown', (evt) => {

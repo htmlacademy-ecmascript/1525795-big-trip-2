@@ -2,6 +2,7 @@ import AbstractView from '../framework/view/abstract-view.js';
 import { pointTypes } from '../mock/point-type.js';
 import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
 import { offers } from '../mock/offer.js';
+import { replace } from '../framework/render.js';
 
 
 function getPointTypesList(defaultPointTypeName) {
@@ -156,5 +157,9 @@ export default class UpdatePointView extends AbstractView {
 
   get template() {
     return createUpdatePointTemplate(this.#routePoint);
+  }
+
+  replaceFormToRow(routePoint, updateComponent) {
+    replace(routePoint, updateComponent);
   }
 }
