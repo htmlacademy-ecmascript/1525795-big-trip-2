@@ -12,10 +12,11 @@ import { render, remove, replace } from '../framework/render.js';
 
 
 export default class RoutePresenter {
+  // routeComponent - это место на странице (<ul></ul>), куда будут вставляться точки маршрута
   #routeComponent = new RouteView();
+  // route - это исходные сгенерированные/полученные с сервера данные для отображения
   #route = new RouteModel();
-  #routePoints = null;
-  #sortComponent = new SortView(this.#routePoints);
+  #sortComponent = new SortView(this.#route);
   #updateComponent = null;
 
   constructor({routeContainer}) {
@@ -23,9 +24,9 @@ export default class RoutePresenter {
   }
 
   #updateTripInfo() {
-    document.querySelector('.trip-info__title').textContent = getTripTitle(this.#routePoints);
-    document.querySelector('.trip-info__dates').textContent = getTripDates(this.#routePoints);
-    document.querySelector('.trip-info__cost-value').textContent = getTripCost(this.#routePoints);
+    document.querySelector('.trip-info__title').textContent = getTripTitle(this.#route);
+    document.querySelector('.trip-info__dates').textContent = getTripDates(this.#route);
+    document.querySelector('.trip-info__cost-value').textContent = getTripCost(this.#route);
   }
 
   #renderSort() {
@@ -35,7 +36,7 @@ export default class RoutePresenter {
       if (!isDisabled) {
         this.#sortComponent.element.querySelector(`#sort-${sortName.toLowerCase()}`).addEventListener('click', () => {
           this.#sortComponent.element.querySelector(`#sort-${sortName.toLowerCase()}`).checked = true;
-          this.#routePoints.sort(sortMethod);
+          this.#route.sort(sortMethod);
           this.#renderRoutePoints();
         });
       }
@@ -50,7 +51,7 @@ export default class RoutePresenter {
     this.#renderSort();
 
     // Сортируем точки маршрута по-умолчанию по цене
-    this.#routePoints = this.#route.route.sort(sortByPrice);
+    this.#route = this.#route.route.sort(sortByPrice);
     // Отрисовываем точки маршрута
     this.#renderRoutePoints();
 
@@ -64,8 +65,8 @@ export default class RoutePresenter {
     this.#routeComponent = new RouteView();
     render(this.#routeComponent, this.routeContainer);
 
-    for (let i = 0; i < this.#routePoints.length; i++) {
-      this.#renderPoint(this.#routePoints[i]);
+    for (let i = 0; i < this.#route.length; i++) {
+      this.#renderPoint(this.#route[i]);
     }
   }
 
