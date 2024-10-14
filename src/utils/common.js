@@ -5,11 +5,14 @@ import { getOfferById } from '../mock/offer.js';
 
 
 export const getTripTitle = (route) => {
-  const copyRoute = route.slice();
-  const routeDestinations = Array.from(copyRoute, (item) => getDestinationById(item.destination).name);
-  const uniqueDestinations = new Set(routeDestinations);
+  const pointsList = new Array();
+  route.forEach((item) => pointsList.push(getDestinationById(item.destination).name));
 
-  return Array.from(uniqueDestinations, (item) => item).join(' - ');
+  if (pointsList.length > 3) {
+    return `${[pointsList[0]]} - ... - ${[pointsList[pointsList.length - 1]]}`;
+  }
+
+  return pointsList.join(' - ');
 };
 
 

@@ -104,6 +104,10 @@ export default class RoutePresenter {
     // Отрисовываем строки с точками маршрута
     render(routePoint, this.#routeComponent.element);
 
+    const eventTypeChangeHandler = () => {
+      // Здесь будет обработка смены типа точки
+    };
+
     // Это callback, который будет срабатывать на submit формы редактирования
     function formSubmitHandler(evt) {
       evt.preventDefault();
@@ -129,6 +133,7 @@ export default class RoutePresenter {
       updateComponent.replaceFormToRow(routePoint, updateComponent);
 
       updateComponent.element.querySelector('.event__rollup-btn').removeEventListener('click', formRollupClickHandler);
+      updateComponent.element.querySelector('.event__type-group').removeEventListener('change', eventTypeChangeHandler);
 
       document.removeEventListener('keydown', escKeydownHandler);
       updateComponent.element.querySelector('.event--edit').addEventListener('submit', formSubmitHandler);
@@ -140,6 +145,7 @@ export default class RoutePresenter {
 
       updateComponent.element.querySelector('.event__rollup-btn').addEventListener('click', formRollupClickHandler);
       updateComponent.element.querySelector('.event--edit').addEventListener('submit', formSubmitHandler);
+      updateComponent.element.querySelector('.event__type-group').addEventListener('change', eventTypeChangeHandler);
 
       document.addEventListener('keydown', escKeydownHandler);
     };
