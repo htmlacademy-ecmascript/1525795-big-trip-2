@@ -3,6 +3,7 @@ import { getPointTypeByName } from '../mock/point-type.js';
 import { getDestinationById } from '../mock/destination.js';
 import { getFormattedDate } from '../util.js';
 import { getOfferById } from '../mock/offer.js';
+import { replace } from '../framework/render.js';
 
 
 const getFormattedLength = (eventLength) => {
@@ -59,7 +60,7 @@ function createRoutePointTemplate(routePoint) {
       <div class="event">
         <time class="event__date" datetime="${startDate}">${formattedStartDate}</time>
         <div class="event__type">
-          <img class="event__type-icon" width="42" height="42" src="img/icons/${pointTypeItem.name}.png" alt="Event type icon">
+          <img class="event__type-icon" width="42" height="42" src="img/icons/${pointTypeItem.name.toLowerCase()}.png" alt="Event type icon">
         </div>
         <h3 class="event__title">${pointTypeItem.name} ${destinationItem.name}</h3>
         <div class="event__schedule">
@@ -99,5 +100,9 @@ export default class RoutePointView extends AbstractView {
 
   get template() {
     return createRoutePointTemplate(this.routePoint);
+  }
+
+  replaceRowToForm(updateComponent, routePoint) {
+    replace(updateComponent, routePoint);
   }
 }
