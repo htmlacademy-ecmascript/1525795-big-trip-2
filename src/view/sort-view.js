@@ -17,7 +17,7 @@ export const sortArray = [
   {
     sortName: 'Day',
     isDisabled: false,
-    isChecked: false,
+    isChecked: true,
     sortMethod: sortByDate
   },
   {
@@ -34,7 +34,7 @@ export const sortArray = [
   {
     sortName: 'Price',
     isDisabled: false,
-    isChecked: true,
+    isChecked: false,
     sortMethod: sortByPrice
   },
   {
