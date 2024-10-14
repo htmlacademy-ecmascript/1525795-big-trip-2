@@ -2,6 +2,7 @@ import AbstractView from '../framework/view/abstract-view.js';
 import { pointTypes } from '../mock/point-type.js';
 import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
 import { offers } from '../mock/offer.js';
+import { replace } from '../framework/render.js';
 
 
 function getPointTypesList(defaultPointTypeName) {
@@ -37,21 +38,46 @@ function getOffers(pointTypeName, pointOffers) {
 
   for (let i = 0; i < offers.length; i++) {
     if (offers[i].type.toLowerCase() === pointTypeName.toLowerCase()) {
-      for (let j = 0; j < offers[i].offers.length; j++) {
+      if (offers[i].offers.length > 0) {
         offersList += `
-          <div class="event__offer-selector">
-            <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[i].offers[j].id}"
-            type="checkbox" name="event-offer-${offers[i].offers[j].id}" ${pointOffers.includes(offers[i].offers[j].id) ? 'checked' : ''}>
-            <label class="event__offer-label" for="event-offer-${offers[i].offers[j].id}">
-              <span class="event__offer-title">${offers[i].offers[j].title}</span>
-              &plus;&euro;&nbsp;
-              <span class="event__offer-price">${offers[i].offers[j].price}</span>
-            </label>
-          </div>
+          <section class="event__section  event__section--offers">
+          <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+
+          <div class="event__available-offers">
+        `;
+
+        for (let j = 0; j < offers[i].offers.length; j++) {
+          offersList += `
+            <div class="event__offer-selector">
+              <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[i].offers[j].id}"
+              type="checkbox" name="event-offer-${offers[i].offers[j].id}" ${pointOffers.includes(offers[i].offers[j].id) ? 'checked' : ''}>
+              <label class="event__offer-label" for="event-offer-${offers[i].offers[j].id}">
+                <span class="event__offer-title">${offers[i].offers[j].title}</span>
+                &plus;&euro;&nbsp;
+                <span class="event__offer-price">${offers[i].offers[j].price}</span>
+              </label>
+            </div>
+          `;
+        }
+        offersList += `
+            </div>
+          </section>
         `;
       }
     }
   }
+
+//   <section class="event__section  event__section--offers">
+//   <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+
+//   <div class="event__available-offers">
+//     ${getOffers(pointTypeName, routePoint.offers)}
+//   </div>
+// </section>
+
+
+
+
 
   return offersList;
 }
@@ -128,14 +154,7 @@ function createUpdatePointTemplate(routePoint) {
           </button>
         </header>
         <section class="event__details">
-          <section class="event__section  event__section--offers">
-            <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-
-            <div class="event__available-offers">
-              ${getOffers(pointTypeName, routePoint.offers)}
-            </div>
-          </section>
-
+          ${getOffers(pointTypeName, routePoint.offers)}
           <section class="event__section  event__section--destination">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
             <p class="event__destination-description">${getDestinationByName(destinationName).description}</p>
@@ -156,5 +175,9 @@ export default class UpdatePointView extends AbstractView {
 
   get template() {
     return createUpdatePointTemplate(this.#routePoint);
+  }
+
+  replaceFormToRow(routePoint, updateComponent) {
+    replace(routePoint, updateComponent);
   }
 }
