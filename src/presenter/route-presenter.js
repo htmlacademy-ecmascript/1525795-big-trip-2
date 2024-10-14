@@ -80,20 +80,47 @@ export default class RoutePresenter {
     // Отрисовываем строки с точками маршрута
     render(routePoint, this.#routeComponent.element);
 
-    // На каждую строку маршрута - listener для вызова формы редактирования строки
-    routePoint.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
-      routePoint.replaceRowToForm(updateComponent, routePoint);
-    });
-
-    updateComponent.element.querySelector('.event__rollup-btn').addEventListener('click', () => {
+    // Это callback, который будет срабатывать на submit формы редактирования
+    function formSubmitHandler(evt) {
+      evt.preventDefault();
       updateComponent.replaceFormToRow(routePoint, updateComponent);
-    });
+      document.removeEventListener('keydown', escKeydownHandler);
+      updateComponent.element.querySelector('.event--edit').removeEventListener('submit', formSubmitHandler);
 
-    // document.addEventListener('keydown', (evt) => {
-    //   if (evt.key === 'Escape') {
-    //     evt.preventDefault();
-    //     replace(routePoint, updateComponent);
-    //   }
-    // });
+      // Здесь пока нет самой обработки submit
+    }
+
+    // Это callback, который будет срабатывать на Esc в форме редактирования
+    function escKeydownHandler(evt) {
+      if (evt.key === 'Escape') {
+        evt.preventDefault();
+        updateComponent.replaceFormToRow(routePoint, updateComponent);
+        document.removeEventListener('keydown', escKeydownHandler);
+        updateComponent.element.querySelector('.event--edit').removeEventListener('submit', formSubmitHandler);
+      }
+    }
+
+    // Это callback, который будет срабатывать при свертывании формы редактирования обратно в строку
+    const formRollupClickHandler = () => {
+      updateComponent.replaceFormToRow(routePoint, updateComponent);
+
+      updateComponent.element.querySelector('.event__rollup-btn').removeEventListener('click', formRollupClickHandler);
+
+      document.removeEventListener('keydown', escKeydownHandler);
+      updateComponent.element.querySelector('.event--edit').addEventListener('submit', formSubmitHandler);
+    };
+
+    // Это callback, который будет срабатывать при развертывании строки в форму редактирования
+    const rowRollupClickHandler = () => {
+      routePoint.replaceRowToForm(updateComponent, routePoint);
+
+      updateComponent.element.querySelector('.event__rollup-btn').addEventListener('click', formRollupClickHandler);
+      updateComponent.element.querySelector('.event--edit').addEventListener('submit', formSubmitHandler);
+
+      document.addEventListener('keydown', escKeydownHandler);
+    };
+
+    // На каждую строку маршрута - listener для вызова формы редактирования строки
+    routePoint.element.querySelector('.event__rollup-btn').addEventListener('click', rowRollupClickHandler);
   }
 }
