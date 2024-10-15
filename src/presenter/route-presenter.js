@@ -12,6 +12,7 @@ import { render, remove } from '../framework/render.js';
 
 
 export default class RoutePresenter {
+  routeContainer = null;
   // routeComponent - это место на странице (<ul></ul>), куда будут вставляться точки маршрута
   #routeComponent = new RouteView();
   // route - это исходные сгенерированные/полученные с сервера данные для отображения
@@ -25,10 +26,10 @@ export default class RoutePresenter {
   }
 
   #updateTripInfo() {
-    if (this.#route.route.length > 0) {
-      const tripTitle = getTripTitle(this.#route.route);
-      const tripDates = getTripDates(this.#route.route);
-      const tripCost = getTripCost(this.#route.route);
+    if (this.#route.length > 0) {
+      const tripTitle = getTripTitle(this.#route);
+      const tripDates = getTripDates(this.#route);
+      const tripCost = getTripCost(this.#route);
 
       const divTripMain = document.querySelector('.trip-main');
       this.#tripInfoComponent = new TripInfoView(tripTitle, tripDates, tripCost);
@@ -38,29 +39,41 @@ export default class RoutePresenter {
 
   #sortTypeClickHandler = (evt) => {
     if (evt.target.tagName === 'INPUT') {
-      this.#route.route.sort(sortMap.get(evt.target.dataset.sortType).sortMethod);
+      this.#route.sort(sortMap.get(evt.target.dataset.sortType).sortMethod);
       this.#renderRoute();
     }
   };
 
-  #renderSort() {
+
+  #renderSort = () => {
     const sortPresenter = new SortPresenter(this.#route, this.routeContainer);
     sortPresenter.init();
+    this.#route = this.#route.sort(sortPresenter.getDefaultSortMethod());
+
     document.querySelector('.trip-events__trip-sort').addEventListener('click', this.#sortTypeClickHandler);
-  }
+  };
+
+  #updatePoint = (point) => {
+    let updatedPoint = null;
+    for (let i = 0; i < this.#route.length; i++) {
+      if (this.#route[i] === point) {
+        updatedPoint = this.#route[i];
+        break;
+      }
+    }
+    updatedPoint['is_favorite'] = !updatedPoint['is_favorite'];
+  };
 
   #renderRoute() {
     remove(this.#routeComponent);
     this.#routeComponent = new RouteView();
     render(this.#routeComponent, this.routeContainer);
 
-    for (let i = 0; i < this.#route.route.length; i++) {
-      this.#renderPoint(this.#route.route[i]);
-    }
+    this.#route.forEach((item) => this.#renderPoint(item));
   }
 
   #renderPoint(point) {
-    const pointPresenter = new PointPresenter(this.#routeComponent, point);
+    const pointPresenter = new PointPresenter(this.#routeComponent, point, this.#updatePoint, this.#renderSort);
     pointPresenter.init(point);
     this.#pointMap.set(point.id, pointPresenter);
   }
@@ -73,8 +86,9 @@ export default class RoutePresenter {
   init() {
     // Добавляем на страницу компонент маршрута
     render(this.#routeComponent, this.routeContainer);
+    this.#route = [...this.#route.route];
 
-    if (this.#route.route.length) {
+    if (this.#route.length) {
       // ... и туда же компонент сортировки точек маршрута
       this.#renderSort();
 

@@ -19,9 +19,9 @@ export default class SortPresenter {
   init() {
     render(this.#sortComponent, this.#container, 'afterbegin');
 
-    const defaultSortMethod = sortMap.get(defaultSortName).sortMethod;
+  }
 
-    // Сортируем точки маршрута по-умолчанию
-    this.#route = this.#route.route.sort(defaultSortMethod);
+  getDefaultSortMethod() {
+    return sortMap.get(defaultSortName).sortMethod;
   }
 }
