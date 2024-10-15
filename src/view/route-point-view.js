@@ -28,7 +28,7 @@ const getFormattedLength = (eventLength) => {
 
 
 function createRoutePointTemplate(routePoint) {
-  const { type: pointType, destination, date_from: dateFrom, date_to: dateTo, base_price: price, offers: pointOffers } = routePoint;
+  const { type: pointType, destination, date_from: dateFrom, date_to: dateTo, base_price: price, is_favorite: isFavorite, offers: pointOffers } = routePoint;
   const startDate = dateFrom.split('T')[0];
   const formattedStartDate = getFormattedDate(startDate);
   const startTime = dateFrom.split('T')[1].slice(0, 5);
@@ -78,7 +78,7 @@ function createRoutePointTemplate(routePoint) {
         <ul class="event__selected-offers">
           ${offersList}
         </ul>
-        <button class="event__favorite-btn event__favorite-btn--active" type="button">
+        <button class="event__favorite-btn ${ isFavorite ? 'event__favorite-btn--active' : ''}" type="button">
           <span class="visually-hidden">Add to favorite</span>
           <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
             <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
