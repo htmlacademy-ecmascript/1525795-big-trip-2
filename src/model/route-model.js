@@ -1,6 +1,6 @@
 import { getRandomPoint } from '../mock/gen-point.js';
 
-const POINT_COUNT = 8;
+const POINT_COUNT = 6;
 
 
 export default class RouteModel {

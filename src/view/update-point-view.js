@@ -165,7 +165,7 @@ export default class UpdatePointView extends AbstractView {
     return createUpdatePointTemplate(this.#routePoint);
   }
 
-  replaceFormToRow(routePoint, updateComponent) {
-    replace(routePoint, updateComponent);
+  replaceFormToRow(rowComponent, updateComponent) {
+    replace(rowComponent, updateComponent);
   }
 }

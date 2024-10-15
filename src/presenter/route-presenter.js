@@ -1,12 +1,11 @@
 import RouteView from '../view/route-view.js';
-import RoutePointView from '../view/route-point-view.js';
 import RouteModel from '../model/route-model.js';
-import SortView from '../view/sort-view.js';
-import UpdatePointView from '../view/update-point-view.js';
 import EmptyRouteView from '../view/empty-route.js';
 import TripInfoView from '../view/trip-info-view.js';
+import PointPresenter from './point-presenter.js';
+import SortPresenter from './sort-presenter.js';
 
-import { sortArray } from '../view/sort-view.js';
+import { sortMap } from '../utils/common.js';
 import { getTripTitle, getTripDates, getTripCost } from '../utils/common.js';
 
 import { render, remove } from '../framework/render.js';
@@ -17,20 +16,19 @@ export default class RoutePresenter {
   #routeComponent = new RouteView();
   // route - это исходные сгенерированные/полученные с сервера данные для отображения
   #route = new RouteModel();
-  #sortComponent = new SortView(this.#route);
-  #updateComponent = null;
-  #emptyRoute = new EmptyRouteView();
+  #emptyRoute = null;
   #tripInfoComponent = null;
+  #pointMap = new Map();
 
   constructor({routeContainer}) {
     this.routeContainer = routeContainer;
   }
 
   #updateTripInfo() {
-    if (this.#route.length > 0) {
-      const tripTitle = getTripTitle(this.#route);
-      const tripDates = getTripDates(this.#route);
-      const tripCost = getTripCost(this.#route);
+    if (this.#route.route.length > 0) {
+      const tripTitle = getTripTitle(this.#route.route);
+      const tripDates = getTripDates(this.#route.route);
+      const tripCost = getTripCost(this.#route.route);
 
       const divTripMain = document.querySelector('.trip-main');
       this.#tripInfoComponent = new TripInfoView(tripTitle, tripDates, tripCost);
@@ -38,29 +36,37 @@ export default class RoutePresenter {
     }
   }
 
+  #sortTypeClickHandler = (evt) => {
+    if (evt.target.tagName === 'INPUT') {
+      this.#route.route.sort(sortMap.get(evt.target.dataset.sortType).sortMethod);
+      this.#renderRoute();
+    }
+  };
+
   #renderSort() {
-    render(this.#sortComponent, this.routeContainer, 'afterbegin');
-    let defaultSortMethod = '';
+    const sortPresenter = new SortPresenter(this.#route, this.routeContainer);
+    sortPresenter.init();
+    document.querySelector('.trip-events__trip-sort').addEventListener('click', this.#sortTypeClickHandler);
+  }
 
-    sortArray.forEach(({sortName, isDisabled, isChecked, sortMethod}) => {
-      if (!isDisabled) {
-        this.#sortComponent.element.querySelector(`#sort-${sortName.toLowerCase()}`).addEventListener('click', () => {
-          this.#sortComponent.element.querySelector(`#sort-${sortName.toLowerCase()}`).checked = true;
-          this.#route.sort(sortMethod);
-          this.#renderRoutePoints();
-        });
-      }
+  #renderRoute() {
+    remove(this.#routeComponent);
+    this.#routeComponent = new RouteView();
+    render(this.#routeComponent, this.routeContainer);
 
-      if (isChecked) {
-        defaultSortMethod = sortMethod;
-      }
-    });
+    for (let i = 0; i < this.#route.route.length; i++) {
+      this.#renderPoint(this.#route.route[i]);
+    }
+  }
 
-    // Сортируем точки маршрута по-умолчанию
-    this.#route = this.#route.route.sort(defaultSortMethod);
+  #renderPoint(point) {
+    const pointPresenter = new PointPresenter(this.#routeComponent, point);
+    pointPresenter.init(point);
+    this.#pointMap.set(point.id, pointPresenter);
   }
 
   #renderEmptyRoute() {
+    this.#emptyRoute = new EmptyRouteView();
     render(this.#emptyRoute, this.routeContainer);
   }
 
@@ -73,7 +79,7 @@ export default class RoutePresenter {
       this.#renderSort();
 
       // Отрисовываем точки маршрута
-      this.#renderRoutePoints();
+      this.#renderRoute();
 
       // Обновляем информацию о маршруте в заголовке страницы
       this.#updateTripInfo();
@@ -81,76 +87,5 @@ export default class RoutePresenter {
       // ... либо Click New Event to create your first point
       this.#renderEmptyRoute();
     }
-  }
-
-  #renderRoutePoints() {
-    // Пока не придумал, как очистить компонент при изменении сортировки, поэтому удаляю его и создаю заново
-    remove(this.#routeComponent);
-    this.#routeComponent = new RouteView();
-    render(this.#routeComponent, this.routeContainer);
-
-    for (let i = 0; i < this.#route.length; i++) {
-      this.#renderPoint(this.#route[i]);
-    }
-  }
-
-  #renderPoint(point) {
-    // Два компонента
-    // Строка с точкой маршрута
-    const routePoint = new RoutePointView(point);
-    // ... и форма редактирования точки маршрута
-    const updateComponent = new UpdatePointView(point);
-
-    // Отрисовываем строки с точками маршрута
-    render(routePoint, this.#routeComponent.element);
-
-    const eventTypeChangeHandler = () => {
-      // Здесь будет обработка смены типа точки
-    };
-
-    // Это callback, который будет срабатывать на submit формы редактирования
-    function formSubmitHandler(evt) {
-      evt.preventDefault();
-      updateComponent.replaceFormToRow(routePoint, updateComponent);
-      document.removeEventListener('keydown', escKeydownHandler);
-      updateComponent.element.querySelector('.event--edit').removeEventListener('submit', formSubmitHandler);
-
-      // Здесь будет обработка submit
-    }
-
-    // Это callback, который будет срабатывать на Esc в форме редактирования
-    function escKeydownHandler(evt) {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        updateComponent.replaceFormToRow(routePoint, updateComponent);
-        document.removeEventListener('keydown', escKeydownHandler);
-        updateComponent.element.querySelector('.event--edit').removeEventListener('submit', formSubmitHandler);
-      }
-    }
-
-    // Это callback, который будет срабатывать при свертывании формы редактирования обратно в строку
-    const formRollupClickHandler = () => {
-      updateComponent.replaceFormToRow(routePoint, updateComponent);
-
-      updateComponent.element.querySelector('.event__rollup-btn').removeEventListener('click', formRollupClickHandler);
-      updateComponent.element.querySelector('.event__type-group').removeEventListener('change', eventTypeChangeHandler);
-
-      document.removeEventListener('keydown', escKeydownHandler);
-      updateComponent.element.querySelector('.event--edit').addEventListener('submit', formSubmitHandler);
-    };
-
-    // Это callback, который будет срабатывать при развертывании строки в форму редактирования
-    const rowRollupClickHandler = () => {
-      routePoint.replaceRowToForm(updateComponent, routePoint);
-
-      updateComponent.element.querySelector('.event__rollup-btn').addEventListener('click', formRollupClickHandler);
-      updateComponent.element.querySelector('.event--edit').addEventListener('submit', formSubmitHandler);
-      updateComponent.element.querySelector('.event__type-group').addEventListener('change', eventTypeChangeHandler);
-
-      document.addEventListener('keydown', escKeydownHandler);
-    };
-
-    // На каждую строку маршрута - listener для вызова формы редактирования строки
-    routePoint.element.querySelector('.event__rollup-btn').addEventListener('click', rowRollupClickHandler);
   }
 }
