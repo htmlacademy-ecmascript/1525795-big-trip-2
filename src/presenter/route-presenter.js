@@ -12,10 +12,8 @@ import { render, remove } from '../framework/render.js';
 
 export default class RoutePresenter {
   routeContainer = null;
-  // routeComponent - это место на странице (<ul></ul>), куда будут вставляться точки маршрута
-  #routeComponent = new RouteView();
-  // route - это исходные сгенерированные/полученные с сервера данные для отображения
-  #route = new RouteModel();
+  #routeComponent = new RouteView(); // routeComponent - это место на странице (<ul></ul>), куда будут вставляться точки маршрута
+  #route = new RouteModel(); // route - это исходные сгенерированные/полученные с сервера данные для отображения
   #emptyRoute = null;
   #pointMap = new Map();
 
@@ -30,6 +28,9 @@ export default class RoutePresenter {
     }
   };
 
+  #resetRoutePoints = () => {
+    this.#pointMap.forEach((item) => item.resetComponent());
+  };
 
   #renderSort = () => {
     const sortPresenter = new SortPresenter(this.#route, this.routeContainer);
@@ -56,11 +57,13 @@ export default class RoutePresenter {
     render(this.#routeComponent, this.routeContainer);
 
     this.#route.forEach((item) => this.#renderPoint(item));
+    document.addEventListener('keydown', this.#resetRoutePoints);
   }
 
   #renderPoint(point) {
-    const pointPresenter = new PointPresenter(this.#routeComponent, point, this.#updatePoint, this.#renderSort);
+    const pointPresenter = new PointPresenter(this.#routeComponent, point, this.#updatePoint, this.#renderSort, this.#resetRoutePoints);
     pointPresenter.init(point);
+
     this.#pointMap.set(point.id, pointPresenter);
   }
 
@@ -87,7 +90,6 @@ export default class RoutePresenter {
       this.#renderRoute();
 
       // Обновляем информацию о маршруте в заголовке страницы
-      // this.#updateTripInfo();
       this.#renderHeader();
     } else {
       // ... либо Click New Event to create your first point

@@ -3,20 +3,28 @@ import UpdatePointView from '../view/update-point-view.js';
 
 import { render, replace } from '../framework/render.js';
 
+const Mode = {
+  VIEW: 'VIEW',
+  EDIT: 'EDIT'
+};
 
 export default class PointPresenter {
   #routeComponent = null;
   #rowComponent = null;
   #updateComponent = null;
   #point = null;
+  #mode = null;
   updatePointCb = null;
   renderSortCb = null;
+  resetMethodCb = null;
 
-  constructor(routeComponent, point, updatePointCb, renderSortCb) {
+  constructor(routeComponent, point, updatePointCb, renderSortCb, resetMethodCb) {
     this.#routeComponent = routeComponent;
     this.#point = point;
     this.updatePointCb = updatePointCb;
     this.renderSortCb = renderSortCb;
+    this.resetMethodCb = resetMethodCb;
+    this.#mode = Mode.VIEW;
 
     // Два компонента
     // Строка с точкой маршрута
@@ -29,13 +37,16 @@ export default class PointPresenter {
   #addListeners() {
     this.#rowComponent.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rowRollupClickHandler);
     this.#rowComponent.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
+    this.#updateComponent.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
+    this.#updateComponent.element.querySelector('.event--edit').addEventListener('submit', this.#formSubmitHandler);
+    this.#updateComponent.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
   }
 
   init() {
     // Отрисовываем строку с точкой маршрута
     render(this.#rowComponent, this.#routeComponent.element);
 
-    // Добавляем listener для вызова формы редактирования строки
+    // Добавляем listeners
     this.#addListeners();
   }
 
@@ -55,44 +66,27 @@ export default class PointPresenter {
   #formSubmitHandler(evt) {
     evt.preventDefault();
     this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
-    document.removeEventListener('keydown', this.#escKeydownHandler);
-    this.#updateComponent.element.querySelector('.event--edit').removeEventListener('submit', this.#formSubmitHandler);
 
     // Здесь будет обработка submit
   }
 
-  // Это callback, который будет срабатывать на Esc в форме редактирования
-  #escKeydownHandler = (evt) => {
-    if (evt.key === 'Escape') {
-      evt.preventDefault();
-      this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
-      document.removeEventListener('keydown', this.#escKeydownHandler);
-      this.#updateComponent.element.querySelector('.event--edit').removeEventListener('submit', this.#formSubmitHandler);
-      this.#rowComponent.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
-    }
-  };
-
   // Это callback, который будет срабатывать при свертывании формы редактирования обратно в строку
   #formRollupClickHandler = () => {
     this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
-
-    this.#updateComponent.element.querySelector('.event__rollup-btn').removeEventListener('click', this.#formRollupClickHandler);
-    this.#updateComponent.element.querySelector('.event__type-group').removeEventListener('change', this.#eventTypeChangeHandler);
-    this.#rowComponent.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
-
-    document.removeEventListener('keydown', this.#escKeydownHandler);
-    this.#updateComponent.element.querySelector('.event--edit').addEventListener('submit', this.#formSubmitHandler);
+    this.#mode = Mode.VIEW;
   };
 
   // Это callback, который будет срабатывать при развертывании строки в форму редактирования
   #rowRollupClickHandler = () => {
+    this.resetMethodCb();
     this.#rowComponent.replaceRowToForm(this.#updateComponent, this.#rowComponent);
-    this.#rowComponent.element.querySelector('.event__favorite-btn').removeEventListener('click', this.#favoriteClickHandler);
+    this.#mode = Mode.EDIT;
+  };
 
-    this.#updateComponent.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
-    this.#updateComponent.element.querySelector('.event--edit').addEventListener('submit', this.#formSubmitHandler);
-    this.#updateComponent.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
-
-    document.addEventListener('keydown', this.#escKeydownHandler);
+  resetComponent = () => {
+    if (this.#mode === Mode.EDIT) {
+      this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
+      this.#mode = Mode.VIEW;
+    }
   };
 }

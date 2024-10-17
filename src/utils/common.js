@@ -71,6 +71,7 @@ export const getTripDates = (route) => {
 
 
 export const getTripCost = (route) => {
+  // Здесь подсчет стоимости маршрута. Суммируется стоимость каждой точки маршрута плюс стоимость offers  для точки маршрута
   let cost = 0;
   for (let i = 0; i < route.length; i++) {
     cost += route[i].base_price;
