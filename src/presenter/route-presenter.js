@@ -5,9 +5,11 @@ import PointPresenter from './point-presenter.js';
 import SortPresenter from './sort-presenter.js';
 import HeaderPresenter from './header-presenter.js';
 
-import { sortMap } from '../utils/common.js';
+import { DEFAULT_SORT_TYPE, DEFAULT_SORT_METHOD, sortMethods } from '../utils/common.js';
 
 import { render, remove } from '../framework/render.js';
+
+let curentSortType = '';
 
 
 export default class RoutePresenter {
@@ -23,8 +25,11 @@ export default class RoutePresenter {
 
   #sortTypeClickHandler = (evt) => {
     if (evt.target.tagName === 'INPUT') {
-      this.#route.sort(sortMap.get(evt.target.dataset.sortType).sortMethod);
-      this.#renderRoute();
+      if (evt.target.dataset.sortType !== curentSortType) {
+        this.#route.sort(sortMethods[evt.target.dataset.sortType]);
+        this.#renderRoute();
+        curentSortType = evt.target.dataset.sortType;
+      }
     }
   };
 
@@ -35,7 +40,7 @@ export default class RoutePresenter {
   #renderSort = () => {
     const sortPresenter = new SortPresenter(this.#route, this.routeContainer);
     sortPresenter.init();
-    this.#route = this.#route.sort(sortPresenter.getDefaultSortMethod());
+    this.#route = this.#route.sort(DEFAULT_SORT_METHOD);
 
     document.querySelector('.trip-events__trip-sort').addEventListener('click', this.#sortTypeClickHandler);
   };
@@ -79,6 +84,7 @@ export default class RoutePresenter {
     if (this.#route.length) {
       // ... и туда же компонент сортировки точек маршрута
       this.#renderSort();
+      curentSortType = DEFAULT_SORT_TYPE;
 
       // Отрисовываем точки маршрута
       this.#renderRoute();
