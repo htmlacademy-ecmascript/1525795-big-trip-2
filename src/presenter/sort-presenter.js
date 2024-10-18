@@ -1,5 +1,4 @@
 import SortView from '../view/sort-view.js';
-import { sortMap, defaultSortName } from '../utils/common.js';
 
 import { render } from '../framework/render.js';
 
@@ -19,9 +18,5 @@ export default class SortPresenter {
   init() {
     render(this.#sortComponent, this.#container, 'afterbegin');
 
-  }
-
-  getDefaultSortMethod() {
-    return sortMap.get(defaultSortName).sortMethod;
   }
 }
