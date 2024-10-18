@@ -41,13 +41,7 @@ export default class RoutePresenter {
   };
 
   #updatePoint = (point) => {
-    let updatedPoint = null;
-    for (let i = 0; i < this.#route.length; i++) {
-      if (this.#route[i] === point) {
-        updatedPoint = this.#route[i];
-        break;
-      }
-    }
+    const updatedPoint = this.#route.find((item) => item.id === point.id);
     updatedPoint['is_favorite'] = !updatedPoint['is_favorite'];
   };
 
@@ -61,7 +55,7 @@ export default class RoutePresenter {
   }
 
   #renderPoint(point) {
-    const pointPresenter = new PointPresenter(this.#routeComponent, point, this.#updatePoint, this.#renderSort, this.#resetRoutePoints);
+    const pointPresenter = new PointPresenter(this.#routeComponent, point, this.#updatePoint, this.#resetRoutePoints);
     pointPresenter.init(point);
 
     this.#pointMap.set(point.id, pointPresenter);

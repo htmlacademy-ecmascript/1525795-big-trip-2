@@ -15,14 +15,12 @@ export default class PointPresenter {
   #point = null;
   #mode = null;
   updatePointCb = null;
-  renderSortCb = null;
   resetMethodCb = null;
 
-  constructor(routeComponent, point, updatePointCb, renderSortCb, resetMethodCb) {
+  constructor(routeComponent, point, updatePointCb, resetMethodCb) {
     this.#routeComponent = routeComponent;
     this.#point = point;
     this.updatePointCb = updatePointCb;
-    this.renderSortCb = renderSortCb;
     this.resetMethodCb = resetMethodCb;
     this.#mode = Mode.VIEW;
 
@@ -37,6 +35,7 @@ export default class PointPresenter {
   #addListeners() {
     this.#rowComponent.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rowRollupClickHandler);
     this.#rowComponent.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
+
     this.#updateComponent.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
     this.#updateComponent.element.querySelector('.event--edit').addEventListener('submit', this.#formSubmitHandler);
     this.#updateComponent.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
