@@ -1,8 +1,11 @@
-import AbstractView from '../framework/view/abstract-view.js';
+// import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
+
 import { pointTypes } from '../mock/point-type.js';
 import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
 import { offers } from '../mock/offer.js';
 import { replace } from '../framework/render.js';
+import { capitalize } from '../utils/common.js';
 
 
 function getPointTypesList(defaultPointTypeName) {
@@ -21,6 +24,31 @@ function getPointTypesList(defaultPointTypeName) {
   return pointTypesList;
 }
 
+function getDestinationPhotos(destination) {
+  let photos = '';
+
+  if (destination.pictures.length) {
+    destination.pictures.forEach((item) => {
+      photos += `<img class="event__photo" src=${item.src} alt="Event photo">`;
+    });
+  }
+
+  return photos;
+}
+
+function getFormattedDestination(destination) {
+  return `
+    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+    <p class="event__destination-description">${destination.description}</p>
+
+    <div class="event__photos-container">
+      <div class="event__photos-tape">
+        ${getDestinationPhotos(destination)}
+      </div>
+    </div>
+  `;
+}
+
 
 function getDestinationsList() {
   // Список пунктов назначения для выпадающего списка в форме редактирования
@@ -32,7 +60,7 @@ function getDestinationsList() {
 }
 
 
-function getOffers(pointTypeName, pointOffers) {
+function getFormattedOffers(pointTypeName, pointOffers) {
   // Список дополнительных опций для вида точки маршрута
   let offersList = '';
 
@@ -40,7 +68,6 @@ function getOffers(pointTypeName, pointOffers) {
     if (offers[i].type.toLowerCase() === pointTypeName.toLowerCase()) {
       if (offers[i].offers.length > 0) {
         offersList += `
-          <section class="event__section  event__section--offers">
           <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
           <div class="event__available-offers">
@@ -59,9 +86,9 @@ function getOffers(pointTypeName, pointOffers) {
             </div>
           `;
         }
+
         offersList += `
-            </div>
-          </section>
+          </div>
         `;
       }
     }
@@ -83,22 +110,22 @@ const getFormattedDate = (date) => {
 };
 
 
-function createUpdatePointTemplate(routePoint) {
-  const pointTypeName = routePoint.type;
-  const destinationName = getDestinationById(routePoint.destination).name;
-  const dateFrom = getFormattedDate(new Date(routePoint.date_from));
-  const dateTo = getFormattedDate(new Date(routePoint.date_to));
+function createUpdatePointTemplate(state) {
+  const pointTypeName = state.type;
+  const dateFrom = getFormattedDate(new Date(state.date_from));
+  const dateTo = getFormattedDate(new Date(state.date_to));
+  const destinationObj = getDestinationById(state.destination);
 
   return `
     <li class="trip-events__item">
       <form class="event event--edit" action="#" method="post">
         <header class="event__header">
           <div class="event__type-wrapper">
-            <label class="event__type  event__type-btn" for="event-type-toggle-${routePoint.id}">
+            <label class="event__type  event__type-btn" for="event-type-toggle-${state.id}">
               <span class="visually-hidden">Choose event type</span>
               <img class="event__type-icon" width="17" height="17" src="img/icons/${pointTypeName.toLowerCase()}.png" alt="Event type icon">
             </label>
-            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${routePoint.id}" type="checkbox">
+            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${state.id}" type="checkbox">
 
             <div class="event__type-list">
               <fieldset class="event__type-group">
@@ -109,30 +136,30 @@ function createUpdatePointTemplate(routePoint) {
           </div>
 
           <div class="event__field-group  event__field-group--destination">
-            <label class="event__label  event__type-output" for="event-destination-${routePoint.id}">
+            <label class="event__label  event__type-output" for="event-destination-${state.id}">
               ${pointTypeName}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-${routePoint.id}" type="text" name="event-destination"
-            value="${destinationName}" list="destination-list-${routePoint.id}">
-            <datalist id="destination-list-${routePoint.id}">
+            <input class="event__input  event__input--destination" id="event-destination-${state.id}" type="text" name="event-destination"
+            value="${destinationObj.name}" list="destination-list-${state.id}">
+            <datalist id="destination-list-${state.id}">
               ${getDestinationsList()}
             </datalist>
           </div>
 
           <div class="event__field-group  event__field-group--time">
-            <label class="visually-hidden" for="event-start-time-${routePoint.id}">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-${routePoint.id}" type="text" name="event-start-time" value="${dateFrom}">
+            <label class="visually-hidden" for="event-start-time-${state.id}">From</label>
+            <input class="event__input  event__input--time" id="event-start-time-${state.id}" type="text" name="event-start-time" value="${dateFrom}">
             &mdash;
-            <label class="visually-hidden" for="event-end-time-${routePoint.id}">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-${routePoint.id}" type="text" name="event-end-time" value="${dateTo}">
+            <label class="visually-hidden" for="event-end-time-${state.id}">To</label>
+            <input class="event__input  event__input--time" id="event-end-time-${state.id}" type="text" name="event-end-time" value="${dateTo}">
           </div>
 
           <div class="event__field-group  event__field-group--price">
-            <label class="event__label" for="event-price-${routePoint.id}">
+            <label class="event__label" for="event-price-${state.id}">
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-${routePoint.id}" type="text" name="event-price" value="${routePoint.base_price}">
+            <input class="event__input  event__input--price" id="event-price-${state.id}" type="text" name="event-price" value="${state.base_price}">
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -142,10 +169,12 @@ function createUpdatePointTemplate(routePoint) {
           </button>
         </header>
         <section class="event__details">
-          ${getOffers(pointTypeName, routePoint.offers)}
+          <section class="event__section  event__section--offers">
+            ${getFormattedOffers(pointTypeName, state.offers)}
+          </section>
+
           <section class="event__section  event__section--destination">
-            <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-            <p class="event__destination-description">${getDestinationByName(destinationName).description}</p>
+            ${getFormattedDestination(destinationObj)}
           </section>
         </section>
       </form>
@@ -153,19 +182,69 @@ function createUpdatePointTemplate(routePoint) {
   `;
 }
 
-export default class UpdatePointView extends AbstractView {
+export default class UpdatePointView extends AbstractStatefulView {
   #routePoint = null;
+  #rowComponent = null;
+  #cbRollupClickHandler = null;
 
-  constructor(routePoint) {
+  constructor(routePoint, rowComponent, cbRollupClickHandler) {
     super();
     this.#routePoint = routePoint;
+    this.#rowComponent = rowComponent;
+    this.#cbRollupClickHandler = cbRollupClickHandler;
+    this._setState(UpdatePointView.parsePointToState(this.#routePoint));
+
+    this._restoreHandlers();
   }
 
   get template() {
-    return createUpdatePointTemplate(this.#routePoint);
+    return createUpdatePointTemplate(this._state);
   }
 
   replaceFormToRow(rowComponent, updateComponent) {
     replace(rowComponent, updateComponent);
+  }
+
+  _restoreHandlers() {
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
+    this.element.querySelector('.event--edit').addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
+  }
+
+  #formRollupClickHandler = () => {
+    this.updateElement(UpdatePointView.parsePointToState(this.#routePoint));
+    this.#cbRollupClickHandler();
+  };
+
+  // Это handler, который будет срабатывать на submit формы редактирования
+  #formSubmitHandler(evt) {
+    evt.preventDefault();
+    this.replaceFormToRow(this.#rowComponent, this);
+
+    // Здесь будет обработка submit
+  }
+
+  #eventTypeChangeHandler = () => {
+    const newPointTypeName = this.element.querySelector('input[name="event-type"]:checked').value;
+
+    this.element.querySelector('.event__section--offers').innerHTML = getFormattedOffers(newPointTypeName, '');
+    this.element.querySelector('.event__type-icon').src = `img/icons/${newPointTypeName.toLowerCase()}.png`;
+    this.element.querySelector('.event__label').textContent = capitalize(newPointTypeName);
+  };
+
+  #destinationChangeHandler = () => {
+    const newDestination = this.element.querySelector('.event__input--destination').value;
+    this.element.querySelector('.event__section--destination').innerHTML = getFormattedDestination(getDestinationByName(newDestination));
+  };
+
+  static parsePointToState(point) {
+    return {...point};
+  }
+
+  static parseStateToPoint(state) {
+    const point = {...state};
+
+    return point;
   }
 }

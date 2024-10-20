@@ -33,8 +33,14 @@ export default class RoutePresenter {
     }
   };
 
-  #resetRoutePoints = () => {
-    this.#pointMap.forEach((item) => item.resetComponent());
+  // Для всех точек маршрута восстанавливаем исходный вид (превращаем в строку)
+  #resetRoutePoints = () => this.#pointMap.forEach((item) => item.resetComponent());
+
+  // Если поймали Esc, возвращаем исходный вид всех точек маршрута
+  #escKeydownHandler = (evt) => {
+    if (evt.key === 'Escape') {
+      this.#resetRoutePoints();
+    }
   };
 
   #renderSort = () => {
@@ -56,7 +62,7 @@ export default class RoutePresenter {
     render(this.#routeComponent, this.routeContainer);
 
     this.#route.forEach((item) => this.#renderPoint(item));
-    document.addEventListener('keydown', this.#resetRoutePoints);
+    document.addEventListener('keydown', this.#escKeydownHandler);
   }
 
   #renderPoint(point) {
@@ -92,7 +98,7 @@ export default class RoutePresenter {
       // Обновляем информацию о маршруте в заголовке страницы
       this.#renderHeader();
     } else {
-      // ... либо Click New Event to create your first point
+      // ... либо Click New Event to create your first point, если маршрут пустой
       this.#renderEmptyRoute();
     }
   }

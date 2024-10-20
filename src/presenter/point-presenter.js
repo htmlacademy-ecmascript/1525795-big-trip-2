@@ -29,16 +29,12 @@ export default class PointPresenter {
     this.#rowComponent = new RoutePointView(this.#point);
 
     // ... и форма редактирования точки маршрута
-    this.#updateComponent = new UpdatePointView(this.#point);
+    this.#updateComponent = new UpdatePointView(this.#point, this.#rowComponent, this.#formRollupClickHandler);
   }
 
   #addListeners() {
     this.#rowComponent.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rowRollupClickHandler);
     this.#rowComponent.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
-
-    this.#updateComponent.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
-    this.#updateComponent.element.querySelector('.event--edit').addEventListener('submit', this.#formSubmitHandler);
-    this.#updateComponent.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
   }
 
   init() {
@@ -57,29 +53,19 @@ export default class PointPresenter {
     this.#addListeners();
   };
 
-  #eventTypeChangeHandler = () => {
-    // Здесь будет обработка смены типа точки
-  };
-
-  // Это callback, который будет срабатывать на submit формы редактирования
-  #formSubmitHandler(evt) {
-    evt.preventDefault();
-    this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
-
-    // Здесь будет обработка submit
-  }
-
-  // Это callback, который будет срабатывать при свертывании формы редактирования обратно в строку
-  #formRollupClickHandler = () => {
-    this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
-    this.#mode = Mode.VIEW;
-  };
 
   // Это callback, который будет срабатывать при развертывании строки в форму редактирования
   #rowRollupClickHandler = () => {
+    // Сначала сбрасываем к исходному виду все открытые формы
     this.resetMethodCb();
+    // Затем на текущей точке меняем отображение
     this.#rowComponent.replaceRowToForm(this.#updateComponent, this.#rowComponent);
     this.#mode = Mode.EDIT;
+  };
+
+  // Это callback, который будет срабатывать при свертывании формы редактирования обратно в строку
+  #formRollupClickHandler = () => {
+    this.resetComponent();
   };
 
   resetComponent = () => {
