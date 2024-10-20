@@ -27,22 +27,16 @@ function getPointTypesList(defaultPointTypeName) {
 function getDestinationPhotos(destination) {
   let photos = '';
 
-  destination.pictures.forEach((item) => {
-    photos += `<img class="event__photo" src=${item.src} alt="Event photo">`;
-  });
+  if (destination.pictures.length) {
+    destination.pictures.forEach((item) => {
+      photos += `<img class="event__photo" src=${item.src} alt="Event photo">`;
+    });
+  }
 
   return photos;
 }
 
-
-function getDestination(destination) {
-  console.log('inside getDestination', destination);
-  const description = destination.description;
-
-  if (!description) {
-    return '';
-  }
-
+function getFormattedDestination(destination) {
   return `
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
     <p class="event__destination-description">${destination.description}</p>
@@ -66,7 +60,7 @@ function getDestinationsList() {
 }
 
 
-function getOffers(pointTypeName, pointOffers) {
+function getFormattedOffers(pointTypeName, pointOffers) {
   // Список дополнительных опций для вида точки маршрута
   let offersList = '';
 
@@ -76,7 +70,7 @@ function getOffers(pointTypeName, pointOffers) {
         offersList += `
           <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
-            <div class="event__available-offers">
+          <div class="event__available-offers">
         `;
 
         for (let j = 0; j < offers[i].offers.length; j++) {
@@ -94,7 +88,7 @@ function getOffers(pointTypeName, pointOffers) {
         }
 
         offersList += `
-            </div>
+          </div>
         `;
       }
     }
@@ -118,9 +112,9 @@ const getFormattedDate = (date) => {
 
 function createUpdatePointTemplate(state) {
   const pointTypeName = state.type;
-  const destination = state.destination;
   const dateFrom = getFormattedDate(new Date(state.date_from));
   const dateTo = getFormattedDate(new Date(state.date_to));
+  const destinationObj = getDestinationById(state.destination);
 
   return `
     <li class="trip-events__item">
@@ -146,7 +140,7 @@ function createUpdatePointTemplate(state) {
               ${pointTypeName}
             </label>
             <input class="event__input  event__input--destination" id="event-destination-${state.id}" type="text" name="event-destination"
-            value="${getDestinationById(destination).name}" list="destination-list-${state.id}">
+            value="${destinationObj.name}" list="destination-list-${state.id}">
             <datalist id="destination-list-${state.id}">
               ${getDestinationsList()}
             </datalist>
@@ -176,11 +170,11 @@ function createUpdatePointTemplate(state) {
         </header>
         <section class="event__details">
           <section class="event__section  event__section--offers">
-            ${getOffers(pointTypeName, state.offers)}
-          </secton>
+            ${getFormattedOffers(pointTypeName, state.offers)}
+          </section>
 
           <section class="event__section  event__section--destination">
-            ${getDestination(destination)}
+            ${getFormattedDestination(destinationObj)}
           </section>
         </section>
       </form>
@@ -198,7 +192,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.#routePoint = routePoint;
     this.#rowComponent = rowComponent;
     this.#cbRollupClickHandler = cbRollupClickHandler;
-    this._setState(UpdatePointView.parsePointToSate(this.#routePoint));
+    this._setState(UpdatePointView.parsePointToState(this.#routePoint));
 
     this._restoreHandlers();
   }
@@ -219,7 +213,7 @@ export default class UpdatePointView extends AbstractStatefulView {
   }
 
   #formRollupClickHandler = () => {
-    this.updateElement(UpdatePointView.parsePointToSate(this.#routePoint));
+    this.updateElement(UpdatePointView.parsePointToState(this.#routePoint));
     this.#cbRollupClickHandler();
   };
 
@@ -234,20 +228,17 @@ export default class UpdatePointView extends AbstractStatefulView {
   #eventTypeChangeHandler = () => {
     const newPointTypeName = this.element.querySelector('input[name="event-type"]:checked').value;
 
-    this.element.querySelector('.event__section--offers').innerHTML = getOffers(newPointTypeName, '');
+    this.element.querySelector('.event__section--offers').innerHTML = getFormattedOffers(newPointTypeName, '');
     this.element.querySelector('.event__type-icon').src = `img/icons/${newPointTypeName.toLowerCase()}.png`;
     this.element.querySelector('.event__label').textContent = capitalize(newPointTypeName);
   };
 
   #destinationChangeHandler = () => {
     const newDestination = this.element.querySelector('.event__input--destination').value;
-
-    this.element.querySelector('.event__section--destination').innerHTML = getDestination(getDestinationByName(newDestination));
-
-    console.log(newDestination);
+    this.element.querySelector('.event__section--destination').innerHTML = getFormattedDestination(getDestinationByName(newDestination));
   };
 
-  static parsePointToSate(point) {
+  static parsePointToState(point) {
     return {...point};
   }
 
