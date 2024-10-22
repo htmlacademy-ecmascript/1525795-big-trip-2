@@ -1,11 +1,13 @@
-// import AbstractView from '../framework/view/abstract-view.js';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 
 import { pointTypes } from '../mock/point-type.js';
 import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
 import { offers } from '../mock/offer.js';
 import { replace } from '../framework/render.js';
-import { capitalize } from '../utils/common.js';
+
+import dayjs from 'dayjs';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 
 function getPointTypesList(defaultPointTypeName) {
@@ -36,14 +38,14 @@ function getDestinationPhotos(destination) {
   return photos;
 }
 
-function getFormattedDestination(destination) {
+function getFormattedDestination(destinationObj) {
   return `
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${destination.description}</p>
+    <p class="event__destination-description">${destinationObj.description}</p>
 
     <div class="event__photos-container">
       <div class="event__photos-tape">
-        ${getDestinationPhotos(destination)}
+        ${getDestinationPhotos(destinationObj)}
       </div>
     </div>
   `;
@@ -98,22 +100,10 @@ function getFormattedOffers(pointTypeName, pointOffers) {
 }
 
 
-const getFormattedDate = (date) => {
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const year = String(date.getUTCFullYear()).slice(2, 4);
-
-  const hours = String(date.getUTCHours()).padStart(2, '0');
-  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-
-  return `${day}/${month}/${year} ${hours}:${minutes}`;
-};
-
-
 function createUpdatePointTemplate(state) {
   const pointTypeName = state.type;
-  const dateFrom = getFormattedDate(new Date(state.date_from));
-  const dateTo = getFormattedDate(new Date(state.date_to));
+  const dateFrom = dayjs(state.date_from).format('DD/MM/YY HH:mm');
+  const dateTo = dayjs(state.date_to).format('DD/MM/YY HH:mm');
   const destinationObj = getDestinationById(state.destination);
 
   return `
@@ -170,7 +160,7 @@ function createUpdatePointTemplate(state) {
         </header>
         <section class="event__details">
           <section class="event__section  event__section--offers">
-            ${getFormattedOffers(pointTypeName, state.offers)}
+            ${getFormattedOffers(pointTypeName, state.offers && state.offers.length ? state.offers : [])}
           </section>
 
           <section class="event__section  event__section--destination">
@@ -184,14 +174,16 @@ function createUpdatePointTemplate(state) {
 
 export default class UpdatePointView extends AbstractStatefulView {
   #routePoint = null;
-  #rowComponent = null;
   #cbRollupClickHandler = null;
+  #cbSubmitClickHandler = null;
+  #startDatePicker = null;
+  #endDatePicker = null;
 
-  constructor(routePoint, rowComponent, cbRollupClickHandler) {
+  constructor(routePoint, cbRollupClickHandler, cbSubmitClickHandler) {
     super();
     this.#routePoint = routePoint;
-    this.#rowComponent = rowComponent;
     this.#cbRollupClickHandler = cbRollupClickHandler;
+    this.#cbSubmitClickHandler = cbSubmitClickHandler;
     this._setState(UpdatePointView.parsePointToState(this.#routePoint));
 
     this._restoreHandlers();
@@ -207,9 +199,12 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   _restoreHandlers() {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
-    this.element.querySelector('.event--edit').addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event--edit').addEventListener('submit', this.#cbSubmitClickHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
+
+    this.#setDatePicker();
   }
 
   #formRollupClickHandler = () => {
@@ -217,25 +212,73 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.#cbRollupClickHandler();
   };
 
-  // Это handler, который будет срабатывать на submit формы редактирования
-  #formSubmitHandler(evt) {
-    evt.preventDefault();
-    this.replaceFormToRow(this.#rowComponent, this);
-
-    // Здесь будет обработка submit
-  }
-
   #eventTypeChangeHandler = () => {
     const newPointTypeName = this.element.querySelector('input[name="event-type"]:checked').value;
-
-    this.element.querySelector('.event__section--offers').innerHTML = getFormattedOffers(newPointTypeName, '');
-    this.element.querySelector('.event__type-icon').src = `img/icons/${newPointTypeName.toLowerCase()}.png`;
-    this.element.querySelector('.event__label').textContent = capitalize(newPointTypeName);
+    this.updateElement({type: newPointTypeName});
   };
 
   #destinationChangeHandler = () => {
-    const newDestination = this.element.querySelector('.event__input--destination').value;
-    this.element.querySelector('.event__section--destination').innerHTML = getFormattedDestination(getDestinationByName(newDestination));
+    if (this.element.querySelector('.event__input--destination').value) {
+      const newDestination = this.element.querySelector('.event__input--destination').value;
+      this.updateElement({destination: getDestinationByName(newDestination).id});
+    }
+  };
+
+  #priceChangeHandler = (evt) => {
+    evt.preventDefault();
+    this.updateElement({'base_price': parseInt(evt.target.value, 10)});
+  };
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#startDatePicker) {
+      this.#startDatePicker.destroy();
+      this.#startDatePicker = null;
+    }
+
+    if (this.#endDatePicker) {
+      this.#endDatePicker.destroy();
+      this.#endDatePicker = null;
+    }
+  }
+
+  #setDatePicker() {
+    if (this._state['date_from']) {
+      this.#startDatePicker = flatpickr(
+        this.element.querySelector('input[name="event-start-time"]'),
+        {
+          enableTime: true,
+          // eslint-disable-next-line camelcase
+          time_24hr: true,
+          dateFormat: 'd/m/y H:i',
+          defaultDate: this._state['date_from'],
+          onChange: this.#startDateChangeHandler
+        }
+      );
+    }
+
+    if (this._state['date_to']) {
+      this.#endDatePicker = flatpickr(
+        this.element.querySelector('input[name="event-end-time"]'),
+        {
+          enableTime: true,
+          // eslint-disable-next-line camelcase
+          time_24hr: true,
+          dateFormat: 'd/m/y H:i',
+          defaultDate: this._state['date_to'],
+          onChange: this.#endDateChangeHandler
+        }
+      );
+    }
+  }
+
+  #startDateChangeHandler = ([startDate]) => {
+    this.updateElement({'date_from': startDate});
+  };
+
+  #endDateChangeHandler = ([endDate]) => {
+    this.updateElement({'date_to': endDate});
   };
 
   static parsePointToState(point) {

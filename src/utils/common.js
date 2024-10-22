@@ -2,6 +2,9 @@ import { getDestinationById } from '../mock/destination.js';
 import { getFormattedRangeDate } from '../util.js';
 import { getOfferById } from '../mock/offer.js';
 
+import dayjs from 'dayjs';
+
+
 const getEventLength = (dateFrom, dateTo) => {
   const startDateTime = new Date(dateFrom);
   const endDateTime = new Date(dateTo);
@@ -40,10 +43,10 @@ export const getTripTitle = (route) => {
 
 export const getTripDates = (route) => {
   const copyRoute = route.slice().sort(sortByDate);
-  const startDate = new Date(copyRoute[0].date_from);
-  const endDate = new Date(copyRoute.slice(-1)[0].date_to);
+  const startDate = dayjs(copyRoute[0].date_from);
+  const endDate = dayjs(copyRoute.slice(-1)[0].date_to);
 
-  return `${getFormattedRangeDate(startDate.getUTCDate(), startDate.getUTCMonth() + 1, endDate.getUTCDate(), endDate.getUTCMonth() + 1)}`;
+  return `${getFormattedRangeDate(startDate.date(), startDate.month() + 1, endDate.date(), endDate.month() + 1)}`;
 };
 
 

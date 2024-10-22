@@ -38,14 +38,6 @@ export const getRandomArrayItem = (itemsArray) => {
 };
 
 
-export const getFormattedDate = (rawDate) => {
-  const monthNum = +rawDate.split('-')[1];
-  const day = rawDate.split('-')[2];
-
-  return `${months[monthNum]} ${day}`;
-};
-
-
 export const getFormattedRangeDate = (startDay, startMonth, endDay, endMonth) => {
   if (startMonth === endMonth) {
     return `${String(startDay).padStart(2, '0')} - ${String(endDay).padStart(2, '0')}

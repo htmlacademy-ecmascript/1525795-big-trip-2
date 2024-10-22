@@ -1,4 +1,4 @@
-import RoutePointView from '../view/route-point-view.js';
+import RoutePointView from '../view/row-point-view.js';
 import UpdatePointView from '../view/update-point-view.js';
 
 import { render, replace } from '../framework/render.js';
@@ -14,14 +14,14 @@ export default class PointPresenter {
   #updateComponent = null;
   #point = null;
   #mode = null;
-  updatePointCb = null;
-  resetMethodCb = null;
+  cbResetMethod = null;
+  cbRefreshHeader = null;
 
-  constructor(routeComponent, point, updatePointCb, resetMethodCb) {
+  constructor(routeComponent, point, cbResetMethod, cbRefreshHeader) {
     this.#routeComponent = routeComponent;
     this.#point = point;
-    this.updatePointCb = updatePointCb;
-    this.resetMethodCb = resetMethodCb;
+    this.cbResetMethod = cbResetMethod;
+    this.cbRefreshHeader = cbRefreshHeader;
     this.#mode = Mode.VIEW;
 
     // Два компонента
@@ -29,7 +29,7 @@ export default class PointPresenter {
     this.#rowComponent = new RoutePointView(this.#point);
 
     // ... и форма редактирования точки маршрута
-    this.#updateComponent = new UpdatePointView(this.#point, this.#rowComponent, this.#formRollupClickHandler);
+    this.#updateComponent = new UpdatePointView(this.#point, this.#formRollupClickHandler, this.#submitClickHandler);
   }
 
   #addListeners() {
@@ -41,23 +41,39 @@ export default class PointPresenter {
     // Отрисовываем строку с точкой маршрута
     render(this.#rowComponent, this.#routeComponent.element);
 
-    // Добавляем listeners
+    // Добавляем listeners для строки с точкой маршрута - реакция на favorite и раскрытие для редактирования
     this.#addListeners();
   }
 
   #favoriteClickHandler = () => {
+    // Здесь потом будет запись непосредственно в БД
     const prevComponent = this.#rowComponent;
-    this.updatePointCb(this.#point);
+    this.#point['is_favorite'] = !this.#point['is_favorite'];
+
     this.#rowComponent = new RoutePointView(this.#point);
     replace(this.#rowComponent, prevComponent);
     this.#addListeners();
   };
 
+  #submitClickHandler = () => {
+    this.#point = this.#updateComponent._state;
+    this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
+
+    const prevComponent = this.#rowComponent;
+    this.#rowComponent = new RoutePointView(this.#point);
+    replace(this.#rowComponent, prevComponent);
+    this.#addListeners();
+
+    // В случае изменения параметров маршрута необходимо обновить заголовок
+    this.cbRefreshHeader(this.#point);
+
+    this.#mode = Mode.VIEW;
+  };
 
   // Это callback, который будет срабатывать при развертывании строки в форму редактирования
   #rowRollupClickHandler = () => {
     // Сначала сбрасываем к исходному виду все открытые формы
-    this.resetMethodCb();
+    this.cbResetMethod();
     // Затем на текущей точке меняем отображение
     this.#rowComponent.replaceRowToForm(this.#updateComponent, this.#rowComponent);
     this.#mode = Mode.EDIT;
@@ -70,7 +86,7 @@ export default class PointPresenter {
 
   resetComponent = () => {
     if (this.#mode === Mode.EDIT) {
-      this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
+      replace(this.#rowComponent, this.#updateComponent);
       this.#mode = Mode.VIEW;
     }
   };
