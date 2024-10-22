@@ -14,14 +14,14 @@ export default class PointPresenter {
   #updateComponent = null;
   #point = null;
   #mode = null;
-  updateFavoriteCb = null;
-  resetMethodCb = null;
+  cbResetMethod = null;
+  cbRefreshHeader = null;
 
-  constructor(routeComponent, point, updateFavoriteCb, resetMethodCb) {
+  constructor(routeComponent, point, cbResetMethod, cbRefreshHeader) {
     this.#routeComponent = routeComponent;
     this.#point = point;
-    this.updateFavoriteCb = updateFavoriteCb;
-    this.resetMethodCb = resetMethodCb;
+    this.cbResetMethod = cbResetMethod;
+    this.cbRefreshHeader = cbRefreshHeader;
     this.#mode = Mode.VIEW;
 
     // Два компонента
@@ -46,8 +46,10 @@ export default class PointPresenter {
   }
 
   #favoriteClickHandler = () => {
+    // Здесь потом будет запись непосредственно в БД
     const prevComponent = this.#rowComponent;
-    this.updateFavoriteCb(this.#point);
+    this.#point['is_favorite'] = !this.#point['is_favorite'];
+
     this.#rowComponent = new RoutePointView(this.#point);
     replace(this.#rowComponent, prevComponent);
     this.#addListeners();
@@ -62,7 +64,8 @@ export default class PointPresenter {
     replace(this.#rowComponent, prevComponent);
     this.#addListeners();
 
-    // TODO: в случае изменения стоимости необходимо обновить заголовок
+    // В случае изменения параметров маршрута необходимо обновить заголовок
+    this.cbRefreshHeader(this.#point);
 
     this.#mode = Mode.VIEW;
   };
@@ -70,7 +73,7 @@ export default class PointPresenter {
   // Это callback, который будет срабатывать при развертывании строки в форму редактирования
   #rowRollupClickHandler = () => {
     // Сначала сбрасываем к исходному виду все открытые формы
-    this.resetMethodCb();
+    this.cbResetMethod();
     // Затем на текущей точке меняем отображение
     this.#rowComponent.replaceRowToForm(this.#updateComponent, this.#rowComponent);
     this.#mode = Mode.EDIT;
@@ -83,7 +86,7 @@ export default class PointPresenter {
 
   resetComponent = () => {
     if (this.#mode === Mode.EDIT) {
-      this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
+      replace(this.#rowComponent, this.#updateComponent);
       this.#mode = Mode.VIEW;
     }
   };

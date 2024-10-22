@@ -6,6 +6,8 @@ import { offers } from '../mock/offer.js';
 import { replace } from '../framework/render.js';
 
 import dayjs from 'dayjs';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 
 function getPointTypesList(defaultPointTypeName) {
@@ -174,6 +176,8 @@ export default class UpdatePointView extends AbstractStatefulView {
   #routePoint = null;
   #cbRollupClickHandler = null;
   #cbSubmitClickHandler = null;
+  #startDatePicker = null;
+  #endDatePicker = null;
 
   constructor(routePoint, cbRollupClickHandler, cbSubmitClickHandler) {
     super();
@@ -195,11 +199,12 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   _restoreHandlers() {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
-    // this.element.querySelector('.event--edit').addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event--edit').addEventListener('submit', this.#cbSubmitClickHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
+
+    this.#setDatePicker();
   }
 
   #formRollupClickHandler = () => {
@@ -207,26 +212,73 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.#cbRollupClickHandler();
   };
 
-  // Это handler, который будет срабатывать на submit формы редактирования
-  #formSubmitHandler(evt) {
-    evt.preventDefault();
-    this.#cbSubmitClickHandler();
-  }
-
   #eventTypeChangeHandler = () => {
     const newPointTypeName = this.element.querySelector('input[name="event-type"]:checked').value;
     this.updateElement({type: newPointTypeName});
   };
 
   #destinationChangeHandler = () => {
-    const newDestination = this.element.querySelector('.event__input--destination').value;
-    this.updateElement({destination: getDestinationByName(newDestination).id});
-    // this.element.querySelector('.event__section--destination').innerHTML = getFormattedDestination(getDestinationByName(newDestination));
+    if (this.element.querySelector('.event__input--destination').value) {
+      const newDestination = this.element.querySelector('.event__input--destination').value;
+      this.updateElement({destination: getDestinationByName(newDestination).id});
+    }
   };
 
   #priceChangeHandler = (evt) => {
     evt.preventDefault();
-    this.updateElement({'base_price': evt.target.value});
+    this.updateElement({'base_price': parseInt(evt.target.value, 10)});
+  };
+
+  removeElement() {
+    super.removeElement();
+
+    if (this.#startDatePicker) {
+      this.#startDatePicker.destroy();
+      this.#startDatePicker = null;
+    }
+
+    if (this.#endDatePicker) {
+      this.#endDatePicker.destroy();
+      this.#endDatePicker = null;
+    }
+  }
+
+  #setDatePicker() {
+    if (this._state['date_from']) {
+      this.#startDatePicker = flatpickr(
+        this.element.querySelector('input[name="event-start-time"]'),
+        {
+          enableTime: true,
+          // eslint-disable-next-line camelcase
+          time_24hr: true,
+          dateFormat: 'd/m/y H:i',
+          defaultDate: this._state['date_from'],
+          onChange: this.#startDateChangeHandler
+        }
+      );
+    };
+
+    if (this._state['date_to']) {
+      this.#endDatePicker = flatpickr(
+        this.element.querySelector('input[name="event-end-time"]'),
+        {
+          enableTime: true,
+          // eslint-disable-next-line camelcase
+          time_24hr: true,
+          dateFormat: 'd/m/y H:i',
+          defaultDate: this._state['date_to'],
+          onChange: this.#endDateChangeHandler
+        }
+      );
+    }
+  }
+
+  #startDateChangeHandler = ([startDate]) => {
+    this.updateElement({'date_from': startDate});
+  };
+
+  #endDateChangeHandler = ([endDate]) => {
+    this.updateElement({'date_to': endDate});
   };
 
   static parsePointToState(point) {

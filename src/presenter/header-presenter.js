@@ -1,12 +1,15 @@
-import TripInfoView from '../view/trip-info-view.js';
+import HeaderView from '../view/header-view.js';
 import { getTripTitle, getTripDates, getTripCost } from '../utils/common.js';
 
-import { render } from '../framework/render.js';
+import { render, replace } from '../framework/render.js';
 
 
 export default class HeaderPresenter {
-  #tripInfoComponent = null;
+  #headerComponent = null;
   #route = null;
+  #tripTitle = null;
+  #tripDates = null;
+  #tripCost = null;
 
   constructor(route) {
     this.#route = route;
@@ -15,14 +18,23 @@ export default class HeaderPresenter {
   init() {
     const divTripMain = document.querySelector('.trip-main');
 
-    const tripTitle = getTripTitle(this.#route);
-    const tripDates = getTripDates(this.#route);
-    const tripCost = getTripCost(this.#route);
+    this.#getTripData();
 
-    this.#tripInfoComponent = new TripInfoView(tripTitle, tripDates, tripCost);
-    render(this.#tripInfoComponent, divTripMain, 'afterbegin');
+    this.#headerComponent = new HeaderView(this.#tripTitle, this.#tripDates, this.#tripCost);
+    render(this.#headerComponent, divTripMain, 'afterbegin');
+  }
+
+  #getTripData = () => {
+    this.#tripTitle = getTripTitle(this.#route);
+    this.#tripDates = getTripDates(this.#route);
+    this.#tripCost = getTripCost(this.#route);
+  };
+
+  refreshHeader(updatedRoute) {
+    this.#route = updatedRoute;
+    this.#getTripData();
+    const newHeaderComponent = new HeaderView(this.#tripTitle, this.#tripDates, this.#tripCost);
+    replace(newHeaderComponent, this.#headerComponent);
+    this.#headerComponent = newHeaderComponent;
   }
 }
-// Сейчас этот компонент отрисовывается один раз при загрузке приложения
-// Фактически он может меняться при изменении маршрута
-// ToDo: Нужно добавить метод для изменения заголовка
