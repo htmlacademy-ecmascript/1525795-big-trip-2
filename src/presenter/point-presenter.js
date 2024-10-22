@@ -1,4 +1,4 @@
-import RoutePointView from '../view/route-point-view.js';
+import RoutePointView from '../view/row-point-view.js';
 import UpdatePointView from '../view/update-point-view.js';
 
 import { render, replace } from '../framework/render.js';

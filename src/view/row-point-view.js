@@ -1,42 +1,21 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import { getPointTypeByName } from '../mock/point-type.js';
 import { getDestinationById } from '../mock/destination.js';
-import { getFormattedDate } from '../util.js';
 import { getOfferById } from '../mock/offer.js';
 import { replace } from '../framework/render.js';
 
-
-const getFormattedLength = (eventLength) => {
-  // Из разницы в датах убираем миллисекунды и секунды
-  eventLength = eventLength / 1000 / 60;
-  // Вычисляем разницу в днях, часах, минутах
-  const days = Math.floor(eventLength / 1440);
-  const hours = Math.floor((eventLength - days * 1440) / 60);
-  const minutes = eventLength % 60;
-
-  let formattedLength = '';
-  if (days) {
-    formattedLength += `${String(days).padStart(2, '0')}D `;
-  }
-
-  formattedLength += `${String(hours).padStart(2, '0')}H `;
-
-  formattedLength += `${String(minutes).padStart(2, '0')}M`;
-
-  return formattedLength;
-};
+import dayjs from 'dayjs';
 
 
-function createRoutePointTemplate(routePoint) {
+function createRowPointTemplate(routePoint) {
   const { type: pointType, destination, date_from: dateFrom, date_to: dateTo, base_price: price, is_favorite: isFavorite, offers: pointOffers } = routePoint;
-  const startDate = dateFrom.split('T')[0];
-  const formattedStartDate = getFormattedDate(startDate);
-  const startTime = dateFrom.split('T')[1].slice(0, 5);
-  const endTime = dateTo.split('T')[1].slice(0, 5);
-
-  const startDateTime = new Date(dateFrom);
-  const endDateTime = new Date(dateTo);
-  const formattedEventLength = getFormattedLength(new Date(endDateTime - startDateTime));
+  const startDate = dayjs(dateFrom);
+  const endDate = dayjs(dateTo);
+  const formattedStartDate = startDate.format('MMM DD');
+  const startTime = startDate.format('HH:mm');
+  const endTime = endDate.format('HH:mm');
+  const diffDate = dayjs(endDate - startDate);
+  const formattedEventLength = `${diffDate.format('DD')}D ${diffDate.format('HH')}H ${diffDate.format('mm')}M`;
 
   const pointTypeItem = getPointTypeByName(pointType);
   const destinationItem = getDestinationById(destination);
@@ -99,7 +78,7 @@ export default class RoutePointView extends AbstractView {
   }
 
   get template() {
-    return createRoutePointTemplate(this.routePoint);
+    return createRowPointTemplate(this.routePoint);
   }
 
   replaceRowToForm(updateComponent, routePoint) {
