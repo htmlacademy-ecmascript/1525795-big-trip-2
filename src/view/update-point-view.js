@@ -256,7 +256,7 @@ export default class UpdatePointView extends AbstractStatefulView {
           onChange: this.#startDateChangeHandler
         }
       );
-    };
+    }
 
     if (this._state['date_to']) {
       this.#endDatePicker = flatpickr(
