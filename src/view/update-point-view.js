@@ -4,7 +4,6 @@ import { pointTypes } from '../mock/point-type.js';
 import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
 import { offers } from '../mock/offer.js';
 import { replace } from '../framework/render.js';
-import { capitalize } from '../utils/common.js';
 
 import dayjs from 'dayjs';
 
@@ -37,14 +36,14 @@ function getDestinationPhotos(destination) {
   return photos;
 }
 
-function getFormattedDestination(destination) {
+function getFormattedDestination(destinationObj) {
   return `
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${destination.description}</p>
+    <p class="event__destination-description">${destinationObj.description}</p>
 
     <div class="event__photos-container">
       <div class="event__photos-tape">
-        ${getDestinationPhotos(destination)}
+        ${getDestinationPhotos(destinationObj)}
       </div>
     </div>
   `;
@@ -173,14 +172,14 @@ function createUpdatePointTemplate(state) {
 
 export default class UpdatePointView extends AbstractStatefulView {
   #routePoint = null;
-  #rowComponent = null;
   #cbRollupClickHandler = null;
+  #cbSubmitClickHandler = null;
 
-  constructor(routePoint, rowComponent, cbRollupClickHandler) {
+  constructor(routePoint, cbRollupClickHandler, cbSubmitClickHandler) {
     super();
     this.#routePoint = routePoint;
-    this.#rowComponent = rowComponent;
     this.#cbRollupClickHandler = cbRollupClickHandler;
+    this.#cbSubmitClickHandler = cbSubmitClickHandler;
     this._setState(UpdatePointView.parsePointToState(this.#routePoint));
 
     this._restoreHandlers();
@@ -196,9 +195,11 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   _restoreHandlers() {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
-    this.element.querySelector('.event--edit').addEventListener('submit', this.#formSubmitHandler);
+    // this.element.querySelector('.event--edit').addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event--edit').addEventListener('submit', this.#cbSubmitClickHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
   }
 
   #formRollupClickHandler = () => {
@@ -209,12 +210,7 @@ export default class UpdatePointView extends AbstractStatefulView {
   // Это handler, который будет срабатывать на submit формы редактирования
   #formSubmitHandler(evt) {
     evt.preventDefault();
-    // this.replaceFormToRow(this.#rowComponent, this);
-
-    // Здесь будет обработка submit
-    console.log('before save', this.#routePoint);
-    this.#routePoint = UpdatePointView.parseStateToPoint(this._state);
-    console.log('after save', this.#routePoint);
+    this.#cbSubmitClickHandler();
   }
 
   #eventTypeChangeHandler = () => {
@@ -224,8 +220,13 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   #destinationChangeHandler = () => {
     const newDestination = this.element.querySelector('.event__input--destination').value;
-    this.updateElement({destination: getDestinationByName(newDestination)});
+    this.updateElement({destination: getDestinationByName(newDestination).id});
     // this.element.querySelector('.event__section--destination').innerHTML = getFormattedDestination(getDestinationByName(newDestination));
+  };
+
+  #priceChangeHandler = (evt) => {
+    evt.preventDefault();
+    this.updateElement({'base_price': evt.target.value});
   };
 
   static parsePointToState(point) {

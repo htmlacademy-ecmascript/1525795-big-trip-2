@@ -14,13 +14,13 @@ export default class PointPresenter {
   #updateComponent = null;
   #point = null;
   #mode = null;
-  updatePointCb = null;
+  updateFavoriteCb = null;
   resetMethodCb = null;
 
-  constructor(routeComponent, point, updatePointCb, resetMethodCb) {
+  constructor(routeComponent, point, updateFavoriteCb, resetMethodCb) {
     this.#routeComponent = routeComponent;
     this.#point = point;
-    this.updatePointCb = updatePointCb;
+    this.updateFavoriteCb = updateFavoriteCb;
     this.resetMethodCb = resetMethodCb;
     this.#mode = Mode.VIEW;
 
@@ -29,7 +29,7 @@ export default class PointPresenter {
     this.#rowComponent = new RoutePointView(this.#point);
 
     // ... и форма редактирования точки маршрута
-    this.#updateComponent = new UpdatePointView(this.#point, this.#rowComponent, this.#formRollupClickHandler);
+    this.#updateComponent = new UpdatePointView(this.#point, this.#formRollupClickHandler, this.#submitClickHandler);
   }
 
   #addListeners() {
@@ -41,18 +41,31 @@ export default class PointPresenter {
     // Отрисовываем строку с точкой маршрута
     render(this.#rowComponent, this.#routeComponent.element);
 
-    // Добавляем listeners
+    // Добавляем listeners для строки с точкой маршрута - реакция на favorite и раскрытие для редактирования
     this.#addListeners();
   }
 
   #favoriteClickHandler = () => {
     const prevComponent = this.#rowComponent;
-    this.updatePointCb(this.#point);
+    this.updateFavoriteCb(this.#point);
     this.#rowComponent = new RoutePointView(this.#point);
     replace(this.#rowComponent, prevComponent);
     this.#addListeners();
   };
 
+  #submitClickHandler = () => {
+    this.#point = this.#updateComponent._state;
+    this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
+
+    const prevComponent = this.#rowComponent;
+    this.#rowComponent = new RoutePointView(this.#point);
+    replace(this.#rowComponent, prevComponent);
+    this.#addListeners();
+
+    // TODO: в случае изменения стоимости необходимо обновить заголовок
+
+    this.#mode = Mode.VIEW;
+  };
 
   // Это callback, который будет срабатывать при развертывании строки в форму редактирования
   #rowRollupClickHandler = () => {

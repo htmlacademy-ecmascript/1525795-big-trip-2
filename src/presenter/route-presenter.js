@@ -51,7 +51,7 @@ export default class RoutePresenter {
     document.querySelector('.trip-events__trip-sort').addEventListener('click', this.#sortTypeClickHandler);
   };
 
-  #updatePoint = (point) => {
+  #updateFavorite = (point) => {
     const updatedPoint = this.#route.find((item) => item.id === point.id);
     updatedPoint['is_favorite'] = !updatedPoint['is_favorite'];
   };
@@ -66,7 +66,7 @@ export default class RoutePresenter {
   }
 
   #renderPoint(point) {
-    const pointPresenter = new PointPresenter(this.#routeComponent, point, this.#updatePoint, this.#resetRoutePoints);
+    const pointPresenter = new PointPresenter(this.#routeComponent, point, this.#updateFavorite, this.#resetRoutePoints);
     pointPresenter.init(point);
 
     this.#pointMap.set(point.id, pointPresenter);
