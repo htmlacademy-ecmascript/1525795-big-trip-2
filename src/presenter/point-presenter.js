@@ -1,5 +1,6 @@
 import RoutePointView from '../view/row-point-view.js';
 import UpdatePointView from '../view/update-point-view.js';
+import { UpdateType } from '../utils/common.js';
 
 import { render, replace } from '../framework/render.js';
 
@@ -23,7 +24,6 @@ export default class PointPresenter {
     this.#routeComponent = routeComponent;
     this.#point = point;
     this.cbResetMethod = cbResetMethod;
-    // this.cbRefreshHeader = cbRefreshHeader;
     this.#mode = Mode.VIEW;
 
     // Два компонента
@@ -31,7 +31,7 @@ export default class PointPresenter {
     this.#rowComponent = new RoutePointView(this.#point);
 
     // ... и форма редактирования точки маршрута
-    this.#updateComponent = new UpdatePointView(this.#point, this.#formRollupClickHandler, this.#submitClickHandler);
+    this.#updateComponent = null;
   }
 
   #addListeners() {
@@ -48,12 +48,7 @@ export default class PointPresenter {
   }
 
   #favoriteClickHandler = () => {
-    // Здесь потом будет запись непосредственно в БД
-    const prevComponent = this.#rowComponent;
-    this.#point['is_favorite'] = !this.#point['is_favorite'];
-
-    this.#rowComponent = new RoutePointView(this.#point);
-    replace(this.#rowComponent, prevComponent);
+    this.#route.changeFavorite(UpdateType.POINT, this.#point);
     this.#addListeners();
   };
 
@@ -67,10 +62,16 @@ export default class PointPresenter {
     this.#addListeners();
 
     // В случае изменения параметров маршрута необходимо обновить заголовок
-    this.#route.updatePoint(this.#point); // Следующая строка не нужна, обновление заголовка должно происходить из updatePoint
-    // this.cbRefreshHeader();
+    this.#route.updatePoint(UpdateType.HEADER, this.#point);
 
     this.#mode = Mode.VIEW;
+  };
+
+  rerenderPoint = (point) => {
+    this.#point = point;
+    const prevComponent = this.#rowComponent;
+    this.#rowComponent = new RoutePointView(this.#point);
+    replace(this.#rowComponent, prevComponent);
   };
 
   // Это callback, который будет срабатывать при развертывании строки в форму редактирования
@@ -78,6 +79,7 @@ export default class PointPresenter {
     // Сначала сбрасываем к исходному виду все открытые формы
     this.cbResetMethod();
     // Затем на текущей точке меняем отображение
+    this.#updateComponent = new UpdatePointView(this.#point, this.#formRollupClickHandler, this.#submitClickHandler);
     this.#rowComponent.replaceRowToForm(this.#updateComponent, this.#rowComponent);
     this.#mode = Mode.EDIT;
   };

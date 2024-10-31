@@ -17,27 +17,27 @@ export default class RouteModel extends Observable {
     return this.#route;
   }
 
-  addPoint(newPoint) {
-    this.#route.push(newPoint);
+  addPoint(point) {
+    this.#route.push(point);
 
-    this._notify('UPDATE', newPoint);
+    this._notify();
   }
 
-  updatePoint(updatePoint) {
-    const idx = this.#route.findIndex((point) => point.id === updatePoint.id);
+  updatePoint(updateType, point) {
+    const idx = this.#route.findIndex((routePoint) => routePoint.id === point.id);
 
     if (idx === -1) {
       // Nothing to update
       return false;
     }
 
-    this.#route = [...this.#route.slice(0, idx), updatePoint, ...this.#route.slice(idx + 1)];
+    this.#route = [...this.#route.slice(0, idx), point, ...this.#route.slice(idx + 1)];
 
-    this._notify('UPDATE', updatePoint);
+    this._notify(updateType);
   }
 
-  deletePoint(deletePoint) {
-    const idx = this.#route.findIndex((point) => point.id === deletePoint.id);
+  deletePoint(point) {
+    const idx = this.#route.findIndex((routePoint) => routePoint.id === point.id);
 
     if (idx === -1) {
       // Nothing to delete
@@ -46,7 +46,17 @@ export default class RouteModel extends Observable {
 
     this.#route = [...this.#route.slice(0, idx), ...this.#route.slice(idx + 1)];
 
-    this._notify('UPDATE', deletePoint);
+    this._notify();
+  }
+
+  changeFavorite(updateType, point) {
+    for (const routePoint of this.#route) {
+      if (routePoint.id === point.id) {
+        routePoint['is_favorite'] = !routePoint['is_favorite'];
+      }
+    }
+
+    this._notify(updateType, point);
   }
 
   getRouteTitle() {

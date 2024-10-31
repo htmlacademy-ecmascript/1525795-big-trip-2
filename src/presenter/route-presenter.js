@@ -5,7 +5,7 @@ import PointPresenter from './point-presenter.js';
 import SortPresenter from './sort-presenter.js';
 import HeaderPresenter from './header-presenter.js';
 
-import { DEFAULT_SORT_TYPE, DEFAULT_SORT_METHOD, sortMethods } from '../utils/common.js';
+import { DEFAULT_SORT_TYPE, DEFAULT_SORT_METHOD, sortMethods, UpdateType } from '../utils/common.js';
 
 import { render, remove } from '../framework/render.js';
 
@@ -47,8 +47,15 @@ export default class RoutePresenter {
     }
   }
 
-  #handleRouteEvent = () => {
-    this.#headerPresenter.refreshHeader();
+  #handleRouteEvent = (updateType, point) => {
+    switch (updateType) {
+      case UpdateType.HEADER:
+        this.#headerPresenter.refreshHeader();
+        break;
+      case UpdateType.POINT:
+        this.#rerenderPoint(point);
+        break;
+    }
   };
 
   #sortTypeClickHandler = (evt) => {
@@ -97,6 +104,11 @@ export default class RoutePresenter {
     pointPresenter.init(point);
 
     this.#pointMap.set(point.id, pointPresenter);
+  }
+
+  #rerenderPoint(point) {
+    const pointPresenter = this.#pointMap.get(point.id);
+    pointPresenter.rerenderPoint(point);
   }
 
   #renderEmptyRoute() {
