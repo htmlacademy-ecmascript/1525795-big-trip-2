@@ -17,6 +17,5 @@ export default class SortPresenter {
 
   init() {
     render(this.#sortComponent, this.#container, 'afterbegin');
-
   }
 }

@@ -1,5 +1,4 @@
 import HeaderView from '../view/header-view.js';
-import { getTripTitle, getTripDates, getTripCost } from '../utils/common.js';
 
 import { render, replace } from '../framework/render.js';
 
@@ -25,13 +24,12 @@ export default class HeaderPresenter {
   }
 
   #getTripData = () => {
-    this.#tripTitle = getTripTitle(this.#route);
-    this.#tripDates = getTripDates(this.#route);
-    this.#tripCost = getTripCost(this.#route);
+    this.#tripTitle = this.#route.getRouteTitle();
+    this.#tripDates = this.#route.getRouteDates();
+    this.#tripCost = this.#route.getRouteCost();
   };
 
-  refreshHeader(updatedRoute) {
-    this.#route = updatedRoute;
+  refreshHeader() {
     this.#getTripData();
     const newHeaderComponent = new HeaderView(this.#tripTitle, this.#tripDates, this.#tripCost);
     replace(newHeaderComponent, this.#headerComponent);

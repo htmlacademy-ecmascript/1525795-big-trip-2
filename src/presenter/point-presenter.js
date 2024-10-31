@@ -9,6 +9,7 @@ const Mode = {
 };
 
 export default class PointPresenter {
+  #route = null;
   #routeComponent = null;
   #rowComponent = null;
   #updateComponent = null;
@@ -17,11 +18,12 @@ export default class PointPresenter {
   cbResetMethod = null;
   cbRefreshHeader = null;
 
-  constructor(routeComponent, point, cbResetMethod, cbRefreshHeader) {
+  constructor(route, routeComponent, point, cbResetMethod) {
+    this.#route = route;
     this.#routeComponent = routeComponent;
     this.#point = point;
     this.cbResetMethod = cbResetMethod;
-    this.cbRefreshHeader = cbRefreshHeader;
+    // this.cbRefreshHeader = cbRefreshHeader;
     this.#mode = Mode.VIEW;
 
     // Два компонента
@@ -65,7 +67,8 @@ export default class PointPresenter {
     this.#addListeners();
 
     // В случае изменения параметров маршрута необходимо обновить заголовок
-    this.cbRefreshHeader(this.#point);
+    this.#route.updatePoint(this.#point); // Следующая строка не нужна, обновление заголовка должно происходить из updatePoint
+    // this.cbRefreshHeader();
 
     this.#mode = Mode.VIEW;
   };

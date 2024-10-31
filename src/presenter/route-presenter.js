@@ -9,48 +9,54 @@ import { DEFAULT_SORT_TYPE, DEFAULT_SORT_METHOD, sortMethods } from '../utils/co
 
 import { render, remove } from '../framework/render.js';
 
-let curentSortType = '';
-
 
 export default class RoutePresenter {
   routeContainer = null;
   #routeComponent = new RouteView(); // routeComponent - это место на странице (<ul></ul>), куда будут вставляться точки маршрута
-  #routeData = new RouteModel(); // route - это исходные сгенерированные/полученные с сервера данные для отображения
+  #route = new RouteModel();
+  #routeData = [...this.#route.route]; // routeData - это исходные сгенерированные/полученные с сервера данные для отображения
   #emptyRoute = null;
   #pointMap = new Map();
-  #headerPresenter = null;
+  #headerPresenter = new HeaderPresenter(this.#route);
+  #sortPresenter = null;
+  #currentSortType = '';
 
   constructor({routeContainer}) {
     this.routeContainer = routeContainer;
+
+    this.#route.addObserver(this.#handleRouteEvent);
   }
 
   init() {
     // Добавляем на страницу компонент маршрута
     render(this.#routeComponent, this.routeContainer);
-    this.#routeData = [...this.#routeData.route];
 
     if (this.#routeData.length) {
       // ... и туда же компонент сортировки точек маршрута
       this.#renderSort();
-      curentSortType = DEFAULT_SORT_TYPE;
+      this.#currentSortType = DEFAULT_SORT_TYPE;
 
       // Отрисовываем точки маршрута
       this.#renderRoute();
 
       // Обновляем информацию о маршруте в заголовке страницы
-      this.#renderHeader();
+      this.#headerPresenter.init();
     } else {
       // ... либо Click New Event to create your first point, если маршрут пустой
       this.#renderEmptyRoute();
     }
   }
 
+  #handleRouteEvent = () => {
+    this.#headerPresenter.refreshHeader();
+  };
+
   #sortTypeClickHandler = (evt) => {
     if (evt.target.tagName === 'INPUT') {
-      if (evt.target.dataset.sortType !== curentSortType) {
+      if (evt.target.dataset.sortType !== this.#currentSortType) {
         this.#routeData.sort(sortMethods[evt.target.dataset.sortType]);
         this.#renderRoute();
-        curentSortType = evt.target.dataset.sortType;
+        this.#currentSortType = evt.target.dataset.sortType;
       }
     }
   };
@@ -66,14 +72,15 @@ export default class RoutePresenter {
   };
 
   #renderSort = () => {
-    const sortPresenter = new SortPresenter(this.#routeData, this.routeContainer);
-    sortPresenter.init();
+    this.#sortPresenter = new SortPresenter(this.#routeData, this.routeContainer);
+    this.#sortPresenter.init();
     this.#routeData = this.#routeData.sort(DEFAULT_SORT_METHOD);
 
     document.querySelector('.trip-events__trip-sort').addEventListener('click', this.#sortTypeClickHandler);
   };
 
   #renderRoute() {
+    // Или сделать replace??
     remove(this.#routeComponent);
     this.#routeComponent = new RouteView();
     render(this.#routeComponent, this.routeContainer);
@@ -83,28 +90,14 @@ export default class RoutePresenter {
   }
 
   #renderPoint(point) {
-    const pointPresenter = new PointPresenter(this.#routeComponent,
+    const pointPresenter = new PointPresenter(this.#route,
+      this.#routeComponent,
       point,
-      this.#resetRoutePoints,
-      this.#refreshHeader);
+      this.#resetRoutePoints);
     pointPresenter.init(point);
 
     this.#pointMap.set(point.id, pointPresenter);
   }
-
-  #renderHeader() {
-    this.#headerPresenter = new HeaderPresenter(this.#routeData);
-    this.#headerPresenter.init();
-  }
-
-  #refreshHeader = (point) => {
-    // Вообще говоря, обновлять заголовок нужно безотносительно точки маршрута.
-    // Пока мы не пишем данные в БД, поэтому такой костыль.
-    // В дальнейшем необходимо обновлять заголовок после каждого обновления данных в БД
-    const idx = this.#routeData.findIndex((item) => item.id === point.id);
-    this.#routeData[idx] = point;
-    this.#headerPresenter.refreshHeader(this.#routeData);
-  };
 
   #renderEmptyRoute() {
     this.#emptyRoute = new EmptyRouteView();
