@@ -1,6 +1,6 @@
 import HeaderView from '../view/header-view.js';
 
-import { render, replace } from '../framework/render.js';
+import { render, replace, remove } from '../framework/render.js';
 
 
 export default class HeaderPresenter {
@@ -12,9 +12,7 @@ export default class HeaderPresenter {
 
   constructor(route) {
     this.#route = route;
-  }
 
-  init() {
     const divTripMain = document.querySelector('.trip-main');
 
     this.#getTripData();
@@ -35,4 +33,8 @@ export default class HeaderPresenter {
     replace(newHeaderComponent, this.#headerComponent);
     this.#headerComponent = newHeaderComponent;
   }
+
+  removeComponent = () => {
+    remove(this.#headerComponent);
+  };
 }

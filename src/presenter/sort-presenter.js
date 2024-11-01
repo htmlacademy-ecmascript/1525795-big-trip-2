@@ -1,6 +1,6 @@
 import SortView from '../view/sort-view.js';
 
-import { render } from '../framework/render.js';
+import { render, remove } from '../framework/render.js';
 
 
 export default class SortPresenter {
@@ -12,10 +12,11 @@ export default class SortPresenter {
     this.#route = route;
     this.#container = container;
     this.#sortComponent = new SortView(this.#route);
-  }
 
-
-  init() {
     render(this.#sortComponent, this.#container, 'afterbegin');
   }
+
+  removeComponent = () => {
+    remove(this.#sortComponent);
+  };
 }

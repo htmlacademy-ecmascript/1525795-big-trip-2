@@ -176,14 +176,16 @@ export default class UpdatePointView extends AbstractStatefulView {
   #routePoint = null;
   #cbRollupClickHandler = null;
   #cbSubmitClickHandler = null;
+  #cbDeletePointHandler = null;
   #startDatePicker = null;
   #endDatePicker = null;
 
-  constructor(routePoint, cbRollupClickHandler, cbSubmitClickHandler) {
+  constructor(routePoint, cbRollupClickHandler, cbSubmitClickHandler, cbDeletePointHandler) {
     super();
     this.#routePoint = routePoint;
     this.#cbRollupClickHandler = cbRollupClickHandler;
     this.#cbSubmitClickHandler = cbSubmitClickHandler;
+    this.#cbDeletePointHandler = cbDeletePointHandler;
     this._setState(UpdatePointView.parsePointToState(this.#routePoint));
 
     this._restoreHandlers();
@@ -203,6 +205,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#cbDeletePointHandler);
 
     this.#setDatePicker();
   }

@@ -7,7 +7,7 @@ import { getOfferById } from '../mock/offer.js';
 
 import dayjs from 'dayjs';
 
-const POINT_COUNT = 8;
+const POINT_COUNT = 4;
 
 
 export default class RouteModel extends Observable {
@@ -36,7 +36,7 @@ export default class RouteModel extends Observable {
     this._notify(updateType);
   }
 
-  deletePoint(point) {
+  deletePoint(updateType, point) {
     const idx = this.#route.findIndex((routePoint) => routePoint.id === point.id);
 
     if (idx === -1) {
@@ -46,7 +46,7 @@ export default class RouteModel extends Observable {
 
     this.#route = [...this.#route.slice(0, idx), ...this.#route.slice(idx + 1)];
 
-    this._notify();
+    this._notify(updateType);
   }
 
   changeFavorite(updateType, point) {
@@ -60,6 +60,10 @@ export default class RouteModel extends Observable {
   }
 
   getRouteTitle() {
+    if (!this.#route.length) {
+      return '';
+    }
+
     const pointsList = new Array();
     this.#route.forEach((item) => pointsList.push(getDestinationById(item.destination).name));
 
@@ -71,6 +75,10 @@ export default class RouteModel extends Observable {
   }
 
   getRouteDates() {
+    if (!this.#route.length) {
+      return '';
+    }
+
     const copyRoute = this.#route.slice().sort(sortByDate);
     const startDate = dayjs(copyRoute[0].date_from);
     const endDate = dayjs(copyRoute.slice(-1)[0].date_to);
@@ -79,6 +87,10 @@ export default class RouteModel extends Observable {
   }
 
   getRouteCost() {
+    if (!this.#route.length) {
+      return 0;
+    }
+
     // Здесь подсчет стоимости маршрута. Суммируется стоимость каждой точки маршрута плюс стоимость offers  для точки маршрута
     let cost = 0;
 

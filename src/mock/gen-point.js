@@ -2,6 +2,7 @@ import { getRandomPointType, getPointTypeById } from './point-type.js';
 import { getRandomDestination } from './destination.js';
 import { getRandomOffers } from './offer.js';
 import { getRandomInteger } from '../util.js';
+// import DestinationModel from '../model/destination-model.js';
 
 
 const getFormattedTime = (minutes) => {
@@ -30,6 +31,7 @@ export const getRandomPoint = () => {
     'date_from': `2024-08-${String(startDay).padStart(2, '0')}T${formattedStartTime}`,
     'date_to': `2024-08-${String(endDay).padStart(2, '0')}T${formattedEndTime}`,
     'destination': getRandomDestination(),
+    // 'destination': destinations.getRandomDestination(),
     'is_favorite': false,
     'offers': randomOffers,
     'type': pointTypeObj.name.toLowerCase()

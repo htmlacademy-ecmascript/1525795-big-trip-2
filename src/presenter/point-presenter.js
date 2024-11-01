@@ -67,6 +67,11 @@ export default class PointPresenter {
     this.#mode = Mode.VIEW;
   };
 
+  #deletePointHandler = () => {
+    console.log('delete point handler');
+    this.#route.deletePoint(UpdateType.ALL, this.#point);
+  };
+
   rerenderPoint = (point) => {
     this.#point = point;
     const prevComponent = this.#rowComponent;
@@ -79,7 +84,7 @@ export default class PointPresenter {
     // Сначала сбрасываем к исходному виду все открытые формы
     this.cbResetMethod();
     // Затем на текущей точке меняем отображение
-    this.#updateComponent = new UpdatePointView(this.#point, this.#formRollupClickHandler, this.#submitClickHandler);
+    this.#updateComponent = new UpdatePointView(this.#point, this.#formRollupClickHandler, this.#submitClickHandler, this.#deletePointHandler);
     this.#rowComponent.replaceRowToForm(this.#updateComponent, this.#rowComponent);
     this.#mode = Mode.EDIT;
   };
