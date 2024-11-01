@@ -68,6 +68,7 @@ export default class PointPresenter {
   };
 
   #deletePointHandler = () => {
+    this.#updateComponent.removeElement();
     this.#route.deletePoint(UpdateType.ALL, this.#point);
   };
 
