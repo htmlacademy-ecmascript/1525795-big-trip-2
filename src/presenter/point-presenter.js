@@ -97,6 +97,7 @@ export default class PointPresenter {
 
   resetComponent = () => {
     if (this.#mode === Mode.EDIT) {
+      this.#updateComponent.removeDatePickr();
       replace(this.#rowComponent, this.#updateComponent);
       this.#mode = Mode.VIEW;
     }

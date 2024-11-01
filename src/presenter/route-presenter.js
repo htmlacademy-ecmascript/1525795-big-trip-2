@@ -153,12 +153,8 @@ export default class RoutePresenter {
   }
 
   #renderPoint(point) {
-    const pointPresenter = new PointPresenter(this.#route,
-      this.#routeComponent,
-      point,
-      this.#resetRoutePoints);
+    const pointPresenter = new PointPresenter(this.#route, this.#routeComponent, point, this.#resetRoutePoints);
     pointPresenter.init(point);
-
     this.#pointMap.set(point.id, pointPresenter);
   }
 
