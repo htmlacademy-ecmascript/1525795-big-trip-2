@@ -28,13 +28,13 @@ export const UpdateType = {
 };
 
 
-export const filterType = {
+export const FilterType = {
   EVERYTHING: 'Everything',
   FUTURE: 'Future',
   PRESENT: 'Present',
   PAST: 'Past'
 };
-export const DEFAULT_FILTER_TYPE = filterType.EVERYTHING;
+export const DEFAULT_FILTER_TYPE = FilterType.EVERYTHING;
 
 
 export const filterEmptyMessage = {

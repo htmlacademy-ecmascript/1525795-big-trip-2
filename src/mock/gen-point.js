@@ -2,7 +2,6 @@ import { getRandomPointType, getPointTypeById } from './point-type.js';
 import { getRandomDestination } from './destination.js';
 import { getRandomOffers } from './offer.js';
 import { getRandomInteger } from '../util.js';
-// import DestinationModel from '../model/destination-model.js';
 
 
 const getFormattedTime = (minutes) => {

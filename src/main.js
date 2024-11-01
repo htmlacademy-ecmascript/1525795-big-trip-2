@@ -1,9 +1,16 @@
 import RoutePresenter from './presenter/route-presenter.js';
+import FilterPresenter from './presenter/filter-presenter.js';
+import FilterModel from './model/filter-model.js';
+import RouteModel from './model/route-model.js';
 
 
-const divFilters = document.querySelector('.trip-controls__filters');
+const routeModel = new RouteModel();
+const filterContainer = document.querySelector('.trip-controls__filters');
 const divRoute = document.querySelector('.trip-events');
-const routePresenter = new RoutePresenter({routeContainer: divRoute, headerContainer: divFilters});
+const filterModel = new FilterModel();
+const filterPresenter = new FilterPresenter(filterContainer, filterModel);
+const routePresenter = new RoutePresenter({routeContainer: divRoute, headerContainer: filterContainer, filterModel, routeModel});
 
 
+filterPresenter.init();
 routePresenter.init();

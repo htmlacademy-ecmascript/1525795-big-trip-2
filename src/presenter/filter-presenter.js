@@ -1,22 +1,39 @@
 import FilterView from '../view/filter-view.js';
+import { UpdateType } from '../utils/common.js';
 
-import { render, remove } from '../framework/render.js';
+import { render, replace, remove } from '../framework/render.js';
 
 
 export default class FilterPresenter {
   #filterComponent = null;
-  #route = null;
-  #container = null;
+  #filterContainer = null;
+  #filterModel = null;
 
-  constructor(route, container) {
-    this.#route = route;
-    this.#container = container;
-    this.#filterComponent = new FilterView(this.#route);
+  constructor(filterContainer, filterModel) {
+    this.#filterContainer = filterContainer;
+    this.#filterModel = filterModel;
+  }
 
-    render(this.#filterComponent, this.#container, 'afterbegin');
+  init() {
+    const currentFilterComponent = this.#filterComponent;
+    this.#filterComponent = new FilterView(this.#filterModel.currentFilter, this.#changeFilterHandler);
+
+    if (currentFilterComponent === null) {
+      render(this.#filterComponent, this.#filterContainer, 'afterbegin');
+      return;
+    }
+
+    replace(this.#filterComponent, currentFilterComponent);
+    remove(currentFilterComponent);
   }
 
   removeComponent = () => {
     remove(this.#filterComponent);
+  };
+
+  #changeFilterHandler = (newFilter) => {
+    if (this.#filterModel.currentFilter !== newFilter) {
+      this.#filterModel.setFilter(UpdateType.ALL, newFilter);
+    }
   };
 }

@@ -4,8 +4,10 @@ import { getDestinationById } from '../mock/destination.js';
 import { sortByDate } from '../utils/common.js';
 import { getFormattedRangeDate } from '../util.js';
 import { getOfferById } from '../mock/offer.js';
+import { FilterType, sortMethods } from '../utils/common.js';
 
 import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 
 const POINT_COUNT = 4;
 
@@ -15,6 +17,33 @@ export default class RouteModel extends Observable {
 
   get route() {
     return this.#route;
+  }
+
+  getRouteData(currentFilter, currentSortType) {
+    // Получаем данные из модели
+    let routeData = [...this.#route];
+
+    // Фильтруем
+    // console.log('inside getRouteData', currentFilter);
+    switch (currentFilter) {
+      case FilterType.EVERYTHING:
+        break;
+      case FilterType.FUTURE:
+        routeData = routeData.filter((item) => dayjs(item.dateFrom) > dayjs());
+        break;
+      case FilterType.PRESENT:
+        dayjs.extend(isBetween);
+        routeData = routeData.filter((item) => dayjs().isBetween(item.dateFrom, item.dateTo));
+        break;
+      case FilterType.PAST:
+        routeData = routeData.filter((item) => dayjs(item.dateTo) <= dayjs());
+        break;
+    }
+
+    // Сортируем
+    routeData.sort(sortMethods[currentSortType]);
+
+    return routeData;
   }
 
   addPoint(point) {
