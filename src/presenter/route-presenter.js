@@ -56,14 +56,14 @@ export default class RoutePresenter {
       case filterType.EVERYTHING:
         break;
       case filterType.FUTURE:
-        routeData = routeData.filter((item) => dayjs(item.date_from) > dayjs());
+        routeData = routeData.filter((item) => dayjs(item.dateFrom) > dayjs());
         break;
       case filterType.PRESENT:
         dayjs.extend(isBetween);
-        routeData = routeData.filter((item) => dayjs().isBetween(item.date_from, item.date_to));
+        routeData = routeData.filter((item) => dayjs().isBetween(item.dateFrom, item.dateTo));
         break;
       case filterType.PAST:
-        routeData = routeData.filter((item) => dayjs(item.date_to) <= dayjs());
+        routeData = routeData.filter((item) => dayjs(item.dateTo) <= dayjs());
         break;
     }
 
@@ -86,8 +86,6 @@ export default class RoutePresenter {
       case UpdateType.ALL:
         // Снова запрашиваем список точек из модели
         this.#routeData = this.#getRouteData();
-        // Сортируем в соответствии с текущим способом сортировки
-        // this.#routeData.sort(sortMethods[this.#currentSortType]);
 
         this.#headerPresenter.refreshHeader();
         this.#renderRoute();
@@ -140,7 +138,9 @@ export default class RoutePresenter {
       if (this.#routeData && this.#routeData.length) {
         this.#routeComponent = new RouteView();
         this.#routeData.forEach((item) => this.#renderPoint(item));
+
         document.querySelector('.trip-events__trip-sort').addEventListener('click', this.#sortTypeClickHandler);
+        document.addEventListener('keydown', this.#escKeydownHandler);
       } else {
         this.#routeComponent = new EmptyRouteView(filterEmptyMessage[this.#currentFilterType.toUpperCase()]);
       }

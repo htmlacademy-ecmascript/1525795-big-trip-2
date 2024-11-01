@@ -26,15 +26,14 @@ export const getRandomPoint = () => {
   const formattedEndTime = getFormattedTime(endTime);
 
   const generatedPoint = {
-    'id': getRandomInteger(1, 100000), // Вместо UUID
-    'base_price': getRandomInteger(1, 1000),
-    'date_from': `2024-11-${String(startDay).padStart(2, '0')}T${formattedStartTime}`,
-    'date_to': `2024-11-${String(endDay).padStart(2, '0')}T${formattedEndTime}`,
-    'destination': getRandomDestination(),
-    // 'destination': destinations.getRandomDestination(),
-    'is_favorite': false,
-    'offers': randomOffers,
-    'type': pointTypeObj.name.toLowerCase()
+    id: getRandomInteger(1, 100000), // Вместо UUID
+    basePrice: getRandomInteger(1, 1000),
+    dateFrom: `2024-11-${String(startDay).padStart(2, '0')}T${formattedStartTime}`,
+    dateTo: `2024-11-${String(endDay).padStart(2, '0')}T${formattedEndTime}`,
+    destination: getRandomDestination(),
+    isFavorite: false,
+    offers: randomOffers,
+    type: pointTypeObj.name.toLowerCase()
   };
 
   return generatedPoint;

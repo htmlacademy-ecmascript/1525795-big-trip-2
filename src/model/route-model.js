@@ -52,7 +52,7 @@ export default class RouteModel extends Observable {
   changeFavorite(updateType, point) {
     for (const routePoint of this.#route) {
       if (routePoint.id === point.id) {
-        routePoint['is_favorite'] = !routePoint['is_favorite'];
+        routePoint.isFavorite = !routePoint.isFavorite;
       }
     }
 
@@ -80,8 +80,8 @@ export default class RouteModel extends Observable {
     }
 
     const copyRoute = this.#route.slice().sort(sortByDate);
-    const startDate = dayjs(copyRoute[0].date_from);
-    const endDate = dayjs(copyRoute.slice(-1)[0].date_to);
+    const startDate = dayjs(copyRoute[0].dateFrom);
+    const endDate = dayjs(copyRoute.slice(-1)[0].dateTo);
 
     return `${getFormattedRangeDate(startDate.date(), startDate.month() + 1, endDate.date(), endDate.month() + 1)}`;
   }
@@ -95,10 +95,10 @@ export default class RouteModel extends Observable {
     let cost = 0;
 
     for (const point of this.#route) {
-      cost += point['base_price'];
+      cost += point.basePrice;
 
       if (point.offers && point.offers.length) {
-        for (const offer of point['offers']) {
+        for (const offer of point.offers) {
           cost += getOfferById(offer).price;
         }
       }

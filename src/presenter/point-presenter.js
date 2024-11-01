@@ -59,6 +59,7 @@ export default class PointPresenter {
     const prevComponent = this.#rowComponent;
     this.#rowComponent = new RoutePointView(this.#point);
     replace(this.#rowComponent, prevComponent);
+    this.#updateComponent.removeDatePickr();
     this.#addListeners();
 
     // В случае изменения параметров маршрута необходимо обновить заголовок
@@ -68,7 +69,7 @@ export default class PointPresenter {
   };
 
   #deletePointHandler = () => {
-    this.#updateComponent.removeElement();
+    this.#updateComponent.removeDatePickr();
     this.#route.deletePoint(UpdateType.ALL, this.#point);
   };
 

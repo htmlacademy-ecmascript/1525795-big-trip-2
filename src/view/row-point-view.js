@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 
 
 function createRowPointTemplate(routePoint) {
-  const { type: pointType, destination, date_from: dateFrom, date_to: dateTo, base_price: price, is_favorite: isFavorite, offers: pointOffers } = routePoint;
+  const { type: pointType, destination, dateFrom: dateFrom, dateTo: dateTo, basePrice: price, isFavorite: isFavorite, offers: pointOffers } = routePoint;
   const startDate = dayjs(dateFrom);
   const endDate = dayjs(dateTo);
   const formattedStartDate = startDate.format('MMM DD');

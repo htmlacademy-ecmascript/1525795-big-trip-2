@@ -102,8 +102,8 @@ function getFormattedOffers(pointTypeName, pointOffers) {
 
 function createUpdatePointTemplate(state) {
   const pointTypeName = state.type;
-  const dateFrom = dayjs(state.date_from).format('DD/MM/YY HH:mm');
-  const dateTo = dayjs(state.date_to).format('DD/MM/YY HH:mm');
+  const dateFrom = dayjs(state.dateFrom).format('DD/MM/YY HH:mm');
+  const dateTo = dayjs(state.dateTo).format('DD/MM/YY HH:mm');
   const destinationObj = getDestinationById(state.destination);
 
   return `
@@ -149,7 +149,7 @@ function createUpdatePointTemplate(state) {
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-${state.id}" type="text" name="event-price" value="${state.base_price}">
+            <input class="event__input  event__input--price" id="event-price-${state.id}" type="text" name="event-price" value="${state.basePrice}">
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -213,6 +213,7 @@ export default class UpdatePointView extends AbstractStatefulView {
   #formRollupClickHandler = () => {
     this.updateElement(UpdatePointView.parsePointToState(this.#routePoint));
     this.#cbRollupClickHandler();
+    this.removeDatePickr();
   };
 
   #eventTypeChangeHandler = () => {
@@ -229,12 +230,15 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   #priceChangeHandler = (evt) => {
     evt.preventDefault();
-    this.updateElement({'base_price': parseInt(evt.target.value, 10)});
+    this.updateElement({basePrice: parseInt(evt.target.value, 10)});
   };
 
   removeElement() {
     super.removeElement();
+    this.removeDatePickr();
+  }
 
+  removeDatePickr = () => {
     if (this.#startDatePicker) {
       this.#startDatePicker.destroy();
       this.#startDatePicker = null;
@@ -244,10 +248,10 @@ export default class UpdatePointView extends AbstractStatefulView {
       this.#endDatePicker.destroy();
       this.#endDatePicker = null;
     }
-  }
+  };
 
   #setDatePicker() {
-    if (this._state['date_from']) {
+    if (this._state.dateFrom) {
       this.#startDatePicker = flatpickr(
         this.element.querySelector('input[name="event-start-time"]'),
         {
@@ -255,13 +259,13 @@ export default class UpdatePointView extends AbstractStatefulView {
           // eslint-disable-next-line camelcase
           time_24hr: true,
           dateFormat: 'd/m/y H:i',
-          defaultDate: this._state['date_from'],
+          defaultDate: this._state.dateFrom,
           onChange: this.#startDateChangeHandler
         }
       );
     }
 
-    if (this._state['date_to']) {
+    if (this._state.dateTo) {
       this.#endDatePicker = flatpickr(
         this.element.querySelector('input[name="event-end-time"]'),
         {
@@ -269,7 +273,7 @@ export default class UpdatePointView extends AbstractStatefulView {
           // eslint-disable-next-line camelcase
           time_24hr: true,
           dateFormat: 'd/m/y H:i',
-          defaultDate: this._state['date_to'],
+          defaultDate: this._state.dateTo,
           onChange: this.#endDateChangeHandler
         }
       );
@@ -277,11 +281,11 @@ export default class UpdatePointView extends AbstractStatefulView {
   }
 
   #startDateChangeHandler = ([startDate]) => {
-    this.updateElement({'date_from': startDate});
+    this.updateElement({dateFrom: startDate});
   };
 
   #endDateChangeHandler = ([endDate]) => {
-    this.updateElement({'date_to': endDate});
+    this.updateElement({dateTo: endDate});
   };
 
   static parsePointToState(point) {

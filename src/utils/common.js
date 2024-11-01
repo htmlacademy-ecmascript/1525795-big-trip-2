@@ -6,9 +6,9 @@ const getEventLength = (dateFrom, dateTo) => {
 };
 
 const getEventStartDate = (dateFrom) => new Date(dateFrom);
-export const sortByPrice = (a, b) => b.base_price - a.base_price;
-export const sortByDate = (a, b) => getEventStartDate(a.date_from) - getEventStartDate(b.date_from);
-export const sortByTime = (a, b) => getEventLength(b.date_from, b.date_to) - getEventLength(a.date_from, a.date_to);
+export const sortByPrice = (a, b) => b.basePrice - a.basePrice;
+export const sortByDate = (a, b) => getEventStartDate(a.dateFrom) - getEventStartDate(b.dateFrom);
+export const sortByTime = (a, b) => getEventLength(b.dateFrom, b.dateTo) - getEventLength(a.dateFrom, a.dateTo);
 
 export const sortTypes = ['day', 'event', 'time', 'price', 'offers'];
 export const sortMethods = {
