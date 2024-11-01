@@ -2,7 +2,7 @@ import RoutePointView from '../view/row-point-view.js';
 import UpdatePointView from '../view/update-point-view.js';
 import { UpdateType } from '../utils/common.js';
 
-import { render, replace } from '../framework/render.js';
+import { render, replace, remove } from '../framework/render.js';
 
 const Mode = {
   VIEW: 'VIEW',
@@ -62,13 +62,12 @@ export default class PointPresenter {
     this.#addListeners();
 
     // В случае изменения параметров маршрута необходимо обновить заголовок
-    this.#route.updatePoint(UpdateType.HEADER, this.#point);
+    this.#route.updatePoint(UpdateType.ALL, this.#point);
 
     this.#mode = Mode.VIEW;
   };
 
   #deletePointHandler = () => {
-    console.log('delete point handler');
     this.#route.deletePoint(UpdateType.ALL, this.#point);
   };
 
@@ -99,5 +98,9 @@ export default class PointPresenter {
       replace(this.#rowComponent, this.#updateComponent);
       this.#mode = Mode.VIEW;
     }
+  };
+
+  removeComponent = () => {
+    remove(this.#rowComponent);
   };
 }

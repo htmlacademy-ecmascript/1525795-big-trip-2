@@ -26,3 +26,20 @@ export const UpdateType = {
   ROW: 'ROW',
   ALL: 'ALL'
 };
+
+
+export const filterType = {
+  EVERYTHING: 'Everything',
+  FUTURE: 'Future',
+  PRESENT: 'Present',
+  PAST: 'Past'
+};
+export const DEFAULT_FILTER_TYPE = filterType.EVERYTHING;
+
+
+export const filterEmptyMessage = {
+  EVERYTHING: 'There are no everything events now',
+  FUTURE: 'There are no future events now',
+  PRESENT: 'There are no present events now',
+  PAST: 'There are no past events now'
+};
