@@ -4,7 +4,7 @@ import { getDestinationById } from '../mock/destination.js';
 import { sortByDate } from '../utils/common.js';
 import { getFormattedRangeDate } from '../util.js';
 import { getOfferById } from '../mock/offer.js';
-import { FilterType, sortMethods } from '../utils/common.js';
+import { FilterType, SortMethods } from '../utils/common.js';
 
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
@@ -41,7 +41,8 @@ export default class RouteModel extends Observable {
     }
 
     // Сортируем
-    routeData.sort(sortMethods[currentSortType]);
+    console.log(currentSortType);
+    routeData.sort(SortMethods[currentSortType]);
 
     return routeData;
   }

@@ -10,14 +10,20 @@ export const sortByPrice = (a, b) => b.basePrice - a.basePrice;
 export const sortByDate = (a, b) => getEventStartDate(a.dateFrom) - getEventStartDate(b.dateFrom);
 export const sortByTime = (a, b) => getEventLength(b.dateFrom, b.dateTo) - getEventLength(a.dateFrom, a.dateTo);
 
-export const sortTypes = ['day', 'event', 'time', 'price', 'offers'];
-export const sortMethods = {
-  day: sortByDate,
-  time: sortByTime,
-  price: sortByPrice
+export const SortTypes = {
+  DAY: 'Day',
+  EVENT: 'Event',
+  TIME: 'Time',
+  PRICE: 'Price',
+  OFFERS: 'Offers'
 };
-export const DEFAULT_SORT_TYPE = sortTypes[0];
-export const DEFAULT_SORT_METHOD = sortMethods[DEFAULT_SORT_TYPE];
+export const SortMethods = {
+  Day: sortByDate,
+  Time: sortByTime,
+  Price: sortByPrice
+};
+export const DEFAULT_SORT_TYPE = SortTypes.DAY;
+export const DEFAULT_SORT_METHOD = SortMethods.DAY;
 
 export const capitalize = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 
