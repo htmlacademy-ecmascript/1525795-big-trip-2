@@ -35,7 +35,7 @@ export default class FilterPresenter {
 
   #changeFilterHandler = (newFilter) => {
     if (this.#filterModel.currentFilter !== newFilter) {
-      // Здесь добавить сброс сортировки в Day (в соответствии с ТЗ: при изменении фильтра сбрасывать сортировку в Day)
+      // Здесь сброс сортировки в Day (в соответствии с ТЗ: при изменении фильтра сбрасывать сортировку в Day)
       this.#sortPresenter.resetSortType();
       this.#filterModel.setFilter(UpdateType.ALL, newFilter);
     }
