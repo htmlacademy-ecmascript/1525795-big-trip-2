@@ -1,16 +1,10 @@
 import RouteView from '../view/route-view.js';
 import EmptyRouteView from '../view/empty-route.js';
 import PointPresenter from './point-presenter.js';
-// import SortPresenter from './sort-presenter.js';
-import HeaderPresenter from './header-presenter.js';
 
-// import { DEFAULT_SORT_TYPE, FilterType, sortMethods, UpdateType, filterEmptyMessage } from '../utils/common.js';
-// import { DEFAULT_SORT_TYPE, UpdateType, filterEmptyMessage } from '../utils/common.js';
 import { UpdateType, filterEmptyMessage } from '../utils/common.js';
 
 import { render, remove } from '../framework/render.js';
-// import dayjs from 'dayjs';
-// import isBetween from 'dayjs/plugin/isBetween';
 
 
 export default class RoutePresenter {
@@ -23,19 +17,17 @@ export default class RoutePresenter {
   #routeData = null;
   #pointMap = new Map();
   #headerPresenter = null;
-  // #sortPresenter = null;
-  // #currentFilterType = FilterType.EVERYTHING;
-  // #currentSortType = DEFAULT_SORT_TYPE;
+  #sortPresenter = null;
 
-  constructor({routeContainer, headerContainer, filterModel, routeModel, sortModel}) {
+  constructor({routeContainer, headerContainer, filterModel, routeModel, sortModel, sortPresenter, headerPresenter}) {
     this.headerContainer = headerContainer;
     this.routeContainer = routeContainer;
 
     this.#filterModel = filterModel;
     this.#routeModel = routeModel;
     this.#sortModel = sortModel;
-    this.#headerPresenter = new HeaderPresenter(this.#routeModel);
-    // this.#sortPresenter = new SortPresenter(this.#routeData, this.routeContainer);
+    this.#headerPresenter = headerPresenter;
+    this.#sortPresenter = sortPresenter;
 
     this.#filterModel.addObserver(this.#handleRouteEvent);
     this.#routeModel.addObserver(this.#handleRouteEvent);
@@ -44,38 +36,11 @@ export default class RoutePresenter {
 
   init() {
     // Получаем отфильтрованные и отсортированные данные
-    // this.#routeData = this.#getRouteData();
     this.#routeData = this.#routeModel.getRouteData(this.#filterModel.currentFilter, this.#sortModel.currentSortType);
 
     // ... и отрисовываем маршрут
     this.#renderRoute();
   }
-
-  // #getRouteData = () => {
-  //   // Получаем данные из модели
-  //   let routeData = [...this.#routeModel.route];
-
-  //   // Фильтруем
-  //   switch (this.#filterModel.currentFilter) {
-  //     case FilterType.EVERYTHING:
-  //       break;
-  //     case FilterType.FUTURE:
-  //       routeData = routeData.filter((item) => dayjs(item.dateFrom) > dayjs());
-  //       break;
-  //     case FilterType.PRESENT:
-  //       dayjs.extend(isBetween);
-  //       routeData = routeData.filter((item) => dayjs().isBetween(item.dateFrom, item.dateTo));
-  //       break;
-  //     case FilterType.PAST:
-  //       routeData = routeData.filter((item) => dayjs(item.dateTo) <= dayjs());
-  //       break;
-  //   }
-
-  //   // Сортируем
-  //   routeData.sort(sortMethods[this.#currentSortType]);
-
-  //   return routeData;
-  // };
 
   #handleRouteEvent = (updateType, point) => {
     // console.log('inside handleRouteEvent');
@@ -89,9 +54,7 @@ export default class RoutePresenter {
         this.#rerenderPoint(point);
         break;
       case UpdateType.ALL:
-        // console.log('inside updateType.ALL', this.#filterModel.currentFilter);
         // Снова запрашиваем список точек из модели
-        // this.#routeData = this.#getRouteData();
         this.#routeData = this.#routeModel.getRouteData(this.#filterModel.currentFilter, this.#sortModel.currentSortType);
 
         this.#headerPresenter.refreshHeader();
@@ -100,29 +63,6 @@ export default class RoutePresenter {
     }
   };
 
-  // #sortTypeClickHandler = (evt) => {
-  //   if (evt.target.tagName === 'INPUT') {
-  //     if (evt.target.dataset.sortType !== this.#currentSortType) {
-  //       this.#currentSortType = evt.target.dataset.sortType;
-  //       // this.#routeData = this.#getRouteData();
-  //       this.#routeData = this.#routeModel.getRouteData(this.#filterModel.currentFilter, this.#currentSortType);
-  //       this.#renderRoute();
-  //     }
-  //   }
-  // };
-
-  // #filterTypeClickHandler = (evt) => {
-  //   if (evt.target.tagName === 'INPUT') {
-  //     if (evt.target.dataset.filterType !== this.#currentFilterType) {
-  //       // Из ТЗ: при смене фильтра сортировка сбрасывается на Day
-  //       this.#currentSortType = DEFAULT_SORT_TYPE;
-
-  //       this.#currentFilterType = FilterType[evt.target.dataset.filterType.toUpperCase()];
-  //       this.#routeData = this.#getRouteData();
-  //       this.#renderRoute({isResetSortType: true});
-  //     }
-  //   }
-  // };
 
   // Для всех точек маршрута восстанавливаем исходный вид (превращаем в строку)
   #resetRoutePoints = () => this.#pointMap.forEach((item) => item.resetComponent());
@@ -136,10 +76,9 @@ export default class RoutePresenter {
 
   #renderRoute({isResetSortType = false} = {}) {
     remove(this.#routeComponent);
-    if (isResetSortType) {
-      // this.#sortPresenter.removeComponent();
-      // this.#sortPresenter = new SortPresenter(this.#routeData, this.routeContainer);
-    }
+    // if (isResetSortType) {
+
+    // }
     this.#pointMap.clear();
 
     if (this.#routeModel.route && this.#routeModel.route.length) {
@@ -147,16 +86,15 @@ export default class RoutePresenter {
         this.#routeComponent = new RouteView();
         this.#routeData.forEach((item) => this.#renderPoint(item));
 
-        // document.querySelector('.trip-events__trip-sort').addEventListener('click', this.#sortTypeClickHandler);
         document.addEventListener('keydown', this.#escKeydownHandler);
       } else {
         this.#routeComponent = new EmptyRouteView(filterEmptyMessage[this.#filterModel.currentFilter.toUpperCase()]);
       }
     } else {
       this.#headerPresenter.removeComponent();
-      // this.#sortPresenter.removeComponent();
       this.#routeComponent = new EmptyRouteView();
     }
+    this.#sortPresenter.init();
     render(this.#routeComponent, this.routeContainer);
   }
 

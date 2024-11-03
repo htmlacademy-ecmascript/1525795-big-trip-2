@@ -8,10 +8,12 @@ export default class FilterPresenter {
   #filterComponent = null;
   #filterContainer = null;
   #filterModel = null;
+  #sortPresenter = null;
 
-  constructor(filterContainer, filterModel) {
+  constructor(filterContainer, filterModel, sortPresenter) {
     this.#filterContainer = filterContainer;
     this.#filterModel = filterModel;
+    this.#sortPresenter = sortPresenter;
   }
 
   init() {
@@ -34,6 +36,7 @@ export default class FilterPresenter {
   #changeFilterHandler = (newFilter) => {
     if (this.#filterModel.currentFilter !== newFilter) {
       // Здесь добавить сброс сортировки в Day (в соответствии с ТЗ: при изменении фильтра сбрасывать сортировку в Day)
+      this.#sortPresenter.resetSortType();
       this.#filterModel.setFilter(UpdateType.ALL, newFilter);
     }
   };

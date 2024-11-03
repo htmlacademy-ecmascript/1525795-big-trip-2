@@ -24,7 +24,6 @@ export default class RouteModel extends Observable {
     let routeData = [...this.#route];
 
     // Фильтруем
-    // console.log('inside getRouteData', currentFilter);
     switch (currentFilter) {
       case FilterType.EVERYTHING:
         break;
@@ -41,11 +40,12 @@ export default class RouteModel extends Observable {
     }
 
     // Сортируем
-    console.log(currentSortType);
     routeData.sort(SortMethods[currentSortType]);
 
     return routeData;
   }
+
+  getRouteLength = () => this.route.length;
 
   addPoint(point) {
     this.#route.push(point);
