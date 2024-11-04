@@ -15,7 +15,6 @@ export const offers = [
         'title': 'Order Uber',
         'price': 20
       }
-
     ]
   },
   {
@@ -62,7 +61,7 @@ export const offers = [
         'price': 40
       }
     ]
-  }
+  },
 ];
 
 

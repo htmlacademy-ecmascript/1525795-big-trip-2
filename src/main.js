@@ -8,22 +8,21 @@ import RouteModel from './model/route-model.js';
 
 
 const routeModel = new RouteModel();
-const divRoute = document.querySelector('.trip-events');
 
-const sortContainer = document.querySelector('.trip-events');
+const routeContainer = document.querySelector('.trip-events');
 const sortModel = new SortModel();
-const sortPresenter = new SortPresenter(routeModel, sortContainer, sortModel);
+const sortPresenter = new SortPresenter(routeModel, routeContainer, sortModel);
 
-const filterContainer = document.querySelector('.trip-controls__filters');
+const headerContainer = document.querySelector('.trip-controls__filters');
 const filterModel = new FilterModel();
-const filterPresenter = new FilterPresenter(filterContainer, filterModel, sortPresenter);
+const filterPresenter = new FilterPresenter(headerContainer, filterModel, sortPresenter);
 
 // headerPresenter необходимо передать в routePresenter, так как своей модели у headerPresenter'а нет, он
 // только меняет и отображает свое состояние в зависимости от действий пользователя в других компонентах
 const headerPresenter = new HeaderPresenter(routeModel);
 
-const routePresenter = new RoutePresenter({routeContainer: divRoute, headerContainer: filterContainer,
-    filterModel, routeModel, sortModel, sortPresenter, headerPresenter});
+const routePresenter = new RoutePresenter({
+  routeContainer, headerContainer, filterModel, routeModel, sortModel, sortPresenter, headerPresenter});
 
 filterPresenter.init();
 sortPresenter.init();

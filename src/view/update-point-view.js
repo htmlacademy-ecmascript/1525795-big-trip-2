@@ -40,14 +40,16 @@ function getDestinationPhotos(destination) {
 
 function getFormattedDestination(destinationObj) {
   return `
-    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${destinationObj.description}</p>
+    <section class="event__section  event__section--destination">
+      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+      <p class="event__destination-description">${destinationObj.description}</p>
 
-    <div class="event__photos-container">
-      <div class="event__photos-tape">
-        ${getDestinationPhotos(destinationObj)}
+      <div class="event__photos-container">
+        <div class="event__photos-tape">
+          ${getDestinationPhotos(destinationObj)}
+        </div>
       </div>
-    </div>
+    </section>
   `;
 }
 
@@ -55,8 +57,8 @@ function getFormattedDestination(destinationObj) {
 function getDestinationsList() {
   // Список пунктов назначения для выпадающего списка в форме редактирования
   let destinationsList = '';
-  for (let i = 0; i < destinations.length; i++) {
-    destinationsList += `<option value="${destinations[i].name}"></option>`;
+  for (const item in destinations) {
+    destinationsList += `<option value="${item.name}"></option>`;
   }
   return destinationsList;
 }
@@ -64,36 +66,42 @@ function getDestinationsList() {
 
 function getFormattedOffers(pointTypeName, pointOffers) {
   // Список дополнительных опций для вида точки маршрута
+  const offersItem = offers.find((item) => item['type'] === pointTypeName);
+  if (offersItem === undefined) {
+    return '';
+  }
+
+  const copyOffers = offersItem.offers;
   let offersList = '';
 
-  for (let i = 0; i < offers.length; i++) {
-    if (offers[i].type.toLowerCase() === pointTypeName.toLowerCase()) {
-      if (offers[i].offers.length > 0) {
-        offersList += `
-          <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+  if (copyOffers && copyOffers.length) {
+    offersList = '<section class="event__section  event__section--offers">';
 
-          <div class="event__available-offers">
-        `;
+    offersList += `
+      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
-        for (let j = 0; j < offers[i].offers.length; j++) {
-          offersList += `
-            <div class="event__offer-selector">
-              <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offers[i].offers[j].id}"
-              type="checkbox" name="event-offer-${offers[i].offers[j].id}" ${pointOffers.includes(offers[i].offers[j].id) ? 'checked' : ''}>
-              <label class="event__offer-label" for="event-offer-${offers[i].offers[j].id}">
-                <span class="event__offer-title">${offers[i].offers[j].title}</span>
-                &plus;&euro;&nbsp;
-                <span class="event__offer-price">${offers[i].offers[j].price}</span>
-              </label>
-            </div>
-          `;
-        }
+      <div class="event__available-offers">
+    `;
 
-        offersList += `
-          </div>
-        `;
-      }
-    }
+    copyOffers.forEach((item) => {
+      offersList += `
+        <div class="event__offer-selector">
+          <input class="event__offer-checkbox  visually-hidden" id="event-offer-${item.id}"
+          type="checkbox" name="event-offer-${item.id}" ${pointOffers.includes(item.id) ? 'checked' : ''}
+          data-offer-id=${item.id}>
+          <label class="event__offer-label" for="event-offer-${item.id}">
+            <span class="event__offer-title">${item.title}</span>
+            &plus;&euro;&nbsp;
+            <span class="event__offer-price">${item.price}</span>
+          </label>
+        </div>
+      `;
+    });
+
+    offersList += `
+        </div>
+      </section>
+    `;
   }
 
   return offersList;
@@ -159,13 +167,9 @@ function createUpdatePointTemplate(state) {
           </button>
         </header>
         <section class="event__details">
-          <section class="event__section  event__section--offers">
-            ${getFormattedOffers(pointTypeName, state.offers && state.offers.length ? state.offers : [])}
-          </section>
+          ${getFormattedOffers(pointTypeName, state.offers && state.offers.length ? state.offers : [])}
 
-          <section class="event__section  event__section--destination">
-            ${getFormattedDestination(destinationObj)}
-          </section>
+          ${getFormattedDestination(destinationObj)}
         </section>
       </form>
     </li>
@@ -204,6 +208,9 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.element.querySelector('.event--edit').addEventListener('submit', this.#cbSubmitClickHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
+    if (this.element.querySelector('.event__available-offers') !== null) {
+      this.element.querySelector('.event__available-offers').addEventListener('change', this.#offersChangeHandler);
+    }
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#cbDeletePointHandler);
 
@@ -218,7 +225,8 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   #eventTypeChangeHandler = () => {
     const newPointTypeName = this.element.querySelector('input[name="event-type"]:checked').value;
-    this.updateElement({type: newPointTypeName});
+    this._state.offers = [];
+    this.updateElement({type: newPointTypeName, offers: []});
   };
 
   #destinationChangeHandler = () => {
@@ -226,6 +234,19 @@ export default class UpdatePointView extends AbstractStatefulView {
       const newDestination = this.element.querySelector('.event__input--destination').value;
       this.updateElement({destination: getDestinationByName(newDestination).id});
     }
+  };
+
+  #offersChangeHandler = (evt) => {
+    const selectedOfferId = evt.target.dataset.offerId;
+    if (this.element.querySelector(`input[name="event-offer-${selectedOfferId}"]`).checked) {
+      // if (this._state.offers === null) {
+      // this._state.offers = [];
+      // }
+      this._state.offers.push(selectedOfferId);
+    } else {
+      this._state.offers = this._state.offers.filter((item) => item !== selectedOfferId);
+    }
+    this.updateElement({offers: this._state.offers});
   };
 
   #priceChangeHandler = (evt) => {
