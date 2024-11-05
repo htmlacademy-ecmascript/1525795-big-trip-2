@@ -2,7 +2,7 @@ import { getRandomPoint } from '../mock/gen-point.js';
 import Observable from '../framework/observable.js';
 import { getDestinationById } from '../mock/destination.js';
 import { sortByDate } from '../utils/common.js';
-import { getFormattedRangeDate } from '../util.js';
+import { getFormattedRangeDate, getRandomInteger } from '../util.js';
 import { getOfferById } from '../mock/offer.js';
 import { FilterType, SortMethods } from '../utils/common.js';
 
@@ -14,6 +14,16 @@ const POINT_COUNT = 4;
 
 export default class RouteModel extends Observable {
   #route = Array.from({length: POINT_COUNT}, getRandomPoint);
+  #emptyPoint = {
+    id: 0,
+    basePrice: 0,
+    dateFrom: '',
+    dateTo: '',
+    destination: 0,
+    isFavorite: false,
+    offers: [],
+    type: 'flight'
+  };
 
   get route() {
     return this.#route;
@@ -47,10 +57,13 @@ export default class RouteModel extends Observable {
 
   getRouteLength = () => this.route.length;
 
-  addPoint(point) {
+  getEmptyPoint = () => this.#emptyPoint;
+
+  addPoint(updateType, point) {
+    point.id = getRandomInteger(1, 100000);
     this.#route.push(point);
 
-    this._notify();
+    this._notify(updateType);
   }
 
   updatePoint(updateType, point) {
@@ -95,7 +108,8 @@ export default class RouteModel extends Observable {
     }
 
     const pointsList = new Array();
-    this.#route.forEach((item) => pointsList.push(getDestinationById(item.destination).name));
+    this.#route.forEach((item) =>
+      (getDestinationById(item.destination) === undefined ? '' : pointsList.push(getDestinationById(item.destination).name)));
 
     if (pointsList.length > 3) {
       return `${[pointsList[0]]} - ... - ${[pointsList[pointsList.length - 1]]}`;

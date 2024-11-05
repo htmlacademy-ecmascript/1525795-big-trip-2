@@ -49,3 +49,9 @@ export const filterEmptyMessage = {
   PRESENT: 'There are no present events now',
   PAST: 'There are no past events now'
 };
+
+export const ActionType = {
+  APPEND: 'append',
+  EDIT: 'edit',
+  DELETE: 'delete'
+};

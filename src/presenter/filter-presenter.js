@@ -1,5 +1,5 @@
 import FilterView from '../view/filter-view.js';
-import { UpdateType } from '../utils/common.js';
+import { UpdateType, DEFAULT_FILTER_TYPE } from '../utils/common.js';
 
 import { render, replace, remove } from '../framework/render.js';
 
@@ -33,11 +33,15 @@ export default class FilterPresenter {
     remove(this.#filterComponent);
   };
 
+  resetFilterType = () => {
+    this.#changeFilterHandler(DEFAULT_FILTER_TYPE);
+    // После сброса фильтра в default, нужно его перерисовать
+    this.init();
+  };
+
   #changeFilterHandler = (newFilter) => {
-    if (this.#filterModel.currentFilter !== newFilter) {
-      // Здесь сброс сортировки в Day (в соответствии с ТЗ: при изменении фильтра сбрасывать сортировку в Day)
-      this.#sortPresenter.resetSortType();
-      this.#filterModel.setFilter(UpdateType.ALL, newFilter);
-    }
+    // Здесь сброс сортировки в Day (в соответствии с ТЗ: при изменении фильтра сбрасывать сортировку в Day)
+    this.#sortPresenter.resetSortType();
+    this.#filterModel.setFilter(UpdateType.ALL, newFilter);
   };
 }

@@ -22,7 +22,8 @@ const filterPresenter = new FilterPresenter(headerContainer, filterModel, sortPr
 const headerPresenter = new HeaderPresenter(routeModel);
 
 const routePresenter = new RoutePresenter({
-  routeContainer, headerContainer, filterModel, routeModel, sortModel, sortPresenter, headerPresenter});
+  routeContainer, headerContainer, filterModel, routeModel, sortModel, sortPresenter, headerPresenter, filterPresenter
+});
 
 filterPresenter.init();
 sortPresenter.init();

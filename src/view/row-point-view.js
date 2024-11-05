@@ -8,14 +8,23 @@ import dayjs from 'dayjs';
 
 
 function createRowPointTemplate(routePoint) {
-  const { type: pointType, destination, dateFrom: dateFrom, dateTo: dateTo, basePrice: price, isFavorite: isFavorite, offers: pointOffers } = routePoint;
-  const startDate = dayjs(dateFrom);
-  const endDate = dayjs(dateTo);
-  const formattedStartDate = startDate.format('MMM DD');
-  const startTime = startDate.format('HH:mm');
-  const endTime = endDate.format('HH:mm');
-  const diffDate = dayjs(endDate - startDate);
-  const formattedEventLength = `${diffDate.format('DD')}D ${diffDate.format('HH')}H ${diffDate.format('mm')}M`;
+  const { id, type: pointType, destination, dateFrom: dateFrom, dateTo: dateTo, basePrice: price, isFavorite: isFavorite, offers: pointOffers } = routePoint;
+  let startDate = null;
+  let endDate = null;
+  let formattedStartDate = '';
+  let startTime = '';
+  let endTime = '';
+  let diffDate = null;
+  let formattedEventLength = '';
+  if (id !== 0) {
+    startDate = dayjs(dateFrom);
+    endDate = dayjs(dateTo);
+    formattedStartDate = startDate.format('MMM DD');
+    startTime = startDate.format('HH:mm');
+    endTime = endDate.format('HH:mm');
+    diffDate = dayjs(endDate - startDate);
+    formattedEventLength = `${diffDate.format('DD')}D ${diffDate.format('HH')}H ${diffDate.format('mm')}M`;
+  }
 
   const pointTypeItem = getPointTypeByName(pointType);
   const destinationItem = getDestinationById(destination);
@@ -39,9 +48,9 @@ function createRowPointTemplate(routePoint) {
       <div class="event">
         <time class="event__date" datetime="${startDate}">${formattedStartDate}</time>
         <div class="event__type">
-          <img class="event__type-icon" width="42" height="42" src="img/icons/${pointTypeItem.name.toLowerCase()}.png" alt="Event type icon">
+          <img class="event__type-icon" width="42" height="42" src="img/icons/${pointTypeItem === undefined ? '' : pointTypeItem.name.toLowerCase()}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">${pointTypeItem.name} ${destinationItem.name}</h3>
+        <h3 class="event__title">${pointTypeItem === undefined ? '' : pointTypeItem.name} ${destinationItem === undefined ? '' : destinationItem.name}</h3>
         <div class="event__schedule">
           <p class="event__time">
             <time class="event__start-time" datetime="${dateFrom}">${startTime}</time>
@@ -81,7 +90,7 @@ export default class RoutePointView extends AbstractView {
     return createRowPointTemplate(this.routePoint);
   }
 
-  replaceRowToForm(updateComponent, routePoint) {
-    replace(updateComponent, routePoint);
+  replaceRowToForm(updateComponent, rowComponent) {
+    replace(updateComponent, rowComponent);
   }
 }

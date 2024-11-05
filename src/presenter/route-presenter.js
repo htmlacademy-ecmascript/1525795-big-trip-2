@@ -2,7 +2,7 @@ import RouteView from '../view/route-view.js';
 import EmptyRouteView from '../view/empty-route.js';
 import PointPresenter from './point-presenter.js';
 
-import { UpdateType, filterEmptyMessage } from '../utils/common.js';
+import { UpdateType, filterEmptyMessage, ActionType } from '../utils/common.js';
 
 import { render, remove } from '../framework/render.js';
 
@@ -18,8 +18,10 @@ export default class RoutePresenter {
   #pointMap = new Map();
   #headerPresenter = null;
   #sortPresenter = null;
+  #filterPresenter = null;
+  #actionType = null;
 
-  constructor({routeContainer, headerContainer, filterModel, routeModel, sortModel, sortPresenter, headerPresenter}) {
+  constructor({routeContainer, headerContainer, filterModel, routeModel, sortModel, sortPresenter, headerPresenter, filterPresenter}) {
     this.headerContainer = headerContainer;
     this.routeContainer = routeContainer;
 
@@ -28,6 +30,7 @@ export default class RoutePresenter {
     this.#sortModel = sortModel;
     this.#headerPresenter = headerPresenter;
     this.#sortPresenter = sortPresenter;
+    this.#filterPresenter = filterPresenter;
 
     this.#filterModel.addObserver(this.#handleRouteEvent);
     this.#routeModel.addObserver(this.#handleRouteEvent);
@@ -43,7 +46,6 @@ export default class RoutePresenter {
   }
 
   #handleRouteEvent = (updateType, point) => {
-    // console.log('inside handleRouteEvent');
     switch (updateType) {
       case UpdateType.HEADER:
         // Обновляем только заголовок страницы - информацию о маршруте
@@ -63,22 +65,35 @@ export default class RoutePresenter {
     }
   };
 
-
   // Для всех точек маршрута восстанавливаем исходный вид (превращаем в строку)
   #resetRoutePoints = () => this.#pointMap.forEach((item) => item.resetComponent());
 
   // Если поймали Esc, возвращаем исходный вид всех точек маршрута
   #escKeydownHandler = (evt) => {
     if (evt.key === 'Escape') {
+      // Если добавление новой точки, то нужно удалить rowComponent у pointPresenter
+      if (this.#actionType === ActionType.APPEND) {
+        this.#pointMap.get(0).resetComponent();
+        this.#pointMap.get(0).removeComponent();
+        this.#pointMap.delete(0);
+      }
       this.#resetRoutePoints();
     }
   };
 
-  #renderRoute({isResetSortType = false} = {}) {
-    remove(this.#routeComponent);
-    // if (isResetSortType) {
+  #addNewEventHandler = () => {
+    // Сначала сбрасываем к исходному виду все открытые формы
+    this.#resetRoutePoints();
 
-    // }
+    // Сбрасываем фильтрацию в значение по-умолчанию (по ТЗ), сортировка сбросится в значение по-умолчанию вместе с фильтром
+    this.#filterPresenter.resetFilterType();
+    this.#renderRoute();
+
+    this.#renderPoint(this.#routeModel.getEmptyPoint());
+  };
+
+  #renderRoute() {
+    remove(this.#routeComponent);
     this.#pointMap.clear();
 
     if (this.#routeModel.route && this.#routeModel.route.length) {
@@ -96,11 +111,14 @@ export default class RoutePresenter {
     }
     this.#sortPresenter.init();
     render(this.#routeComponent, this.routeContainer);
+    document.querySelector('.trip-main__event-add-btn').addEventListener('click', this.#addNewEventHandler);
   }
 
   #renderPoint(point) {
-    const pointPresenter = new PointPresenter(this.#routeModel, this.#routeComponent, point, this.#resetRoutePoints);
+    this.#actionType = point.id === 0 ? ActionType.APPEND : ActionType.EDIT;
+    const pointPresenter = new PointPresenter(this.#routeModel, this.#routeComponent, point, this.#resetRoutePoints, this.#actionType);
     pointPresenter.init(point);
+    // Если добавление новой точки маршрута, то в Map запишется ключ с id = 0
     this.#pointMap.set(point.id, pointPresenter);
   }
 

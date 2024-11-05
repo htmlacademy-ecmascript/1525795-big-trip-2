@@ -4,6 +4,7 @@ import { pointTypes } from '../mock/point-type.js';
 import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
 import { offers } from '../mock/offer.js';
 import { replace } from '../framework/render.js';
+import { ActionType } from '../utils/common.js';
 
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
@@ -29,7 +30,7 @@ function getPointTypesList(defaultPointTypeName) {
 function getDestinationPhotos(destination) {
   let photos = '';
 
-  if (destination.pictures.length) {
+  if (destination && destination.pictures && destination.pictures.length) {
     destination.pictures.forEach((item) => {
       photos += `<img class="event__photo" src=${item.src} alt="Event photo">`;
     });
@@ -42,7 +43,7 @@ function getFormattedDestination(destinationObj) {
   return `
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${destinationObj.description}</p>
+      <p class="event__destination-description">${destinationObj === undefined ? '' : destinationObj.description}</p>
 
       <div class="event__photos-container">
         <div class="event__photos-tape">
@@ -108,7 +109,7 @@ function getFormattedOffers(pointTypeName, pointOffers) {
 }
 
 
-function createUpdatePointTemplate(state) {
+function createUpdatePointTemplate(state, actionType) {
   const pointTypeName = state.type;
   const dateFrom = dayjs(state.dateFrom).format('DD/MM/YY HH:mm');
   const dateTo = dayjs(state.dateTo).format('DD/MM/YY HH:mm');
@@ -138,7 +139,7 @@ function createUpdatePointTemplate(state) {
               ${pointTypeName}
             </label>
             <input class="event__input  event__input--destination" id="event-destination-${state.id}" type="text" name="event-destination"
-            value="${destinationObj.name}" list="destination-list-${state.id}">
+            value="${destinationObj === undefined ? '' : destinationObj.name}" list="destination-list-${state.id}">
             <datalist id="destination-list-${state.id}">
               ${getDestinationsList()}
             </datalist>
@@ -161,7 +162,7 @@ function createUpdatePointTemplate(state) {
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
+          <button class="event__reset-btn" type="reset">${ actionType === ActionType.APPEND ? 'Cancel' : 'Delete'}</button>
           <button class="event__rollup-btn" type="button">
             <span class="visually-hidden">Open event</span>
           </button>
@@ -183,20 +184,23 @@ export default class UpdatePointView extends AbstractStatefulView {
   #cbDeletePointHandler = null;
   #startDatePicker = null;
   #endDatePicker = null;
+  #actionType = null;
 
-  constructor(routePoint, cbRollupClickHandler, cbSubmitClickHandler, cbDeletePointHandler) {
+  constructor(routePoint, cbRollupClickHandler, cbSubmitClickHandler, cbDeletePointHandler, actionType) {
     super();
     this.#routePoint = routePoint;
     this.#cbRollupClickHandler = cbRollupClickHandler;
     this.#cbSubmitClickHandler = cbSubmitClickHandler;
     this.#cbDeletePointHandler = cbDeletePointHandler;
+    this.#actionType = actionType;
+
     this._setState(UpdatePointView.parsePointToState(this.#routePoint));
 
     this._restoreHandlers();
   }
 
   get template() {
-    return createUpdatePointTemplate(this._state);
+    return createUpdatePointTemplate(this._state, this.#actionType);
   }
 
   replaceFormToRow(rowComponent, updateComponent) {
@@ -239,9 +243,6 @@ export default class UpdatePointView extends AbstractStatefulView {
   #offersChangeHandler = (evt) => {
     const selectedOfferId = evt.target.dataset.offerId;
     if (this.element.querySelector(`input[name="event-offer-${selectedOfferId}"]`).checked) {
-      // if (this._state.offers === null) {
-      // this._state.offers = [];
-      // }
       this._state.offers.push(selectedOfferId);
     } else {
       this._state.offers = this._state.offers.filter((item) => item !== selectedOfferId);
@@ -272,33 +273,31 @@ export default class UpdatePointView extends AbstractStatefulView {
   };
 
   #setDatePicker() {
-    if (this._state.dateFrom) {
-      this.#startDatePicker = flatpickr(
-        this.element.querySelector('input[name="event-start-time"]'),
-        {
-          enableTime: true,
-          // eslint-disable-next-line camelcase
-          time_24hr: true,
-          dateFormat: 'd/m/y H:i',
-          defaultDate: this._state.dateFrom,
-          onChange: this.#startDateChangeHandler
-        }
-      );
-    }
+    this.#startDatePicker = flatpickr(
+      this.element.querySelector('input[name="event-start-time"]'),
+      {
+        enableTime: true,
+        // eslint-disable-next-line camelcase
+        time_24hr: true,
+        dateFormat: 'd/m/y H:i',
+        // defaultDate: (this._state.dateFrom === '' ? 'today' : this._state.dateFrom),
+        // defaultDate: (this._state.dateFrom === '' ? Date() : this._state.dateFrom),
+        onChange: this.#startDateChangeHandler
+      }
+    );
 
-    if (this._state.dateTo) {
-      this.#endDatePicker = flatpickr(
-        this.element.querySelector('input[name="event-end-time"]'),
-        {
-          enableTime: true,
-          // eslint-disable-next-line camelcase
-          time_24hr: true,
-          dateFormat: 'd/m/y H:i',
-          defaultDate: this._state.dateTo,
-          onChange: this.#endDateChangeHandler
-        }
-      );
-    }
+    this.#endDatePicker = flatpickr(
+      this.element.querySelector('input[name="event-end-time"]'),
+      {
+        enableTime: true,
+        // eslint-disable-next-line camelcase
+        time_24hr: true,
+        dateFormat: 'd/m/y H:i',
+        // defaultDate: (this._state.dateTo === '' ? 'today' : this._state.dateTo),
+        // defaultDate: (this._state.dateTo === '' ? Date() : this._state.dateTo),
+        onChange: this.#endDateChangeHandler
+      }
+    );
   }
 
   #startDateChangeHandler = ([startDate]) => {
