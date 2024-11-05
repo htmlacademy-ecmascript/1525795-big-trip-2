@@ -1,7 +1,6 @@
 import HeaderView from '../view/header-view.js';
-import { getTripTitle, getTripDates, getTripCost } from '../utils/common.js';
 
-import { render, replace } from '../framework/render.js';
+import { render, replace, remove } from '../framework/render.js';
 
 
 export default class HeaderPresenter {
@@ -13,9 +12,7 @@ export default class HeaderPresenter {
 
   constructor(route) {
     this.#route = route;
-  }
 
-  init() {
     const divTripMain = document.querySelector('.trip-main');
 
     this.#getTripData();
@@ -25,16 +22,19 @@ export default class HeaderPresenter {
   }
 
   #getTripData = () => {
-    this.#tripTitle = getTripTitle(this.#route);
-    this.#tripDates = getTripDates(this.#route);
-    this.#tripCost = getTripCost(this.#route);
+    this.#tripTitle = this.#route.getRouteTitle();
+    this.#tripDates = this.#route.getRouteDates();
+    this.#tripCost = this.#route.getRouteCost();
   };
 
-  refreshHeader(updatedRoute) {
-    this.#route = updatedRoute;
+  refreshHeader() {
     this.#getTripData();
     const newHeaderComponent = new HeaderView(this.#tripTitle, this.#tripDates, this.#tripCost);
     replace(newHeaderComponent, this.#headerComponent);
     this.#headerComponent = newHeaderComponent;
   }
+
+  removeComponent = () => {
+    remove(this.#headerComponent);
+  };
 }

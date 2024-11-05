@@ -14,12 +14,12 @@ const months = {
 };
 
 
-export const filtersArray = [
-  'Everything',
-  'Future',
-  'Present',
-  'Past'
-];
+// export const filtersArray = [
+//   'Everything',
+//   'Future',
+//   'Present',
+//   'Past'
+// ];
 
 
 export const getRandomInteger = (min, max) => {

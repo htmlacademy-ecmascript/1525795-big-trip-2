@@ -1,57 +1,67 @@
 import RouteView from '../view/route-view.js';
-import RouteModel from '../model/route-model.js';
 import EmptyRouteView from '../view/empty-route.js';
 import PointPresenter from './point-presenter.js';
-import SortPresenter from './sort-presenter.js';
-import HeaderPresenter from './header-presenter.js';
 
-import { DEFAULT_SORT_TYPE, DEFAULT_SORT_METHOD, sortMethods } from '../utils/common.js';
+import { UpdateType, filterEmptyMessage, ActionType } from '../utils/common.js';
 
 import { render, remove } from '../framework/render.js';
-
-let curentSortType = '';
 
 
 export default class RoutePresenter {
   routeContainer = null;
-  #routeComponent = new RouteView(); // routeComponent - это место на странице (<ul></ul>), куда будут вставляться точки маршрута
-  #routeData = new RouteModel(); // route - это исходные сгенерированные/полученные с сервера данные для отображения
-  #emptyRoute = null;
+  headerContainer = null;
+  #routeComponent = null;
+  #filterModel = null;
+  #sortModel = null;
+  #routeModel = null;
+  #routeData = null;
   #pointMap = new Map();
   #headerPresenter = null;
+  #sortPresenter = null;
+  #filterPresenter = null;
+  #actionType = null;
 
-  constructor({routeContainer}) {
+  constructor({routeContainer, headerContainer, filterModel, routeModel, sortModel, sortPresenter, headerPresenter, filterPresenter}) {
+    this.headerContainer = headerContainer;
     this.routeContainer = routeContainer;
+
+    this.#filterModel = filterModel;
+    this.#routeModel = routeModel;
+    this.#sortModel = sortModel;
+    this.#headerPresenter = headerPresenter;
+    this.#sortPresenter = sortPresenter;
+    this.#filterPresenter = filterPresenter;
+
+    this.#filterModel.addObserver(this.#handleRouteEvent);
+    this.#routeModel.addObserver(this.#handleRouteEvent);
+    this.#sortModel.addObserver(this.#handleRouteEvent);
   }
 
   init() {
-    // Добавляем на страницу компонент маршрута
-    render(this.#routeComponent, this.routeContainer);
-    this.#routeData = [...this.#routeData.route];
+    // Получаем отфильтрованные и отсортированные данные
+    this.#routeData = this.#routeModel.getRouteData(this.#filterModel.currentFilter, this.#sortModel.currentSortType);
 
-    if (this.#routeData.length) {
-      // ... и туда же компонент сортировки точек маршрута
-      this.#renderSort();
-      curentSortType = DEFAULT_SORT_TYPE;
-
-      // Отрисовываем точки маршрута
-      this.#renderRoute();
-
-      // Обновляем информацию о маршруте в заголовке страницы
-      this.#renderHeader();
-    } else {
-      // ... либо Click New Event to create your first point, если маршрут пустой
-      this.#renderEmptyRoute();
-    }
+    // ... и отрисовываем маршрут
+    this.#renderRoute();
   }
 
-  #sortTypeClickHandler = (evt) => {
-    if (evt.target.tagName === 'INPUT') {
-      if (evt.target.dataset.sortType !== curentSortType) {
-        this.#routeData.sort(sortMethods[evt.target.dataset.sortType]);
+  #handleRouteEvent = (updateType, point) => {
+    switch (updateType) {
+      case UpdateType.HEADER:
+        // Обновляем только заголовок страницы - информацию о маршруте
+        this.#headerPresenter.refreshHeader();
+        break;
+      case UpdateType.POINT:
+        // Только перерисовываем строку с точкой машрута (при клике на favorite)
+        this.#rerenderPoint(point);
+        break;
+      case UpdateType.ALL:
+        // Снова запрашиваем список точек из модели
+        this.#routeData = this.#routeModel.getRouteData(this.#filterModel.currentFilter, this.#sortModel.currentSortType);
+
+        this.#headerPresenter.refreshHeader();
         this.#renderRoute();
-        curentSortType = evt.target.dataset.sortType;
-      }
+        break;
     }
   };
 
@@ -61,53 +71,59 @@ export default class RoutePresenter {
   // Если поймали Esc, возвращаем исходный вид всех точек маршрута
   #escKeydownHandler = (evt) => {
     if (evt.key === 'Escape') {
+      // Если добавление новой точки, то нужно удалить rowComponent у pointPresenter
+      if (this.#actionType === ActionType.APPEND) {
+        this.#pointMap.get(0).resetComponent();
+        this.#pointMap.get(0).removeComponent();
+        this.#pointMap.delete(0);
+      }
       this.#resetRoutePoints();
     }
   };
 
-  #renderSort = () => {
-    const sortPresenter = new SortPresenter(this.#routeData, this.routeContainer);
-    sortPresenter.init();
-    this.#routeData = this.#routeData.sort(DEFAULT_SORT_METHOD);
+  #addNewEventHandler = () => {
+    // Сначала сбрасываем к исходному виду все открытые формы
+    this.#resetRoutePoints();
 
-    document.querySelector('.trip-events__trip-sort').addEventListener('click', this.#sortTypeClickHandler);
+    // Сбрасываем фильтрацию в значение по-умолчанию (по ТЗ), сортировка сбросится в значение по-умолчанию вместе с фильтром
+    this.#filterPresenter.resetFilterType();
+    this.#renderRoute();
+
+    this.#renderPoint(this.#routeModel.getEmptyPoint());
   };
 
   #renderRoute() {
     remove(this.#routeComponent);
-    this.#routeComponent = new RouteView();
-    render(this.#routeComponent, this.routeContainer);
+    this.#pointMap.clear();
 
-    this.#routeData.forEach((item) => this.#renderPoint(item));
-    document.addEventListener('keydown', this.#escKeydownHandler);
+    if (this.#routeModel.route && this.#routeModel.route.length) {
+      if (this.#routeData && this.#routeData.length) {
+        this.#routeComponent = new RouteView();
+        this.#routeData.forEach((item) => this.#renderPoint(item));
+
+        document.addEventListener('keydown', this.#escKeydownHandler);
+      } else {
+        this.#routeComponent = new EmptyRouteView(filterEmptyMessage[this.#filterModel.currentFilter.toUpperCase()]);
+      }
+    } else {
+      this.#headerPresenter.removeComponent();
+      this.#routeComponent = new EmptyRouteView();
+    }
+    this.#sortPresenter.init();
+    render(this.#routeComponent, this.routeContainer);
+    document.querySelector('.trip-main__event-add-btn').addEventListener('click', this.#addNewEventHandler);
   }
 
   #renderPoint(point) {
-    const pointPresenter = new PointPresenter(this.#routeComponent,
-      point,
-      this.#resetRoutePoints,
-      this.#refreshHeader);
+    this.#actionType = point.id === 0 ? ActionType.APPEND : ActionType.EDIT;
+    const pointPresenter = new PointPresenter(this.#routeModel, this.#routeComponent, point, this.#resetRoutePoints, this.#actionType);
     pointPresenter.init(point);
-
+    // Если добавление новой точки маршрута, то в Map запишется ключ с id = 0
     this.#pointMap.set(point.id, pointPresenter);
   }
 
-  #renderHeader() {
-    this.#headerPresenter = new HeaderPresenter(this.#routeData);
-    this.#headerPresenter.init();
-  }
-
-  #refreshHeader = (point) => {
-    // Вообще говоря, обновлять заголовок нужно безотносительно точки маршрута.
-    // Пока мы не пишем данные в БД, поэтому такой костыль.
-    // В дальнейшем необходимо обновлять заголовок после каждого обновления данных в БД
-    const idx = this.#routeData.findIndex((item) => item.id === point.id);
-    this.#routeData[idx] = point;
-    this.#headerPresenter.refreshHeader(this.#routeData);
-  };
-
-  #renderEmptyRoute() {
-    this.#emptyRoute = new EmptyRouteView();
-    render(this.#emptyRoute, this.routeContainer);
+  #rerenderPoint(point) {
+    const pointPresenter = this.#pointMap.get(point.id);
+    pointPresenter.rerenderPoint(point);
   }
 }

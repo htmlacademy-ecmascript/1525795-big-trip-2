@@ -1,19 +1,25 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { filtersArray } from '../util.js';
+import { FilterType } from '../utils/common.js';
 
 
-function createFilterItemTemplate(filterName) {
+function createFilterItemTemplate(filterName, currentFilter) {
   return `
       <div class="trip-filters__filter">
-        <input id="filter-${filterName.toLowerCase()}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${filterName.toLowerCase()}">
-        <label class="trip-filters__filter-label" for="filter-${filterName.toLowerCase()}">${filterName}</label>
+        <input id="filter-${filterName}"
+          class="trip-filters__filter-input  visually-hidden"
+          type="radio" name="trip-filter"
+          value="${filterName}"
+          data-filter-type="${filterName}"
+          ${filterName === currentFilter ? 'checked' : ''}>
+        <label class="trip-filters__filter-label" for="filter-${filterName}">${filterName}</label>
       </div>
   `;
 }
 
 
-function createFilterTemplate() {
-  const siteFilters = Array.from(filtersArray, (item) => createFilterItemTemplate(item)).join('');
+function createFilterTemplate(currentFilter) {
+  const siteFilters = Array.from(Object.values(FilterType),
+    (item) => createFilterItemTemplate(item.toLowerCase(), currentFilter.toLowerCase())).join('');
 
   return `
     <form class="trip-filters" action="#" method="get">
@@ -25,7 +31,20 @@ function createFilterTemplate() {
 
 
 export default class FilterView extends AbstractView {
-  get template() {
-    return createFilterTemplate();
+  #currentFilter = null;
+  #changeFilterHandler = null;
+
+  constructor(currentFilter, changeFilterHandler) {
+    super();
+    this.#currentFilter = currentFilter;
+    this.#changeFilterHandler = changeFilterHandler;
+
+    this.element.addEventListener('change', this.#onChangeFilter);
   }
+
+  get template() {
+    return createFilterTemplate(this.#currentFilter);
+  }
+
+  #onChangeFilter = (evt) => this.#changeFilterHandler(FilterType[evt.target.dataset.filterType.toUpperCase()]);
 }

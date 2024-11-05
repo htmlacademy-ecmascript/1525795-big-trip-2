@@ -1,22 +1,48 @@
 import SortView from '../view/sort-view.js';
+import { UpdateType, DEFAULT_SORT_TYPE } from '../utils/common.js';
 
-import { render } from '../framework/render.js';
+import { render, replace, remove } from '../framework/render.js';
 
 
 export default class SortPresenter {
+  #routeModel = null;
   #sortComponent = null;
-  #route = null;
-  #container = null;
+  #sortContainer = null;
+  #sortModel = null;
 
-  constructor(route, container) {
-    this.#route = route;
-    this.#container = container;
-    this.#sortComponent = new SortView(this.#route);
+  constructor(routeModel, sortContainer, sortModel) {
+    this.#routeModel = routeModel;
+    this.#sortContainer = sortContainer;
+    this.#sortModel = sortModel;
   }
 
+  init () {
+    const currentSortComponent = this.#sortComponent;
 
-  init() {
-    render(this.#sortComponent, this.#container, 'afterbegin');
+    if (this.#routeModel.getRouteLength()) {
+      this.#sortComponent = new SortView(this.#sortModel.currentSortType, this.#changeSortHandler);
 
+      if (currentSortComponent === null) {
+        render(this.#sortComponent, this.#sortContainer, 'afterbegin');
+        return;
+      }
+
+      replace(this.#sortComponent, currentSortComponent);
+      remove(currentSortComponent);
+    } else {
+      this.removeComponent();
+    }
   }
+
+  removeComponent = () => {
+    remove(this.#sortComponent);
+  };
+
+  resetSortType = () => this.#changeSortHandler(DEFAULT_SORT_TYPE);
+
+  #changeSortHandler = (newSortType) => {
+    if (this.#sortModel.currentSortType !== newSortType) {
+      this.#sortModel.setSortType(UpdateType.ALL, newSortType);
+    }
+  };
 }

@@ -1,26 +1,27 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { sortTypes, DEFAULT_SORT_TYPE, sortMethods, capitalize } from '../utils/common.js';
+import { SortTypes, SortMethods, capitalize } from '../utils/common.js';
 
 
-function createSortItemTemplate(sortName) {
+function createSortItemTemplate(sortType, currentSortType) {
   return `
-      <div class="trip-sort__item  trip-sort__item--${sortName}">
-        <input id="sort-${sortName}"
+      <div class="trip-sort__item  trip-sort__item--${sortType}">
+        <input id="sort-${sortType}"
           class="trip-sort__input  visually-hidden"
           type="radio"
           name="trip-sort"
-          value="sort-${sortName}"
-          ${sortName in sortMethods ? '' : 'disabled'}
-          ${sortName === DEFAULT_SORT_TYPE ? 'checked' : ''}
-          data-sort-type="${sortName}">
-        <label class="trip-sort__btn" for="sort-${sortName.toLowerCase()}">${capitalize(sortName)}</label>
+          value="sort-${sortType}"
+          ${SortMethods[capitalize(sortType)] === undefined ? 'disabled' : ''}
+          ${sortType === currentSortType ? 'checked' : ''}
+          data-sort-type="${sortType}">
+        <label class="trip-sort__btn" for="sort-${sortType}">${capitalize(sortType)}</label>
       </div>
   `;
 }
 
 
-function createSortTemplate() {
-  const siteSort = Array.from(sortTypes, (item) => createSortItemTemplate(item)).join('');
+function createSortTemplate(currentSortType) {
+  const siteSort = Array.from(Object.values(SortTypes),
+    (item) => createSortItemTemplate(item.toLowerCase(), currentSortType.toLowerCase())).join('');
 
   return `
     <form class="trip-events__trip-sort  trip-sort" action="#" method="get">
@@ -30,11 +31,20 @@ function createSortTemplate() {
 }
 
 export default class SortView extends AbstractView {
-  constructor() {
+  #currentSortType = null;
+  #changeSortHandler = null;
+
+  constructor(currentSortType, changeSortHandler) {
     super();
+    this.#currentSortType = currentSortType;
+    this.#changeSortHandler = changeSortHandler;
+
+    this.element.addEventListener('change', this.#onChangeSortType);
   }
 
   get template() {
-    return createSortTemplate();
+    return createSortTemplate(this.#currentSortType);
   }
+
+  #onChangeSortType = (evt) => this.#changeSortHandler(SortTypes[evt.target.dataset.sortType.toUpperCase()]);
 }
