@@ -222,7 +222,8 @@ export default class UpdatePointView extends AbstractStatefulView {
   }
 
   #formRollupClickHandler = () => {
-    this.updateElement(UpdatePointView.parsePointToState(this.#routePoint));
+    // Здесь достаточно просто поменять компонент с updateComponent на rowComponent. Зачем следующая строка??
+    // this.updateElement(UpdatePointView.parsePointToState(this.#routePoint));
     this.#cbRollupClickHandler();
     this.removeDatePickr();
   };
@@ -236,6 +237,12 @@ export default class UpdatePointView extends AbstractStatefulView {
   #destinationChangeHandler = () => {
     if (this.element.querySelector('.event__input--destination').value) {
       const newDestination = this.element.querySelector('.event__input--destination').value;
+      const destinationObj = getDestinationByName(newDestination);
+      if (destinationObj === undefined) {
+        this.element.querySelector('.event__input--destination').value = '';
+        return null;
+      }
+
       this.updateElement({destination: getDestinationByName(newDestination).id});
     }
   };
@@ -251,6 +258,10 @@ export default class UpdatePointView extends AbstractStatefulView {
   };
 
   #priceChangeHandler = (evt) => {
+    if (isNaN(parseInt(evt.target.value, 10)) || parseInt(evt.target.value, 10) < 0) {
+      evt.target.value = 0;
+      return;
+    }
     evt.preventDefault();
     this.updateElement({basePrice: parseInt(evt.target.value, 10)});
   };
@@ -297,10 +308,18 @@ export default class UpdatePointView extends AbstractStatefulView {
   }
 
   #startDateChangeHandler = ([startDate]) => {
+    if (this._state.dateTo && startDate > this._state.dateTo) {
+      this.element.querySelector('input[name="event-start-time"]').value = '';
+      return;
+    }
     this.updateElement({dateFrom: startDate});
   };
 
   #endDateChangeHandler = ([endDate]) => {
+    if (this._state.dateFrom && endDate < this._state.dateFrom) {
+      this.element.querySelector('input[name="event-end-time"]').value = '';
+      return;
+    }
     this.updateElement({dateTo: endDate});
   };
 
