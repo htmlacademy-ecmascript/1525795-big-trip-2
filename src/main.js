@@ -15,7 +15,7 @@ const sortPresenter = new SortPresenter(routeModel, routeContainer, sortModel);
 
 const headerContainer = document.querySelector('.trip-controls__filters');
 const filterModel = new FilterModel();
-const filterPresenter = new FilterPresenter(headerContainer, filterModel, sortPresenter);
+const filterPresenter = new FilterPresenter(headerContainer, filterModel, sortPresenter, routeModel);
 
 // headerPresenter необходимо передать в routePresenter, так как своей модели у headerPresenter'а нет, он
 // только меняет и отображает свое состояние в зависимости от действий пользователя в других компонентах

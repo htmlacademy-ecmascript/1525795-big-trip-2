@@ -19,14 +19,16 @@ export default class PointPresenter {
   #actionType = null;
   cbResetMethod = null;
   cbRefreshHeader = null;
+  cbRefreshRoute = null;
 
-  constructor(route, routeComponent, point, cbResetMethod, actionType) {
+  constructor(route, routeComponent, point, cbResetMethod, actionType, cbRefreshRoute) {
     this.#route = route;
     this.#routeComponent = routeComponent;
     this.#point = point;
     this.cbResetMethod = cbResetMethod;
     this.#mode = Mode.VIEW;
     this.#actionType = actionType;
+    this.cbRefreshRoute = cbRefreshRoute;
 
     // Два компонента
     // Строка с точкой маршрута
@@ -34,7 +36,6 @@ export default class PointPresenter {
 
     // ... и форма редактирования точки маршрута
     this.#updateComponent = null;
-
   }
 
   #addListeners() {
@@ -43,7 +44,7 @@ export default class PointPresenter {
   }
 
   init() {
-    if (this.#point.id === 0) {
+    if (this.#actionType === ActionType.APPEND) {
       // Отрисовываем строку с новой точкой маршрута первой строкой в маршруте
       render(this.#rowComponent, this.#routeComponent.element, 'afterbegin');
 
@@ -52,11 +53,23 @@ export default class PointPresenter {
     } else {
       // Обычная точка маршрута - рендерим следующей строкой в конце списка
       render(this.#rowComponent, this.#routeComponent.element);
-    }
 
-    // Добавляем listeners для строки с точкой маршрута - реакция на favorite и раскрытие для редактирования
-    this.#addListeners();
+      // Добавляем listeners для строки с точкой маршрута - реакция на favorite и раскрытие для редактирования
+      this.#addListeners();
+    }
   }
+
+  #escKeydownHandler = (evt) => {
+    if (evt.key === 'Escape') {
+      // Если добавление новой точки, то нужно удалить rowComponent у pointPresenter
+      if (this.#actionType === ActionType.APPEND) {
+        this.resetComponent();
+        this.removeComponent();
+      }
+      this.resetComponent();
+      this.cbRefreshRoute();
+    }
+  };
 
   #favoriteClickHandler = () => {
     this.#route.changeFavorite(UpdateType.POINT, this.#point);
@@ -85,8 +98,10 @@ export default class PointPresenter {
   #deletePointHandler = () => {
     this.#updateComponent.removeDatePickr();
     if (this.#actionType === ActionType.APPEND) {
+      // Этот же метод выполняется при нажатии Cancel в форме добавления новой точки маршрута
       this.resetComponent();
       this.removeComponent();
+      this.cbRefreshRoute();
     } else {
       this.#route.deletePoint(UpdateType.ALL, this.#point);
     }
@@ -106,6 +121,8 @@ export default class PointPresenter {
     // Затем на текущей точке меняем отображение
     this.#updateComponent = new UpdatePointView(this.#point, this.#formRollupClickHandler, this.#submitClickHandler, this.#deletePointHandler, this.#actionType);
     replace(this.#updateComponent, this.#rowComponent);
+    document.addEventListener('keydown', this.#escKeydownHandler);
+
     this.#mode = Mode.EDIT;
   };
 
@@ -114,6 +131,7 @@ export default class PointPresenter {
     this.resetComponent();
     if (this.#actionType === ActionType.APPEND) {
       this.removeComponent();
+      this.cbRefreshRoute();
     }
   };
 
@@ -121,6 +139,7 @@ export default class PointPresenter {
     if (this.#mode === Mode.EDIT) {
       this.#updateComponent.removeDatePickr();
       replace(this.#rowComponent, this.#updateComponent);
+      document.removeEventListener('keydown', this.#escKeydownHandler);
       this.#mode = Mode.VIEW;
     }
   };

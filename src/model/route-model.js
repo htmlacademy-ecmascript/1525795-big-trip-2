@@ -50,7 +50,9 @@ export default class RouteModel extends Observable {
     }
 
     // Сортируем
-    routeData.sort(SortMethods[currentSortType]);
+    if (currentSortType) {
+      routeData.sort(SortMethods[currentSortType]);
+    }
 
     return routeData;
   }
