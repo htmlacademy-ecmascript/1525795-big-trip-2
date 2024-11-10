@@ -1,19 +1,20 @@
-import { getRandomPoint } from '../mock/gen-point.js';
 import Observable from '../framework/observable.js';
-import { getDestinationById } from '../mock/destination.js';
+// import { getDestinationById } from '../model/destination-model.js';
 import { sortByDate } from '../utils/common.js';
 import { getFormattedRangeDate, getRandomInteger } from '../util.js';
-import { getOfferById } from '../mock/offer.js';
-import { FilterType, SortMethods } from '../utils/common.js';
+// import { getOfferById } from '../model/offer-model.js';
+import { FilterType, SortMethods, UpdateType } from '../utils/common.js';
+
+import { destinationModel } from '../main.js';
+import { offerModel } from '../main.js';
 
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 
-const POINT_COUNT = 4;
-
 
 export default class RouteModel extends Observable {
-  #route = Array.from({length: POINT_COUNT}, getRandomPoint);
+  #routeApiService = null;
+  #route = [];
   #emptyPoint = {
     id: 0,
     basePrice: 0,
@@ -25,13 +26,26 @@ export default class RouteModel extends Observable {
     type: 'flight'
   };
 
+  constructor(routeApiService) {
+    super();
+    this.#routeApiService = routeApiService;
+  }
+
+  async init() {
+    const points = await this.#routeApiService.points;
+    this.#route = points.map(this.#convertToInnerFormat);
+    this._notify(UpdateType.ALL);
+  }
+
   get route() {
+    // console.log('get route', this.#route);
     return this.#route;
   }
 
   getRouteData(currentFilter, currentSortType) {
     // Получаем данные из модели
-    let routeData = [...this.#route];
+    // let routeData = [...this.#route];
+    let routeData = this.#route;
 
     // Фильтруем
     switch (currentFilter) {
@@ -54,6 +68,7 @@ export default class RouteModel extends Observable {
       routeData.sort(SortMethods[currentSortType]);
     }
 
+    // console.log(routeData);
     return routeData;
   }
 
@@ -111,7 +126,7 @@ export default class RouteModel extends Observable {
 
     const pointsList = new Array();
     this.#route.forEach((item) =>
-      (getDestinationById(item.destination) === undefined ? '' : pointsList.push(getDestinationById(item.destination).name)));
+      (destinationModel.getDestinationById(item.destination) === undefined ? '' : pointsList.push(destinationModel.getDestinationById(item.destination).name)));
 
     if (pointsList.length > 3) {
       return `${[pointsList[0]]} - ... - ${[pointsList[pointsList.length - 1]]}`;
@@ -145,11 +160,26 @@ export default class RouteModel extends Observable {
 
       if (point.offers && point.offers.length) {
         for (const offer of point.offers) {
-          cost += getOfferById(offer).price;
+          cost += offerModel.getOfferById(offer).price;
         }
       }
     }
 
     return cost;
+  }
+
+  #convertToInnerFormat(item) {
+    const convertedPoint = {...item,
+      basePrice: item['base_price'],
+      dateFrom: item['date_from'],
+      dateTo: item['date_to'],
+      isFavorite: item['is_favorite']};
+
+    delete convertedPoint['base_price'];
+    delete convertedPoint['date_from'];
+    delete convertedPoint['date_to'];
+    delete convertedPoint['is_favorite'];
+
+    return convertedPoint;
   }
 }

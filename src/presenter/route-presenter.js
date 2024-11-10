@@ -2,6 +2,9 @@ import RouteView from '../view/route-view.js';
 import EmptyRouteView from '../view/empty-route.js';
 import PointPresenter from './point-presenter.js';
 
+import { destinationModel } from '../main.js';
+import { offerModel } from '../main.js';
+
 import { filterEmptyMessage, ActionType } from '../utils/common.js';
 
 import { render, remove } from '../framework/render.js';

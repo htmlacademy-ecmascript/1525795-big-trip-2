@@ -1,14 +1,17 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import { getPointTypeByName } from '../mock/point-type.js';
-import { getDestinationById } from '../mock/destination.js';
-import { getOfferById } from '../mock/offer.js';
+// import { getDestinationById } from '../model/destination-model.js';
+// import { getOfferById } from '../model/offer-model.js';
 import { replace } from '../framework/render.js';
+
+import { destinationModel } from '../main.js';
+import { offerModel } from '../main.js';
 
 import dayjs from 'dayjs';
 
 
 function createRowPointTemplate(routePoint) {
-  const { id, type: pointType, destination, dateFrom: dateFrom, dateTo: dateTo, basePrice: price, isFavorite: isFavorite, offers: pointOffers } = routePoint;
+  const { id, type: pointType, destination, dateFrom, dateTo, basePrice, isFavorite, offers } = routePoint;
   let startDate = null;
   let endDate = null;
   let formattedStartDate = '';
@@ -27,19 +30,22 @@ function createRowPointTemplate(routePoint) {
   }
 
   const pointTypeItem = getPointTypeByName(pointType);
-  const destinationItem = getDestinationById(destination);
+  const destinationItem = destinationModel.getDestinationById(destination);
 
   let offersList = '';
-  if (pointOffers && pointOffers.length) {
-    for (let i = 0; i < pointOffers.length; i++) {
-      const offerItem = getOfferById(pointOffers[i]);
-      offersList += `
-        <li class="event__offer">
-        <span class="event__offer-title">${offerItem.title}</span>
-        &plus;&euro;&nbsp;
-        <span class="event__offer-price">${offerItem.price}</span>
-      </li>
-    `;
+  if (offers && offers.length) {
+    for (let i = 0; i < offers.length; i++) {
+      const offerItem = offerModel.getOfferById(offers[i]);
+
+      if (offerItem) {
+        offersList += `
+          <li class="event__offer">
+            <span class="event__offer-title">${'title' in offerItem ? offerItem.title : ''}</span>
+            &plus;&euro;&nbsp;
+            <span class="event__offer-price">${offerItem.price}</span>
+          </li>
+        `;
+      }
     }
   }
 
@@ -60,7 +66,7 @@ function createRowPointTemplate(routePoint) {
           <p class="event__duration">${formattedEventLength}</p>
         </div>
         <p class="event__price">
-          &euro;&nbsp;<span class="event__price-value">${price}</span>
+          &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
         </p>
         <h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">

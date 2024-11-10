@@ -1,8 +1,10 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 
 import { pointTypes } from '../mock/point-type.js';
-import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
-import { offers } from '../mock/offer.js';
+import { destinationModel } from '../main.js';
+import { offerModel } from '../main.js';
+// import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
+// import { offers } from '../mock/offer.js';
 import { replace } from '../framework/render.js';
 import { ActionType } from '../utils/common.js';
 
@@ -56,6 +58,7 @@ function getFormattedDestination(destinationObj) {
 
 
 function getDestinationsList() {
+  const destinations = destinationModel.destinations();
   // Список пунктов назначения для выпадающего списка в форме редактирования
   let destinationsList = '';
   for (const item in destinations) {
@@ -66,6 +69,7 @@ function getDestinationsList() {
 
 
 function getFormattedOffers(pointTypeName, pointOffers) {
+  const offers = offerModel.offers;
   // Список дополнительных опций для вида точки маршрута
   const offersItem = offers.find((item) => item['type'] === pointTypeName);
   if (offersItem === undefined) {
@@ -113,7 +117,7 @@ function createUpdatePointTemplate(state, actionType) {
   const pointTypeName = state.type;
   const dateFrom = state.dateFrom ? dayjs(state.dateFrom).format('DD/MM/YY HH:mm') : '';
   const dateTo = state.dateTo ? dayjs(state.dateTo).format('DD/MM/YY HH:mm') : '';
-  const destinationObj = getDestinationById(state.destination);
+  const destinationObj = destinationModel.getDestinationById(state.destination);
 
   return `
     <li class="trip-events__item">
