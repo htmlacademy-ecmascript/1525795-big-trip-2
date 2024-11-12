@@ -78,6 +78,13 @@ export default class PointPresenter {
 
   #submitClickHandler = () => {
     this.#point = this.#updateComponent._state;
+
+    if (this.#actionType === ActionType.APPEND) {
+      this.#route.addPoint(UpdateType.ALL, this.#point);
+    } else {
+      this.#route.updatePoint(UpdateType.ALL, this.#point);
+    }
+
     this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
 
     const prevComponent = this.#rowComponent;
@@ -85,12 +92,6 @@ export default class PointPresenter {
     replace(this.#rowComponent, prevComponent);
     this.#updateComponent.removeDatePickr();
     this.#addListeners();
-
-    if (this.#actionType === ActionType.APPEND) {
-      this.#route.addPoint(UpdateType.ALL, this.#point);
-    } else {
-      this.#route.updatePoint(UpdateType.ALL, this.#point);
-    }
 
     this.#mode = Mode.VIEW;
   };

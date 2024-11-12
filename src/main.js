@@ -13,7 +13,7 @@ import OfferModel from './model/offer-model.js';
 const ENDPOINT = 'https://22.objects.htmlacademy.pro/big-trip';
 const AUTHORIZATION = 'Basic abcdefghijklmno';
 
-const routeApi = new RouteApi(ENDPOINT, AUTHORIZATION);
+export const routeApi = new RouteApi(ENDPOINT, AUTHORIZATION);
 const routeModel = new RouteModel(routeApi);
 
 export const destinationModel = new DestinationModel(routeApi);

@@ -3,6 +3,7 @@ import { sortByDate } from '../utils/common.js';
 import { getFormattedRangeDate, getRandomInteger } from '../util.js';
 import { FilterType, SortMethods } from '../utils/common.js';
 
+import { routeApi } from '../main.js';
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
 
@@ -72,8 +73,11 @@ export default class RouteModel extends Observable {
   getEmptyPoint = () => this.#emptyPoint;
 
   addPoint(updateType, point) {
-    point.id = getRandomInteger(1, 100000);
-    this.#route.push(point);
+    // point.id = getRandomInteger(1, 100000);
+    const response = routeApi.addPoint(this.#convertToOuterFormat(point));
+    if (response) {
+      this.#route.push(this.#convertToInnerFormat(response));
+    }
 
     this._notify(updateType);
   }
@@ -176,6 +180,22 @@ export default class RouteModel extends Observable {
     delete convertedPoint['date_from'];
     delete convertedPoint['date_to'];
     delete convertedPoint['is_favorite'];
+
+    return convertedPoint;
+  }
+
+  #convertToOuterFormat(item) {
+    const convertedPoint = {...item,
+      'base_price': item.basePrice,
+      'date_from': item.dateFrom,
+      'date_to': item.dateTo,
+      'is_favorite': item.isFavorite};
+
+    delete convertedPoint.id;
+    delete convertedPoint.basePrice;
+    delete convertedPoint.dateFrom;
+    delete convertedPoint.dateTo;
+    delete convertedPoint.isFavorite;
 
     return convertedPoint;
   }
