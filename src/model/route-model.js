@@ -1,19 +1,19 @@
-import { getRandomPoint } from '../mock/gen-point.js';
 import Observable from '../framework/observable.js';
-import { getDestinationById } from '../mock/destination.js';
 import { sortByDate } from '../utils/common.js';
 import { getFormattedRangeDate, getRandomInteger } from '../util.js';
-import { getOfferById } from '../mock/offer.js';
 import { FilterType, SortMethods } from '../utils/common.js';
+
+import { routeApi } from '../main.js';
+import { destinationModel } from '../main.js';
+import { offerModel } from '../main.js';
 
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 
-const POINT_COUNT = 4;
-
 
 export default class RouteModel extends Observable {
-  #route = Array.from({length: POINT_COUNT}, getRandomPoint);
+  #routeApiService = null;
+  #route = [];
   #emptyPoint = {
     id: 0,
     basePrice: 0,
@@ -25,13 +25,24 @@ export default class RouteModel extends Observable {
     type: 'flight'
   };
 
+  constructor(routeApiService) {
+    super();
+    this.#routeApiService = routeApiService;
+  }
+
+  async init() {
+    const points = await this.#routeApiService.points;
+    this.#route = points.map(this.#convertToInnerFormat);
+    // this._notify(UpdateType.LOADING);
+  }
+
   get route() {
     return this.#route;
   }
 
   getRouteData(currentFilter, currentSortType) {
     // Получаем данные из модели
-    let routeData = [...this.#route];
+    let routeData = this.#route;
 
     // Фильтруем
     switch (currentFilter) {
@@ -50,7 +61,9 @@ export default class RouteModel extends Observable {
     }
 
     // Сортируем
-    routeData.sort(SortMethods[currentSortType]);
+    if (currentSortType) {
+      routeData.sort(SortMethods[currentSortType]);
+    }
 
     return routeData;
   }
@@ -60,8 +73,11 @@ export default class RouteModel extends Observable {
   getEmptyPoint = () => this.#emptyPoint;
 
   addPoint(updateType, point) {
-    point.id = getRandomInteger(1, 100000);
-    this.#route.push(point);
+    // point.id = getRandomInteger(1, 100000);
+    const response = routeApi.addPoint(this.#convertToOuterFormat(point));
+    if (response) {
+      this.#route.push(this.#convertToInnerFormat(response));
+    }
 
     this._notify(updateType);
   }
@@ -109,7 +125,7 @@ export default class RouteModel extends Observable {
 
     const pointsList = new Array();
     this.#route.forEach((item) =>
-      (getDestinationById(item.destination) === undefined ? '' : pointsList.push(getDestinationById(item.destination).name)));
+      (destinationModel.getDestinationById(item.destination) === undefined ? '' : pointsList.push(destinationModel.getDestinationById(item.destination).name)));
 
     if (pointsList.length > 3) {
       return `${[pointsList[0]]} - ... - ${[pointsList[pointsList.length - 1]]}`;
@@ -137,17 +153,50 @@ export default class RouteModel extends Observable {
 
     // Здесь подсчет стоимости маршрута. Суммируется стоимость каждой точки маршрута плюс стоимость offers  для точки маршрута
     let cost = 0;
-
     for (const point of this.#route) {
       cost += point.basePrice;
 
-      if (point.offers && point.offers.length) {
+      if (point.offers) {
         for (const offer of point.offers) {
-          cost += getOfferById(offer).price;
+          const pointOffer = offerModel.getOfferById(point.type, offer);
+          if (pointOffer) {
+            cost += pointOffer.price;
+          }
         }
       }
     }
 
     return cost;
+  }
+
+  #convertToInnerFormat(item) {
+    const convertedPoint = {...item,
+      basePrice: item['base_price'],
+      dateFrom: item['date_from'],
+      dateTo: item['date_to'],
+      isFavorite: item['is_favorite']};
+
+    delete convertedPoint['base_price'];
+    delete convertedPoint['date_from'];
+    delete convertedPoint['date_to'];
+    delete convertedPoint['is_favorite'];
+
+    return convertedPoint;
+  }
+
+  #convertToOuterFormat(item) {
+    const convertedPoint = {...item,
+      'base_price': item.basePrice,
+      'date_from': item.dateFrom,
+      'date_to': item.dateTo,
+      'is_favorite': item.isFavorite};
+
+    delete convertedPoint.id;
+    delete convertedPoint.basePrice;
+    delete convertedPoint.dateFrom;
+    delete convertedPoint.dateTo;
+    delete convertedPoint.isFavorite;
+
+    return convertedPoint;
   }
 }

@@ -16,7 +16,9 @@ export default class SortPresenter {
     this.#sortModel = sortModel;
   }
 
-  init () {
+  init = () => this.refreshSort();
+
+  refreshSort = () => {
     const currentSortComponent = this.#sortComponent;
 
     if (this.#routeModel.getRouteLength()) {
@@ -32,17 +34,16 @@ export default class SortPresenter {
     } else {
       this.removeComponent();
     }
-  }
+  };
 
   removeComponent = () => {
     remove(this.#sortComponent);
+    this.#sortComponent = null;
   };
 
   resetSortType = () => this.#changeSortHandler(DEFAULT_SORT_TYPE);
 
   #changeSortHandler = (newSortType) => {
-    if (this.#sortModel.currentSortType !== newSortType) {
-      this.#sortModel.setSortType(UpdateType.ALL, newSortType);
-    }
+    this.#sortModel.setSortType(UpdateType.ALL, newSortType);
   };
 }

@@ -4,6 +4,7 @@ import { render, replace, remove } from '../framework/render.js';
 
 
 export default class HeaderPresenter {
+  #headerContainer = document.querySelector('.trip-main');
   #headerComponent = null;
   #route = null;
   #tripTitle = null;
@@ -12,13 +13,7 @@ export default class HeaderPresenter {
 
   constructor(route) {
     this.#route = route;
-
-    const divTripMain = document.querySelector('.trip-main');
-
-    this.#getTripData();
-
-    this.#headerComponent = new HeaderView(this.#tripTitle, this.#tripDates, this.#tripCost);
-    render(this.#headerComponent, divTripMain, 'afterbegin');
+    this.refreshHeader();
   }
 
   #getTripData = () => {
@@ -28,13 +23,24 @@ export default class HeaderPresenter {
   };
 
   refreshHeader() {
-    this.#getTripData();
-    const newHeaderComponent = new HeaderView(this.#tripTitle, this.#tripDates, this.#tripCost);
-    replace(newHeaderComponent, this.#headerComponent);
-    this.#headerComponent = newHeaderComponent;
+    if (this.#route.route && this.#route.route.length) {
+      const currentHeaderComponent = this.#headerComponent;
+      this.#getTripData();
+      this.#headerComponent = new HeaderView(this.#tripTitle, this.#tripDates, this.#tripCost);
+
+      if (currentHeaderComponent === null) {
+        render(this.#headerComponent, this.#headerContainer, 'afterbegin');
+        return;
+      }
+      replace(this.#headerComponent, currentHeaderComponent);
+      return;
+    }
+    this.removeComponent();
+    this.#headerComponent = null;
   }
 
   removeComponent = () => {
     remove(this.#headerComponent);
+    this.#headerComponent = null;
   };
 }

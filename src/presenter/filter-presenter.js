@@ -9,16 +9,22 @@ export default class FilterPresenter {
   #filterContainer = null;
   #filterModel = null;
   #sortPresenter = null;
+  #routeModel = null;
 
-  constructor(filterContainer, filterModel, sortPresenter) {
+  constructor(filterContainer, filterModel, sortPresenter, routeModel) {
     this.#filterContainer = filterContainer;
     this.#filterModel = filterModel;
     this.#sortPresenter = sortPresenter;
+    this.#routeModel = routeModel;
   }
 
   init() {
+    this.refreshFilter();
+  }
+
+  refreshFilter = () => {
     const currentFilterComponent = this.#filterComponent;
-    this.#filterComponent = new FilterView(this.#filterModel.currentFilter, this.#changeFilterHandler);
+    this.#filterComponent = new FilterView(this.#filterModel.currentFilter, this.#changeFilterHandler, this.#routeModel);
 
     if (currentFilterComponent === null) {
       render(this.#filterComponent, this.#filterContainer, 'afterbegin');
@@ -27,16 +33,13 @@ export default class FilterPresenter {
 
     replace(this.#filterComponent, currentFilterComponent);
     remove(currentFilterComponent);
-  }
-
-  removeComponent = () => {
-    remove(this.#filterComponent);
   };
+
 
   resetFilterType = () => {
     this.#changeFilterHandler(DEFAULT_FILTER_TYPE);
     // После сброса фильтра в default, нужно его перерисовать
-    this.init();
+    this.refreshFilter();
   };
 
   #changeFilterHandler = (newFilter) => {

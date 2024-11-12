@@ -30,7 +30,7 @@ export const capitalize = (string) => string.charAt(0).toUpperCase() + string.sl
 export const UpdateType = {
   HEADER: 'HEADER',
   ROW: 'ROW',
-  ALL: 'ALL'
+  ALL: 'ALL',
 };
 
 
@@ -54,4 +54,16 @@ export const ActionType = {
   APPEND: 'append',
   EDIT: 'edit',
   DELETE: 'delete'
+};
+
+export const PointTypes = {
+  TAXI: 'Taxi',
+  BUS: 'Bus',
+  TRAIN: 'Train',
+  SHIP: 'Ship',
+  DRIVE: 'Drive',
+  FLIGHT: 'Flight',
+  CHECKIN: 'Check-in',
+  SIGHTSEENG: 'Sightseeing',
+  RESTAURANT: 'Restaurant'
 };

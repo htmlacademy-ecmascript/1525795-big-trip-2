@@ -1,8 +1,7 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-
-import { pointTypes } from '../mock/point-type.js';
-import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
-import { offers } from '../mock/offer.js';
+import { PointTypes } from '../utils/common.js';
+import { destinationModel } from '../main.js';
+import { offerModel } from '../main.js';
 import { replace } from '../framework/render.js';
 import { ActionType } from '../utils/common.js';
 
@@ -14,14 +13,14 @@ import 'flatpickr/dist/flatpickr.min.css';
 function getPointTypesList(defaultPointTypeName) {
   // Список видов точек маршрута
   let pointTypesList = '';
-  for (let i = 0; i < pointTypes.length; i++) {
-    const checked = pointTypes[i].name.toLowerCase() === defaultPointTypeName.toLowerCase() ? 'checked' : '';
+  for (const item of Object.values(PointTypes)) {
+    const checked = item.toLowerCase() === defaultPointTypeName.toLowerCase() ? 'checked' : '';
     pointTypesList += `
       <div class="event__type-item">
-        <input id="event-type-${pointTypes[i].name.toLowerCase()}-1" class="event__type-input  visually-hidden"
-        type="radio" name="event-type" value="${pointTypes[i].name.toLowerCase()}" ${checked}>
-        <label class="event__type-label  event__type-label--${pointTypes[i].name.toLowerCase()}"
-        for="event-type-${pointTypes[i].name.toLowerCase()}-1">${pointTypes[i].name}</label>
+        <input id="event-type-${item.toLowerCase()}-1" class="event__type-input  visually-hidden"
+        type="radio" name="event-type" value="${item.toLowerCase()}" ${checked}>
+        <label class="event__type-label  event__type-label--${item.toLowerCase()}"
+        for="event-type-${item.toLowerCase()}-1">${item}</label>
       </div>`;
   }
   return pointTypesList;
@@ -56,9 +55,10 @@ function getFormattedDestination(destinationObj) {
 
 
 function getDestinationsList() {
+  const destinations = destinationModel.destinations;
   // Список пунктов назначения для выпадающего списка в форме редактирования
   let destinationsList = '';
-  for (const item in destinations) {
+  for (const item of destinations) {
     destinationsList += `<option value="${item.name}"></option>`;
   }
   return destinationsList;
@@ -66,6 +66,7 @@ function getDestinationsList() {
 
 
 function getFormattedOffers(pointTypeName, pointOffers) {
+  const offers = offerModel.offers;
   // Список дополнительных опций для вида точки маршрута
   const offersItem = offers.find((item) => item['type'] === pointTypeName);
   if (offersItem === undefined) {
@@ -111,13 +112,13 @@ function getFormattedOffers(pointTypeName, pointOffers) {
 
 function createUpdatePointTemplate(state, actionType) {
   const pointTypeName = state.type;
-  const dateFrom = dayjs(state.dateFrom).format('DD/MM/YY HH:mm');
-  const dateTo = dayjs(state.dateTo).format('DD/MM/YY HH:mm');
-  const destinationObj = getDestinationById(state.destination);
+  const dateFrom = state.dateFrom ? dayjs(state.dateFrom).format('DD/MM/YY HH:mm') : '';
+  const dateTo = state.dateTo ? dayjs(state.dateTo).format('DD/MM/YY HH:mm') : '';
+  const destinationObj = destinationModel.getDestinationById(state.destination);
 
   return `
     <li class="trip-events__item">
-      <form class="event event--edit" action="#" method="post">
+      <form class="event event--edit" method="post">
         <header class="event__header">
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-${state.id}">
@@ -222,7 +223,8 @@ export default class UpdatePointView extends AbstractStatefulView {
   }
 
   #formRollupClickHandler = () => {
-    this.updateElement(UpdatePointView.parsePointToState(this.#routePoint));
+    // Здесь достаточно просто поменять компонент с updateComponent на rowComponent. Зачем следующая строка??
+    // this.updateElement(UpdatePointView.parsePointToState(this.#routePoint));
     this.#cbRollupClickHandler();
     this.removeDatePickr();
   };
@@ -236,7 +238,13 @@ export default class UpdatePointView extends AbstractStatefulView {
   #destinationChangeHandler = () => {
     if (this.element.querySelector('.event__input--destination').value) {
       const newDestination = this.element.querySelector('.event__input--destination').value;
-      this.updateElement({destination: getDestinationByName(newDestination).id});
+      const destinationObj = destinationModel.getDestinationByName(newDestination);
+      if (destinationObj === undefined) {
+        this.element.querySelector('.event__input--destination').value = '';
+        return null;
+      }
+
+      this.updateElement({destination: destinationModel.getDestinationByName(newDestination).id});
     }
   };
 
@@ -251,6 +259,10 @@ export default class UpdatePointView extends AbstractStatefulView {
   };
 
   #priceChangeHandler = (evt) => {
+    if (isNaN(parseInt(evt.target.value, 10)) || parseInt(evt.target.value, 10) < 0) {
+      evt.target.value = 0;
+      return;
+    }
     evt.preventDefault();
     this.updateElement({basePrice: parseInt(evt.target.value, 10)});
   };
@@ -280,8 +292,6 @@ export default class UpdatePointView extends AbstractStatefulView {
         // eslint-disable-next-line camelcase
         time_24hr: true,
         dateFormat: 'd/m/y H:i',
-        // defaultDate: (this._state.dateFrom === '' ? 'today' : this._state.dateFrom),
-        // defaultDate: (this._state.dateFrom === '' ? Date() : this._state.dateFrom),
         onChange: this.#startDateChangeHandler
       }
     );
@@ -293,18 +303,24 @@ export default class UpdatePointView extends AbstractStatefulView {
         // eslint-disable-next-line camelcase
         time_24hr: true,
         dateFormat: 'd/m/y H:i',
-        // defaultDate: (this._state.dateTo === '' ? 'today' : this._state.dateTo),
-        // defaultDate: (this._state.dateTo === '' ? Date() : this._state.dateTo),
         onChange: this.#endDateChangeHandler
       }
     );
   }
 
   #startDateChangeHandler = ([startDate]) => {
+    if (this._state.dateTo && startDate > this._state.dateTo) {
+      this.element.querySelector('input[name="event-start-time"]').value = '';
+      return;
+    }
     this.updateElement({dateFrom: startDate});
   };
 
   #endDateChangeHandler = ([endDate]) => {
+    if (this._state.dateFrom && endDate < this._state.dateFrom) {
+      this.element.querySelector('input[name="event-end-time"]').value = '';
+      return;
+    }
     this.updateElement({dateTo: endDate});
   };
 

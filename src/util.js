@@ -14,14 +14,6 @@ const months = {
 };
 
 
-// export const filtersArray = [
-//   'Everything',
-//   'Future',
-//   'Present',
-//   'Past'
-// ];
-
-
 export const getRandomInteger = (min, max) => {
   const lower = Math.ceil(Math.min(Math.abs(min), Math.abs(max)));
   const upper = Math.floor(Math.max(Math.abs(min), Math.abs(max)));
