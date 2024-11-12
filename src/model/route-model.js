@@ -41,7 +41,6 @@ export default class RouteModel extends Observable {
 
   getRouteData(currentFilter, currentSortType) {
     // Получаем данные из модели
-    // let routeData = [...this.#route];
     let routeData = this.#route;
 
     // Фильтруем

@@ -1,11 +1,7 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-
-import { pointTypes } from '../mock/point-type.js';
-// import DestinationModel from '../model/destination-model.js';
+import { PointTypes } from '../utils/common.js';
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
-// import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
-// import { offers } from '../mock/offer.js';
 import { replace } from '../framework/render.js';
 import { ActionType } from '../utils/common.js';
 
@@ -17,14 +13,14 @@ import 'flatpickr/dist/flatpickr.min.css';
 function getPointTypesList(defaultPointTypeName) {
   // Список видов точек маршрута
   let pointTypesList = '';
-  for (let i = 0; i < pointTypes.length; i++) {
-    const checked = pointTypes[i].name.toLowerCase() === defaultPointTypeName.toLowerCase() ? 'checked' : '';
+  for (const item of Object.values(PointTypes)) {
+    const checked = item.toLowerCase() === defaultPointTypeName.toLowerCase() ? 'checked' : '';
     pointTypesList += `
       <div class="event__type-item">
-        <input id="event-type-${pointTypes[i].name.toLowerCase()}-1" class="event__type-input  visually-hidden"
-        type="radio" name="event-type" value="${pointTypes[i].name.toLowerCase()}" ${checked}>
-        <label class="event__type-label  event__type-label--${pointTypes[i].name.toLowerCase()}"
-        for="event-type-${pointTypes[i].name.toLowerCase()}-1">${pointTypes[i].name}</label>
+        <input id="event-type-${item.toLowerCase()}-1" class="event__type-input  visually-hidden"
+        type="radio" name="event-type" value="${item.toLowerCase()}" ${checked}>
+        <label class="event__type-label  event__type-label--${item.toLowerCase()}"
+        for="event-type-${item.toLowerCase()}-1">${item}</label>
       </div>`;
   }
   return pointTypesList;

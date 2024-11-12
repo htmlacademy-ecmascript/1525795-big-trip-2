@@ -19,7 +19,6 @@ export default class SortPresenter {
   init = () => this.refreshSort();
 
   refreshSort = () => {
-    console.log('refresh sort');
     const currentSortComponent = this.#sortComponent;
 
     if (this.#routeModel.getRouteLength()) {
@@ -45,9 +44,6 @@ export default class SortPresenter {
   resetSortType = () => this.#changeSortHandler(DEFAULT_SORT_TYPE);
 
   #changeSortHandler = (newSortType) => {
-    console.log('change sort');
-    // if (this.#sortModel.currentSortType !== newSortType) {
     this.#sortModel.setSortType(UpdateType.ALL, newSortType);
-    // }
   };
 }

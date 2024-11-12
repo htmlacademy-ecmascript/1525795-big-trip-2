@@ -1,5 +1,4 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { getPointTypeByName } from '../mock/point-type.js'; // TODO: перенести данные из mock в common
 import { replace } from '../framework/render.js';
 
 import { destinationModel } from '../main.js';
@@ -27,7 +26,6 @@ function createRowPointTemplate(routePoint) {
     formattedEventLength = `${diffDate.format('DD')}D ${diffDate.format('HH')}H ${diffDate.format('mm')}M`;
   }
 
-  const pointTypeItem = getPointTypeByName(pointType);
   const destinationItem = destinationModel.getDestinationById(destination);
 
   let offersList = '';
@@ -52,9 +50,9 @@ function createRowPointTemplate(routePoint) {
       <div class="event">
         <time class="event__date" datetime="${startDate}">${formattedStartDate}</time>
         <div class="event__type">
-          <img class="event__type-icon" width="42" height="42" src="img/icons/${pointTypeItem === undefined ? '' : pointTypeItem.name.toLowerCase()}.png" alt="Event type icon">
+          <img class="event__type-icon" width="42" height="42" src="img/icons/${pointType === undefined ? '' : pointType.toLowerCase()}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">${pointTypeItem === undefined ? '' : pointTypeItem.name} ${destinationItem === undefined ? '' : destinationItem.name}</h3>
+        <h3 class="event__title">${pointType === undefined ? '' : pointType} ${destinationItem === undefined ? '' : destinationItem.name}</h3>
         <div class="event__schedule">
           <p class="event__time">
             <time class="event__start-time" datetime="${dateFrom}">${startTime}</time>

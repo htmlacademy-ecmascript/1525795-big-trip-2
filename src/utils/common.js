@@ -55,3 +55,15 @@ export const ActionType = {
   EDIT: 'edit',
   DELETE: 'delete'
 };
+
+export const PointTypes = {
+  TAXI: 'Taxi',
+  BUS: 'Bus',
+  TRAIN: 'Train',
+  SHIP: 'Ship',
+  DRIVE: 'Drive',
+  FLIGHT: 'Flight',
+  CHECKIN: 'Check-in',
+  SIGHTSEENG: 'Sightseeing',
+  RESTAURANT: 'Restaurant'
+};
