@@ -1,9 +1,7 @@
 import RouteView from '../view/route-view.js';
 import EmptyRouteView from '../view/empty-route.js';
 import PointPresenter from './point-presenter.js';
-
-import { destinationModel } from '../main.js';
-import { offerModel } from '../main.js';
+import LoadingView from '../view/loading-view.js';
 
 import { filterEmptyMessage, ActionType } from '../utils/common.js';
 
@@ -24,6 +22,8 @@ export default class RoutePresenter {
   #filterPresenter = null;
   #actionType = null;
 
+  #loadingComponent = new LoadingView();
+
   constructor({routeContainer, headerContainer, filterModel, routeModel, sortModel, sortPresenter, headerPresenter, filterPresenter}) {
     this.headerContainer = headerContainer;
     this.routeContainer = routeContainer;
@@ -35,12 +35,24 @@ export default class RoutePresenter {
     this.#sortPresenter = sortPresenter;
     this.#filterPresenter = filterPresenter;
 
-    this.#filterModel.addObserver(this.init);
-    this.#sortModel.addObserver(this.init);
-    this.#routeModel.addObserver(this.init);
+    this.#filterModel.addObserver(this.#eventHandler);
+    this.#sortModel.addObserver(this.#eventHandler);
+    this.#routeModel.addObserver(this.#eventHandler);
+
+    this.#routeComponent = null;
   }
 
-  init = () => {
+  init = (isPrepareData = false) => {
+    if (isPrepareData) {
+      this.#routeComponent = this.#loadingComponent;
+      render(this.#routeComponent, this.routeContainer);
+      return;
+    }
+
+    this.#eventHandler();
+  };
+
+  #eventHandler = () => {
     // Получаем отфильтрованные и отсортированные данные
     this.#routeData = this.#routeModel.getRouteData(this.#filterModel.currentFilter, this.#sortModel.currentSortType);
 

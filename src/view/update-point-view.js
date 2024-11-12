@@ -1,6 +1,7 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 
 import { pointTypes } from '../mock/point-type.js';
+// import DestinationModel from '../model/destination-model.js';
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
 // import { destinations, getDestinationById, getDestinationByName } from '../mock/destination.js';
@@ -58,10 +59,10 @@ function getFormattedDestination(destinationObj) {
 
 
 function getDestinationsList() {
-  const destinations = destinationModel.destinations();
+  const destinations = destinationModel.destinations;
   // Список пунктов назначения для выпадающего списка в форме редактирования
   let destinationsList = '';
-  for (const item in destinations) {
+  for (const item of destinations) {
     destinationsList += `<option value="${item.name}"></option>`;
   }
   return destinationsList;
@@ -241,13 +242,13 @@ export default class UpdatePointView extends AbstractStatefulView {
   #destinationChangeHandler = () => {
     if (this.element.querySelector('.event__input--destination').value) {
       const newDestination = this.element.querySelector('.event__input--destination').value;
-      const destinationObj = getDestinationByName(newDestination);
+      const destinationObj = destinationModel.getDestinationByName(newDestination);
       if (destinationObj === undefined) {
         this.element.querySelector('.event__input--destination').value = '';
         return null;
       }
 
-      this.updateElement({destination: getDestinationByName(newDestination).id});
+      this.updateElement({destination: destinationModel.getDestinationByName(newDestination).id});
     }
   };
 

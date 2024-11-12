@@ -30,7 +30,7 @@ export const capitalize = (string) => string.charAt(0).toUpperCase() + string.sl
 export const UpdateType = {
   HEADER: 'HEADER',
   ROW: 'ROW',
-  ALL: 'ALL'
+  ALL: 'ALL',
 };
 
 

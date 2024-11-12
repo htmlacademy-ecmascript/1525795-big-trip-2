@@ -1,7 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { getPointTypeByName } from '../mock/point-type.js';
-// import { getDestinationById } from '../model/destination-model.js';
-// import { getOfferById } from '../model/offer-model.js';
+import { getPointTypeByName } from '../mock/point-type.js'; // TODO: перенести данные из mock в common
 import { replace } from '../framework/render.js';
 
 import { destinationModel } from '../main.js';
@@ -34,13 +32,13 @@ function createRowPointTemplate(routePoint) {
 
   let offersList = '';
   if (offers && offers.length) {
-    for (let i = 0; i < offers.length; i++) {
-      const offerItem = offerModel.getOfferById(offers[i]);
+    for (const pointOffer of offers) {
+      const offerItem = offerModel.getOfferById(pointType, pointOffer);
 
       if (offerItem) {
         offersList += `
           <li class="event__offer">
-            <span class="event__offer-title">${'title' in offerItem ? offerItem.title : ''}</span>
+            <span class="event__offer-title">${('title' in offerItem) ? offerItem.title : ''}</span>
             &plus;&euro;&nbsp;
             <span class="event__offer-price">${offerItem.price}</span>
           </li>

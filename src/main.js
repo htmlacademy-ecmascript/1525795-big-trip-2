@@ -19,9 +19,6 @@ const routeModel = new RouteModel(routeApi);
 export const destinationModel = new DestinationModel(routeApi);
 export const offerModel = new OfferModel(routeApi);
 
-destinationModel.init();
-offerModel.init();
-routeModel.init();
 
 const routeContainer = document.querySelector('.trip-events');
 const sortModel = new SortModel();
@@ -41,4 +38,13 @@ const routePresenter = new RoutePresenter({
 
 filterPresenter.init();
 sortPresenter.init();
-routePresenter.init();
+let isPrepareData = true;
+routePresenter.init(isPrepareData);
+
+destinationModel.init()
+  .then(() => offerModel.init())
+  .then(() => routeModel.init())
+  .then(() => {
+    isPrepareData = false;
+    routePresenter.init(isPrepareData);
+  });

@@ -1,9 +1,7 @@
 import Observable from '../framework/observable.js';
-// import { getDestinationById } from '../model/destination-model.js';
 import { sortByDate } from '../utils/common.js';
 import { getFormattedRangeDate, getRandomInteger } from '../util.js';
-// import { getOfferById } from '../model/offer-model.js';
-import { FilterType, SortMethods, UpdateType } from '../utils/common.js';
+import { FilterType, SortMethods } from '../utils/common.js';
 
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
@@ -34,11 +32,10 @@ export default class RouteModel extends Observable {
   async init() {
     const points = await this.#routeApiService.points;
     this.#route = points.map(this.#convertToInnerFormat);
-    this._notify(UpdateType.ALL);
+    // this._notify(UpdateType.LOADING);
   }
 
   get route() {
-    // console.log('get route', this.#route);
     return this.#route;
   }
 
@@ -68,7 +65,6 @@ export default class RouteModel extends Observable {
       routeData.sort(SortMethods[currentSortType]);
     }
 
-    // console.log(routeData);
     return routeData;
   }
 
@@ -154,13 +150,15 @@ export default class RouteModel extends Observable {
 
     // Здесь подсчет стоимости маршрута. Суммируется стоимость каждой точки маршрута плюс стоимость offers  для точки маршрута
     let cost = 0;
-
     for (const point of this.#route) {
       cost += point.basePrice;
 
-      if (point.offers && point.offers.length) {
+      if (point.offers) {
         for (const offer of point.offers) {
-          cost += offerModel.getOfferById(offer).price;
+          const pointOffer = offerModel.getOfferById(point.type, offer);
+          if (pointOffer) {
+            cost += pointOffer.price;
+          }
         }
       }
     }
