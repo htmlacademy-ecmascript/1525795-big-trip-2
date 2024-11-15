@@ -32,6 +32,7 @@ export default class RouteApi extends ApiService {
       response = await ApiService.parseResponse(response);
       return response;
     } catch(err) {
+      // eslint-disable-next-line no-console
       console.log(err);
     }
   }

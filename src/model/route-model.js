@@ -99,6 +99,7 @@ export default class RouteModel extends Observable {
       this.#route.push(this.#convertToInnerFormat(response));
       this._notify();
     } catch(err) {
+      // eslint-disable-next-line no-console
       console.log(err.name, err.message);
 
       updateComponent.shake();

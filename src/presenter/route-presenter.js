@@ -78,6 +78,7 @@ export default class RoutePresenter {
     if (!stateType) {
       stateType = this.#getStateType();
     }
+    // eslint-disable-next-line no-console
     console.log(stateType);
 
     switch (stateType) {
@@ -113,7 +114,7 @@ export default class RoutePresenter {
   };
 
 
-  #pointEventHandler = (eventType, point = null) => {
+  #pointEventHandler = (eventType) => {
     switch (eventType) {
       case EventType.ADD_POINT:
         this.#routeStateHandler(StateType.NEW_POINT_VIEW);
