@@ -29,4 +29,14 @@ export default class OfferModel {
 
     return null;
   }
+
+  getOffersByPointType(pointType) {
+    if (this.#offers) {
+      const offerItem = this.#offers.find((item) => item.type === pointType);
+
+      return offerItem.offers;
+    }
+
+    return null;
+  }
 }

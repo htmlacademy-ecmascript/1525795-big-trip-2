@@ -1,6 +1,6 @@
 import RoutePointView from '../view/row-point-view.js';
 import UpdatePointView from '../view/update-point-view.js';
-import { UpdateType, ActionType } from '../utils/common.js';
+import { ActionType } from '../utils/common.js';
 
 import { render, replace, remove } from '../framework/render.js';
 
@@ -72,28 +72,20 @@ export default class PointPresenter {
   };
 
   #favoriteClickHandler = () => {
-    this.#route.changeFavorite(UpdateType.POINT, this.#point);
-    this.#addListeners();
+    this.#route.toggleFavorite(this.#point, this.#rowComponent, this.rerenderRowComponent);
   };
 
   #submitClickHandler = () => {
     this.#point = this.#updateComponent._state;
 
     if (this.#actionType === ActionType.APPEND) {
-      this.#route.addPoint(UpdateType.ALL, this.#point);
+      this.#route.addPoint(this.#point, this.#updateComponent);
     } else {
-      this.#route.updatePoint(UpdateType.ALL, this.#point);
+      this.#route.updatePoint(this.#point, this.#updateComponent, this.rerenderRowComponent);
     }
 
-    this.#updateComponent.replaceFormToRow(this.#rowComponent, this.#updateComponent);
-
-    const prevComponent = this.#rowComponent;
-    this.#rowComponent = new RoutePointView(this.#point);
-    replace(this.#rowComponent, prevComponent);
-    this.#updateComponent.removeDatePickr();
-    this.#addListeners();
-
-    this.#mode = Mode.VIEW;
+    // this.#mode = Mode.VIEW;
+    // this.cbRefreshRoute();
   };
 
   #deletePointHandler = () => {
@@ -102,17 +94,17 @@ export default class PointPresenter {
       // Этот же метод выполняется при нажатии Cancel в форме добавления новой точки маршрута
       this.resetComponent();
       this.removeComponent();
-      this.cbRefreshRoute();
     } else {
-      this.#route.deletePoint(UpdateType.ALL, this.#point);
+      this.#route.deletePoint(this.#point, this.#updateComponent);
     }
   };
 
-  rerenderPoint = (point) => {
+  rerenderRowComponent = (point) => {
     this.#point = point;
     const prevComponent = this.#rowComponent;
     this.#rowComponent = new RoutePointView(this.#point);
     replace(this.#rowComponent, prevComponent);
+    this.#addListeners();
   };
 
   // Это callback, который будет срабатывать при развертывании строки в форму редактирования

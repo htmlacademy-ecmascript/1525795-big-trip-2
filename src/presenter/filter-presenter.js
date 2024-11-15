@@ -1,19 +1,21 @@
+import Observable from '../framework/observable.js';
 import FilterView from '../view/filter-view.js';
-import { UpdateType, DEFAULT_FILTER_TYPE } from '../utils/common.js';
+import { DEFAULT_FILTER_TYPE } from '../utils/common.js';
 
 import { render, replace, remove } from '../framework/render.js';
 
 
-export default class FilterPresenter {
+export default class FilterPresenter extends Observable {
   #filterComponent = null;
   #filterContainer = null;
-  #filterModel = null;
   #sortPresenter = null;
   #routeModel = null;
+  #currentFilter = DEFAULT_FILTER_TYPE;
 
-  constructor(filterContainer, filterModel, sortPresenter, routeModel) {
+
+  constructor(filterContainer, sortPresenter, routeModel) {
+    super();
     this.#filterContainer = filterContainer;
-    this.#filterModel = filterModel;
     this.#sortPresenter = sortPresenter;
     this.#routeModel = routeModel;
   }
@@ -22,9 +24,18 @@ export default class FilterPresenter {
     this.refreshFilter();
   }
 
+  get currentFilter() {
+    return this.#currentFilter;
+  }
+
+  setFilter(filter) {
+    this.#currentFilter = filter;
+    this._notify();
+  }
+
   refreshFilter = () => {
     const currentFilterComponent = this.#filterComponent;
-    this.#filterComponent = new FilterView(this.#filterModel.currentFilter, this.#changeFilterHandler, this.#routeModel);
+    this.#filterComponent = new FilterView(this.#currentFilter, this.#changeFilterHandler, this.#routeModel);
 
     if (currentFilterComponent === null) {
       render(this.#filterComponent, this.#filterContainer, 'afterbegin');
@@ -45,6 +56,6 @@ export default class FilterPresenter {
   #changeFilterHandler = (newFilter) => {
     // Здесь сброс сортировки в Day (в соответствии с ТЗ: при изменении фильтра сбрасывать сортировку в Day)
     this.#sortPresenter.resetSortType();
-    this.#filterModel.setFilter(UpdateType.ALL, newFilter);
+    this.setFilter(newFilter);
   };
 }

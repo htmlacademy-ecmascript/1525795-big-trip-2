@@ -22,19 +22,37 @@ export default class RouteApi extends ApiService {
 
   async addPoint(point) {
     try {
-      const response = await this._load({
+      let response = await this._load({
         url: 'points',
         method: HttpMethod.POST,
         body: JSON.stringify(point),
-        headers: new Headers({'Content-Type': 'application/json'})});
+        headers: new Headers({'Content-Type': 'application/json'}),
+      });
 
-      if (response.ok) {
-        return await ApiService.parseResponse(response);
-      } else {
-        throw new Error('Can\'t add point', response);
-      }
+      response = await ApiService.parseResponse(response);
+      return response;
     } catch(err) {
-      throw new Error('Can\'t add point');
+      // eslint-disable-next-line no-console
+      console.log(err);
     }
+  }
+
+
+  async updatePoint(point) {
+    let response = await this._load({
+      url: `points/${point.id}`,
+      method: HttpMethod.PUT,
+      body: JSON.stringify(point),
+      headers: new Headers({'Content-Type': 'application/json'})
+    });
+    response = await ApiService.parseResponse(response);
+    return response;
+  }
+
+  async deletePoint(pointId) {
+    await this._load({
+      method: HttpMethod.DELETE,
+      url: `points/${pointId}`
+    });
   }
 }
