@@ -118,7 +118,7 @@ function createUpdatePointTemplate(state, actionType) {
 
   return `
     <li class="trip-events__item">
-      <form class="event event--edit" method="post">
+      <form class="event event--edit" action="#" method="GET">
         <header class="event__header">
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-${state.id}">
@@ -259,8 +259,9 @@ export default class UpdatePointView extends AbstractStatefulView {
   };
 
   #priceChangeHandler = (evt) => {
-    if (isNaN(parseInt(evt.target.value, 10)) || parseInt(evt.target.value, 10) < 0) {
+    if (isNaN(parseInt(evt.target.value, 10)) || parseInt(evt.target.value, 10) <= 0) {
       evt.target.value = 0;
+      this.updateElement({basePrice: 0});
       return;
     }
     evt.preventDefault();
@@ -309,7 +310,7 @@ export default class UpdatePointView extends AbstractStatefulView {
   }
 
   #startDateChangeHandler = ([startDate]) => {
-    if (this._state.dateTo && startDate > this._state.dateTo) {
+    if (this._state.dateTo && startDate >= this._state.dateTo) {
       this.element.querySelector('input[name="event-start-time"]').value = '';
       return;
     }
@@ -317,7 +318,7 @@ export default class UpdatePointView extends AbstractStatefulView {
   };
 
   #endDateChangeHandler = ([endDate]) => {
-    if (this._state.dateFrom && endDate < this._state.dateFrom) {
+    if (this._state.dateFrom && endDate <= this._state.dateFrom) {
       this.element.querySelector('input[name="event-end-time"]').value = '';
       return;
     }

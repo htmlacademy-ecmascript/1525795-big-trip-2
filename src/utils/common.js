@@ -67,3 +67,20 @@ export const PointTypes = {
   SIGHTSEENG: 'Sightseeing',
   RESTAURANT: 'Restaurant'
 };
+
+export const StateType = {
+  LOADING_VIEW: 'Loading view',
+  EMPTY_VIEW: 'Empty view',
+  EMPTY_FILTERED_VIEW: 'Empty filtered view',
+  LIST_VIEW: 'List view',
+  NEW_POINT_VIEW: 'New point view',
+  UPDATE_POINT_VIEW: 'Update point view'
+};
+
+export const EventType = {
+  ADD_POINT: 'Add point',
+  UPDATE_POINT: 'Update point',
+  DELETE_POINT: 'Delete point',
+  FAVORITE_POINT: 'Favorite point',
+  ROW_ROLLUP: 'Row rollup'
+};
