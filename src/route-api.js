@@ -13,28 +13,29 @@ export default class RouteApi extends ApiService {
   }
 
   get destinations() {
-    return this._load({url: 'destinations'}).then(ApiService.parseResponse);
+    try {
+      return this._load({url: 'destinations'}).then(ApiService.parseResponse);
+    } catch (err) {
+      return [];
+    }
   }
 
   get offers() {
-    return this._load({url: 'offers'}).then(ApiService.parseResponse);
+    try {
+      return this._load({url: 'offers'}).then(ApiService.parseResponse);
+    } catch (err) {
+      return [];
+    }
   }
 
   async addPoint(point) {
-    try {
-      let response = await this._load({
-        url: 'points',
-        method: HttpMethod.POST,
-        body: JSON.stringify(point),
-        headers: new Headers({'Content-Type': 'application/json'}),
-      });
+    const response = await this._load({
+      url: 'points',
+      method: HttpMethod.POST,
+      body: JSON.stringify(point),
+      headers: new Headers({'Content-Type': 'application/json'}),});
 
-      response = await ApiService.parseResponse(response);
-      return response;
-    } catch(err) {
-      // eslint-disable-next-line no-console
-      console.log(err);
-    }
+    return await ApiService.parseResponse(response);
   }
 
 

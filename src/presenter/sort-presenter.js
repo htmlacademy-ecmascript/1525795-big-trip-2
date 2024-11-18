@@ -23,6 +23,10 @@ export default class SortPresenter extends Observable {
     return this.#currentSortType;
   }
 
+  get sortComponent() {
+    return this.#sortComponent;
+  }
+
   setSortType(sortType) {
     this.#currentSortType = sortType;
     this._notify();

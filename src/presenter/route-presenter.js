@@ -3,16 +3,17 @@ import EmptyRouteView from '../view/empty-route.js';
 import PointPresenter from './point-presenter.js';
 import LoadingView from '../view/loading-view.js';
 
-import { filterEmptyMessage, ActionType, StateType, EventType } from '../utils/common.js';
+import { destinationModel } from '../main.js';
+import { offerModel } from '../main.js';
+
+import { filterEmptyMessage, ActionType, StateType } from '../utils/common.js';
 
 import { render, remove, replace } from '../framework/render.js';
-
 
 export default class RoutePresenter {
   routeContainer = null;
   headerContainer = null;
   #routeComponent = null;
-  // #routeComponent = new RouteView();
 
   #routeModel = null;
   #routeData = null;
@@ -32,9 +33,9 @@ export default class RoutePresenter {
     this.#sortPresenter = sortPresenter;
     this.#filterPresenter = filterPresenter;
 
-    this.#filterPresenter.addObserver(this.#routeStateHandler);
-    this.#sortPresenter.addObserver(this.#routeStateHandler);
-    this.#routeModel.addObserver(this.#routeStateHandler);
+    this.#filterPresenter.addObserver(this.routeStateHandler);
+    this.#sortPresenter.addObserver(this.routeStateHandler);
+    this.#routeModel.addObserver(this.routeStateHandler);
 
     this.#routeComponent = new RouteView();
     render(this.#routeComponent, this.routeContainer);
@@ -42,15 +43,28 @@ export default class RoutePresenter {
 
   init = (isLoadData = false) => {
     if (isLoadData) {
-      this.#routeStateHandler(StateType.LOADING_VIEW);
+      this.routeStateHandler(StateType.LOADING_VIEW);
       return;
     }
 
-    this.#routeStateHandler();
+    this.routeStateHandler();
   };
 
   #getStateType = () => {
     let stateType = null;
+
+    const destinations = destinationModel.destinations;
+    const offers = offerModel.offers;
+
+    if (!destinations.length || !offers.length) {
+      // Если не подгрузились точки назначения или доп.опции, то смысла работать с приложением нет
+      this.#headerPresenter.removeComponent();
+      this.#filterPresenter.removeComponent();
+      this.#sortPresenter.removeComponent();
+
+      return StateType.NO_DATA;
+    }
+
     // Сначала получаем отфильтрованные и отсортированные данные
     this.#routeData = this.#routeModel.getRouteData(this.#filterPresenter.currentFilter, this.#sortPresenter.currentSortType);
 
@@ -67,6 +81,7 @@ export default class RoutePresenter {
         stateType = StateType.EMPTY_FILTERED_VIEW;
       }
     } else {
+      // В модели данных нет
       stateType = StateType.EMPTY_VIEW;
     }
 
@@ -74,12 +89,10 @@ export default class RoutePresenter {
   };
 
 
-  #routeStateHandler = (stateType = null) => {
+  routeStateHandler = (stateType = null, point = null) => {
     if (!stateType) {
       stateType = this.#getStateType();
     }
-    // eslint-disable-next-line no-console
-    console.log(stateType);
 
     switch (stateType) {
       case StateType.LOADING_VIEW:
@@ -99,46 +112,39 @@ export default class RoutePresenter {
         break;
 
       case StateType.NEW_POINT_VIEW:
-        // this.#setNewPointViewState();
+        this.#setNewPointViewState();
         break;
 
       case StateType.UPDATE_POINT_VIEW:
+        this.#setUpdatePointViewState(point);
+        break;
+
+      case StateType.NO_DATA:
+        this.#setNoDataViewState();
         break;
     }
-    // this.#currentStateType = stateType;
-    this.#headerPresenter.refreshHeader();
-    this.#filterPresenter.refreshFilter();
-    this.#sortPresenter.refreshSort();
+
+    if (this.#headerPresenter.headerComponent) {
+      this.#headerPresenter.refreshHeader();
+    }
+    if (this.#filterPresenter.filterComponent) {
+      this.#filterPresenter.refreshFilter();
+    }
+    if (this.#sortPresenter.sortComponent) {
+      this.#sortPresenter.refreshSort();
+    }
 
     document.querySelector('.trip-main__event-add-btn').addEventListener('click', this.#setNewPointViewState);
   };
 
 
-  #pointEventHandler = (eventType) => {
-    switch (eventType) {
-      case EventType.ADD_POINT:
-        this.#routeStateHandler(StateType.NEW_POINT_VIEW);
-        break;
-
-      case EventType.UPDATE_POINT:
-        break;
-      case EventType.DELETE_POINT:
-        break;
-      case EventType.FAVORITE_POINT:
-        break;
-      case EventType.ROW_ROLLUP:
-        break;
-    }
-  };
-
   #renderPoint(point) {
     this.#actionType = point.id === 0 ? ActionType.APPEND : ActionType.EDIT;
-    const pointPresenter = new PointPresenter(this.#routeModel, this.#routeComponent, point, this.#resetRoutePoints, this.#actionType, this.#routeStateHandler);
+    const pointPresenter = new PointPresenter(this, this.#routeModel, this.#routeComponent, point, this.#actionType);
     pointPresenter.init(point);
     // Если добавление новой точки маршрута, то в Map запишется ключ с id = 0
     this.#pointMap.set(point.id, pointPresenter);
   }
-
 
   #setLoadingViewState = () => {
     const prevRouteComponent = this.#routeComponent;
@@ -152,7 +158,14 @@ export default class RoutePresenter {
     this.#routeComponent = new EmptyRouteView();
     replace(this.#routeComponent, prevRouteComponent);
     remove(prevRouteComponent);
-    // document.querySelector('.trip-main__event-add-btn').addEventListener('click', this.#addNewEventHandler);
+  };
+
+  #setNoDataViewState = () => {
+    const prevRouteComponent = this.#routeComponent;
+    this.#routeComponent = new EmptyRouteView('No data');
+    document.querySelector('.trip-main__event-add-btn').disabled = true;
+    replace(this.#routeComponent, prevRouteComponent);
+    remove(prevRouteComponent);
   };
 
   #setEmptyFilteredViewState = () => {
@@ -160,7 +173,6 @@ export default class RoutePresenter {
     this.#routeComponent = new EmptyRouteView(filterEmptyMessage[this.#filterPresenter.currentFilter.toUpperCase()]);
     replace(this.#routeComponent, prevRouteComponent);
     remove(prevRouteComponent);
-    // document.querySelector('.trip-main__event-add-btn').addEventListener('click', this.#addNewEventHandler);
   };
 
   #setListViewState = () => {
@@ -194,5 +206,16 @@ export default class RoutePresenter {
     render(this.#routeComponent, this.routeContainer);
     // Рендерим форму добавления для пустой точки маршрута
     this.#renderPoint(this.#routeModel.getEmptyPoint());
+  };
+
+  #setUpdatePointViewState = (point) => {
+    // Получаем презентер выбранной точки маршута
+    const selectedPointPresenter = this.#pointMap.get(point.id);
+
+    // Сбрасываем к исходному виду все открытые формы
+    this.#resetRoutePoints();
+
+    // Разворачиваем выбранную строку
+    selectedPointPresenter.rowRolldownHandler();
   };
 }

@@ -1,8 +1,9 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { replace } from '../framework/render.js';
 
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
+import { StateType } from '../utils/common.js';
 
 import dayjs from 'dayjs';
 
@@ -82,17 +83,43 @@ function createRowPointTemplate(routePoint) {
   `;
 }
 
-export default class RoutePointView extends AbstractView {
-  constructor(routePoint) {
+export default class RoutePointView extends AbstractStatefulView {
+  #routePresenter = null;
+  #routeModel = null;
+  #point = null;
+
+  constructor(routePresenter, routeModel, point) {
     super();
-    this.routePoint = routePoint;
+    this.#routePresenter = routePresenter;
+    this.#routeModel = routeModel;
+    this.#point = point;
+    this._restoreHandlers();
+  }
+
+  _restoreHandlers() {
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rowRolldownClickHandler);
   }
 
   get template() {
-    return createRowPointTemplate(this.routePoint);
+    return createRowPointTemplate(this.#point);
   }
 
   replaceRowToForm(updateComponent, rowComponent) {
     replace(updateComponent, rowComponent);
   }
+
+  #favoriteClickHandler = async () => {
+    this.#point = await this.#routeModel.toggleFavorite(this.#point);
+    if (this.#point) {
+      await this.updateElement({isFaforite: this.#point.isFavorite});
+    } else {
+      this.shake();
+    }
+  };
+
+
+  #rowRolldownClickHandler = () => {
+    this.#routePresenter.routeStateHandler(StateType.UPDATE_POINT_VIEW, this.#point);
+  };
 }

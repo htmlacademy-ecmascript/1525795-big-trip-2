@@ -7,7 +7,11 @@ export default class DestinationModel {
   }
 
   async init() {
-    this.#destinations = await this.#routeApiService.destinations;
+    try {
+      this.#destinations = await this.#routeApiService.destinations;
+    } catch (err) {
+      return false;
+    }
   }
 
   get destinations() {

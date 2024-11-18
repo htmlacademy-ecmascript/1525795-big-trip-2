@@ -7,7 +7,11 @@ export default class OfferModel {
   }
 
   async init() {
-    this.#offers = await this.#routeApiService.offers;
+    try {
+      this.#offers = await this.#routeApiService.offers;
+    } catch (err) {
+      return false;
+    }
   }
 
   get offers() {
