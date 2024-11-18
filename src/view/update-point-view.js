@@ -162,7 +162,7 @@ function createUpdatePointTemplate(state, actionType) {
             <input class="event__input  event__input--price" id="event-price-${state.id}" type="text" name="event-price" value="${state.basePrice}">
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+          <button class="event__save-btn btn btn--blue" type="submit">Save</button>
           <button class="event__reset-btn" type="reset">${ actionType === ActionType.APPEND ? 'Cancel' : 'Delete'}</button>
           <button class="event__rollup-btn" type="button">
             <span class="visually-hidden">Open event</span>
@@ -179,23 +179,21 @@ function createUpdatePointTemplate(state, actionType) {
 }
 
 export default class UpdatePointView extends AbstractStatefulView {
-  #routePoint = null;
-  #cbRollupClickHandler = null;
-  #cbSubmitClickHandler = null;
-  #cbDeletePointHandler = null;
+  #routePresenter = null;
+  #routeModel = null;
+  #point = null;
   #startDatePicker = null;
   #endDatePicker = null;
   #actionType = null;
 
-  constructor(routePoint, cbRollupClickHandler, cbSubmitClickHandler, cbDeletePointHandler, actionType) {
+  constructor(routePresenter, routeModel, point, actionType) {
     super();
-    this.#routePoint = routePoint;
-    this.#cbRollupClickHandler = cbRollupClickHandler;
-    this.#cbSubmitClickHandler = cbSubmitClickHandler;
-    this.#cbDeletePointHandler = cbDeletePointHandler;
+    this.#routePresenter = routePresenter;
+    this.#routeModel = routeModel;
+    this.#point = point;
     this.#actionType = actionType;
 
-    this._setState(UpdatePointView.parsePointToState(this.#routePoint));
+    this._setState(UpdatePointView.parsePointToState(this.#point));
 
     this._restoreHandlers();
   }
@@ -209,25 +207,19 @@ export default class UpdatePointView extends AbstractStatefulView {
   }
 
   _restoreHandlers() {
+    document.addEventListener('keydown', this.#escKeydownHandler);
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
-    this.element.querySelector('.event--edit').addEventListener('submit', this.#cbSubmitClickHandler);
+    this.element.querySelector('.event--edit').addEventListener('submit', this.#submitClickHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     if (this.element.querySelector('.event__available-offers') !== null) {
       this.element.querySelector('.event__available-offers').addEventListener('change', this.#offersChangeHandler);
     }
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#cbDeletePointHandler);
+    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deletePointHandler);
 
     this.#setDatePicker();
   }
-
-  #formRollupClickHandler = () => {
-    // Здесь достаточно просто поменять компонент с updateComponent на rowComponent. Зачем следующая строка??
-    // this.updateElement(UpdatePointView.parsePointToState(this.#routePoint));
-    this.#cbRollupClickHandler();
-    this.removeDatePickr();
-  };
 
   #eventTypeChangeHandler = () => {
     const newPointTypeName = this.element.querySelector('input[name="event-type"]:checked').value;
@@ -266,6 +258,50 @@ export default class UpdatePointView extends AbstractStatefulView {
     }
     evt.preventDefault();
     this.updateElement({basePrice: parseInt(evt.target.value, 10)});
+  };
+
+  #formRollupClickHandler = () => {
+    this.removeDatePickr();
+    this.#routePresenter.routeStateHandler();
+  };
+
+  #escKeydownHandler = (evt) => {
+    if (evt.key === 'Escape') {
+      this.removeDatePickr();
+      this.#routePresenter.routeStateHandler();
+    }
+  };
+
+  #submitClickHandler = (evt) => {
+    evt.preventDefault();
+    this.setSaveButtonText('Saving...');
+    this.#point = this._state;
+
+    if (this.#actionType === ActionType.APPEND) {
+      this.#routeModel.addPoint(this.#point, this);
+    } else {
+      this.#routeModel.updatePoint(this.#point, this);
+    }
+  };
+
+  #deletePointHandler = () => {
+    this.setDeleteButtonText('Deleting...');
+    this.removeDatePickr();
+    if (this.#actionType === ActionType.APPEND) {
+      // При добавлении новой точки - это Cancel
+      this.#routePresenter.routeStateHandler();
+    } else {
+      // При редактировании точки - это Delete
+      this.#routeModel.deletePoint(this.#point, this);
+    }
+  };
+
+  setSaveButtonText = (buttonText) => {
+    this.element.querySelector('.event__save-btn').textContent = buttonText;
+  };
+
+  setDeleteButtonText = (buttonText) => {
+    this.element.querySelector('.event__reset-btn').textContent = buttonText;
   };
 
   removeElement() {

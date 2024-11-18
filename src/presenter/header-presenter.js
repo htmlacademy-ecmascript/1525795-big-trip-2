@@ -6,24 +6,28 @@ import { render, replace, remove } from '../framework/render.js';
 export default class HeaderPresenter {
   #headerContainer = document.querySelector('.trip-main');
   #headerComponent = null;
-  #route = null;
+  #routeModel = null;
   #tripTitle = null;
   #tripDates = null;
   #tripCost = null;
 
-  constructor(route) {
-    this.#route = route;
+  constructor(routeModel) {
+    this.#routeModel = routeModel;
     this.refreshHeader();
   }
 
+  get headerComponent() {
+    return this.#headerComponent;
+  }
+
   #getTripData = () => {
-    this.#tripTitle = this.#route.getRouteTitle();
-    this.#tripDates = this.#route.getRouteDates();
-    this.#tripCost = this.#route.getRouteCost();
+    this.#tripTitle = this.#routeModel.getRouteTitle();
+    this.#tripDates = this.#routeModel.getRouteDates();
+    this.#tripCost = this.#routeModel.getRouteCost();
   };
 
   refreshHeader() {
-    if (this.#route.route && this.#route.route.length) {
+    if (this.#routeModel.getRouteLength) {
       const currentHeaderComponent = this.#headerComponent;
       this.#getTripData();
       this.#headerComponent = new HeaderView(this.#tripTitle, this.#tripDates, this.#tripCost);
@@ -36,7 +40,6 @@ export default class HeaderPresenter {
       return;
     }
     this.removeComponent();
-    this.#headerComponent = null;
   }
 
   removeComponent = () => {

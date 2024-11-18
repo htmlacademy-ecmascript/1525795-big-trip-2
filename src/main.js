@@ -1,3 +1,5 @@
+import UiBlocker from './framework/ui-blocker/ui-blocker.js';
+
 import RoutePresenter from './presenter/route-presenter.js';
 import HeaderPresenter from './presenter/header-presenter.js';
 import FilterPresenter from './presenter/filter-presenter.js';
@@ -9,7 +11,7 @@ import DestinationModel from './model/destination-model.js';
 import OfferModel from './model/offer-model.js';
 
 const ENDPOINT = 'https://22.objects.htmlacademy.pro/big-trip';
-const AUTHORIZATION = 'Basic defghijklmno';
+const AUTHORIZATION = 'Basic abcfghijklmno';
 
 export const routeApi = new RouteApi(ENDPOINT, AUTHORIZATION);
 const routeModel = new RouteModel(routeApi);
@@ -32,6 +34,18 @@ const routePresenter = new RoutePresenter({
   routeContainer, headerContainer, routeModel, sortPresenter, headerPresenter, filterPresenter
 });
 
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000
+};
+
+export const uiBlocker = new UiBlocker({
+  lowerLimit: TimeLimit.LOWER_LIMIT,
+  upperLimit: TimeLimit.UPPER_LIMIT
+});
+
+uiBlocker.block();
+
 filterPresenter.init();
 sortPresenter.init();
 let isLoadData = true;
@@ -41,6 +55,7 @@ destinationModel.init()
   .then(() => offerModel.init())
   .then(() => routeModel.init())
   .then(() => {
+    uiBlocker.unblock();
     isLoadData = false;
     routePresenter.init(isLoadData);
   });

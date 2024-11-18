@@ -74,7 +74,8 @@ export const StateType = {
   EMPTY_FILTERED_VIEW: 'Empty filtered view',
   LIST_VIEW: 'List view',
   NEW_POINT_VIEW: 'New point view',
-  UPDATE_POINT_VIEW: 'Update point view'
+  UPDATE_POINT_VIEW: 'Update point view',
+  NO_DATA: 'No data'
 };
 
 export const EventType = {

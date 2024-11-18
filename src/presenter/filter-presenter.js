@@ -28,6 +28,10 @@ export default class FilterPresenter extends Observable {
     return this.#currentFilter;
   }
 
+  get filterComponent() {
+    return this.#filterComponent;
+  }
+
   setFilter(filter) {
     this.#currentFilter = filter;
     this._notify();
@@ -57,5 +61,10 @@ export default class FilterPresenter extends Observable {
     // Здесь сброс сортировки в Day (в соответствии с ТЗ: при изменении фильтра сбрасывать сортировку в Day)
     this.#sortPresenter.resetSortType();
     this.setFilter(newFilter);
+  };
+
+  removeComponent = () => {
+    remove(this.#filterComponent);
+    this.#filterComponent = null;
   };
 }

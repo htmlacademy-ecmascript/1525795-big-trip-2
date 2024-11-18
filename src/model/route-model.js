@@ -1,4 +1,6 @@
 import Observable from '../framework/observable.js';
+
+import { uiBlocker } from '../main.js';
 import { sortByDate } from '../utils/common.js';
 import { getFormattedRangeDate } from '../util.js';
 import { FilterType, SortMethods } from '../utils/common.js';
@@ -23,6 +25,7 @@ export default class RouteModel extends Observable {
     offers: [],
     type: 'flight'
   };
+
 
   constructor(routeApiService) {
     super();
@@ -70,39 +73,20 @@ export default class RouteModel extends Observable {
 
   getEmptyPoint = () => this.#emptyPoint;
 
-  // async addPoint(point, updateComponent) {
-  //   const headers = new Headers();
-  //   headers.append('Authorization', 'Basic qqefghijklmno');
-
-  //   const convertedPoint = this.#convertToOuterFormat(point);
-  //   delete convertedPoint.id;
-
-  //   console.log(convertedPoint);
-  //   await fetch('https://22.objects.htmlacademy.pro/big-trip/points', {method: 'POST', body: JSON.stringify(convertedPoint), headers: headers})
-  //     .then((response) => {
-  //       console.log(response, response.ok);
-  //       if (!response.ok) {
-  //         updateComponent.shake();
-  //       } else {
-  //         this.#route.push(this.#convertToInnerFormat(response));
-  //         this._notify();
-  //       }
-  //     });
-  // }
-
   async addPoint(point, updateComponent) {
     try {
+      uiBlocker.block();
       const convertedPoint = this.#convertToOuterFormat(point);
       delete convertedPoint.id;
 
       const response = await this.#routeApiService.addPoint(convertedPoint);
       this.#route.push(this.#convertToInnerFormat(response));
+      await uiBlocker.unblock();
       this._notify();
     } catch(err) {
-      // eslint-disable-next-line no-console
-      console.log(err.name, err.message);
-
+      uiBlocker.unblock();
       updateComponent.shake();
+      updateComponent.setSaveButtonText('Save');
     }
   }
 
@@ -115,14 +99,17 @@ export default class RouteModel extends Observable {
     }
 
     try {
+      uiBlocker.block();
       const convertedPoint = this.#convertToOuterFormat({...point});
       const response = await this.#routeApiService.updatePoint(convertedPoint);
       const updatedPoint = await this.#convertToInnerFormat(response);
       this.#route = [...this.#route.slice(0, idx), updatedPoint, ...this.#route.slice(idx + 1)];
+      await uiBlocker.unblock();
       this._notify();
-      // cbRerenderRowComponent(updatedPoint);
     } catch(err) {
+      uiBlocker.unblock();
       updateComponent.shake();
+      updateComponent.setSaveButtonText('Save');
     }
   }
 
@@ -135,16 +122,19 @@ export default class RouteModel extends Observable {
     }
 
     try {
+      uiBlocker.block();
       await this.#routeApiService.deletePoint(point.id);
       this.#route = [...this.#route.slice(0, idx), ...this.#route.slice(idx + 1)];
-
+      await uiBlocker.unblock();
       this._notify();
     } catch (err) {
+      uiBlocker.unblock();
       updateComponent.shake();
+      updateComponent.setDeleteButtonText('Delete');
     }
   }
 
-  async toggleFavorite(point, rowComponent, cbRerenderRowComponent) {
+  async toggleFavorite(point) {
     const idx = this.#route.findIndex((routePoint) => routePoint.id === point.id);
     if (idx === -1) {
       // Nothing to update
@@ -156,10 +146,11 @@ export default class RouteModel extends Observable {
       const response = await this.#routeApiService.updatePoint(convertedPoint);
       const updatedPoint = this.#convertToInnerFormat(response);
       this.#route = [...this.#route.slice(0, idx), updatedPoint, ...this.#route.slice(idx + 1)];
-      cbRerenderRowComponent(updatedPoint);
+      return updatedPoint;
     } catch (err) {
-      rowComponent.shake();
+      return false;
     }
+
   }
 
   getRouteTitle() {
