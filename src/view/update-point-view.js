@@ -30,27 +30,34 @@ function getDestinationPhotos(destination) {
   let photos = '';
 
   if (destination && destination.pictures && destination.pictures.length) {
+    photos += `
+      <div class="event__photos-container">
+        <div class="event__photos-tape">`;
+
     destination.pictures.forEach((item) => {
       photos += `<img class="event__photo" src=${item.src} alt="Event photo">`;
     });
+
+    photos += `
+        </div>
+      </div>`;
   }
 
   return photos;
 }
 
 function getFormattedDestination(destinationObj) {
-  return `
-    <section class="event__section  event__section--destination">
-      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${destinationObj === undefined ? '' : destinationObj.description}</p>
+  let destination = '';
 
-      <div class="event__photos-container">
-        <div class="event__photos-tape">
+  if (destinationObj !== undefined && destinationObj.description) {
+    destination += `
+      <section class="event__section  event__section--destination">
+        <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+          <p class="event__destination-description">${destinationObj.description}</p>
           ${getDestinationPhotos(destinationObj)}
-        </div>
-      </div>
-    </section>
-  `;
+      </section>`;
+  }
+  return destination;
 }
 
 
@@ -112,8 +119,8 @@ function getFormattedOffers(pointTypeName, pointOffers) {
 
 function createUpdatePointTemplate(state, actionType) {
   const pointTypeName = state.type;
-  const dateFrom = state.dateFrom ? dayjs(state.dateFrom).format('DD/MM/YY HH:mm') : '';
-  const dateTo = state.dateTo ? dayjs(state.dateTo).format('DD/MM/YY HH:mm') : '';
+  const dateFrom = state.dateFrom ? dayjs(state.dateFrom).utc().format('DD/MM/YY HH:mm') : '';
+  const dateTo = state.dateTo ? dayjs(state.dateTo).utc().format('DD/MM/YY HH:mm') : '';
   const destinationObj = destinationModel.getDestinationById(state.destination);
 
   return `
@@ -202,9 +209,9 @@ export default class UpdatePointView extends AbstractStatefulView {
     return createUpdatePointTemplate(this._state, this.#actionType);
   }
 
-  replaceFormToRow(rowComponent, updateComponent) {
-    replace(rowComponent, updateComponent);
-  }
+  // replaceFormToRow(rowComponent, updateComponent) {
+  //   replace(rowComponent, updateComponent);
+  // }
 
   _restoreHandlers() {
     document.addEventListener('keydown', this.#escKeydownHandler);
@@ -241,7 +248,9 @@ export default class UpdatePointView extends AbstractStatefulView {
   };
 
   #offersChangeHandler = (evt) => {
+    // evt.preventDefault();
     const selectedOfferId = evt.target.dataset.offerId;
+
     if (this.element.querySelector(`input[name="event-offer-${selectedOfferId}"]`).checked) {
       this._state.offers.push(selectedOfferId);
     } else {
@@ -262,12 +271,14 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   #formRollupClickHandler = () => {
     this.removeDatePickr();
+    document.querySelector('.trip-main__event-add-btn').disabled = false;
     this.#routePresenter.routeStateHandler();
   };
 
   #escKeydownHandler = (evt) => {
     if (evt.key === 'Escape') {
       this.removeDatePickr();
+      document.querySelector('.trip-main__event-add-btn').disabled = false;
       this.#routePresenter.routeStateHandler();
     }
   };
@@ -282,6 +293,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     } else {
       this.#routeModel.updatePoint(this.#point, this);
     }
+    document.querySelector('.trip-main__event-add-btn').disabled = false;
   };
 
   #deletePointHandler = () => {
@@ -289,6 +301,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.removeDatePickr();
     if (this.#actionType === ActionType.APPEND) {
       // При добавлении новой точки - это Cancel
+      document.querySelector('.trip-main__event-add-btn').disabled = false;
       this.#routePresenter.routeStateHandler();
     } else {
       // При редактировании точки - это Delete

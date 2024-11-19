@@ -29,7 +29,6 @@ export default class SortPresenter extends Observable {
 
   setSortType(sortType) {
     this.#currentSortType = sortType;
-    this._notify();
   }
 
   refreshSort = () => {
@@ -51,8 +50,10 @@ export default class SortPresenter extends Observable {
   };
 
   removeComponent = () => {
-    remove(this.#sortComponent);
-    this.#sortComponent = null;
+    if (this.#sortComponent !== null) {
+      remove(this.#sortComponent);
+      this.#sortComponent = null;
+    }
   };
 
   resetSortType = () => this.#changeSortHandler(DEFAULT_SORT_TYPE);

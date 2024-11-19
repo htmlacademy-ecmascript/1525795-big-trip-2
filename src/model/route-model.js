@@ -9,6 +9,7 @@ import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
 
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
 import isBetween from 'dayjs/plugin/isBetween';
 
 
@@ -50,14 +51,14 @@ export default class RouteModel extends Observable {
       case FilterType.EVERYTHING:
         break;
       case FilterType.FUTURE:
-        routeData = routeData.filter((item) => dayjs(item.dateFrom) > dayjs());
+        routeData = routeData.filter((item) => dayjs(item.dateFrom).utc() > dayjs());
         break;
       case FilterType.PRESENT:
         dayjs.extend(isBetween);
         routeData = routeData.filter((item) => dayjs().isBetween(item.dateFrom, item.dateTo));
         break;
       case FilterType.PAST:
-        routeData = routeData.filter((item) => dayjs(item.dateTo) <= dayjs());
+        routeData = routeData.filter((item) => dayjs(item.dateTo).utc() <= dayjs());
         break;
     }
 
@@ -142,10 +143,12 @@ export default class RouteModel extends Observable {
     }
 
     try {
+      uiBlocker.block();
       const convertedPoint = this.#convertToOuterFormat({...point, isFavorite: !point.isFavorite});
       const response = await this.#routeApiService.updatePoint(convertedPoint);
       const updatedPoint = this.#convertToInnerFormat(response);
       this.#route = [...this.#route.slice(0, idx), updatedPoint, ...this.#route.slice(idx + 1)];
+      await uiBlocker.unblock();
       return updatedPoint;
     } catch (err) {
       return false;
@@ -175,8 +178,8 @@ export default class RouteModel extends Observable {
     }
 
     const copyRoute = this.#route.slice().sort(sortByDate);
-    const startDate = dayjs(copyRoute[0].dateFrom);
-    const endDate = dayjs(copyRoute.slice(-1)[0].dateTo);
+    const startDate = dayjs(copyRoute[0].dateFrom).utc();
+    const endDate = dayjs(copyRoute.slice(-1)[0].dateTo).utc();
 
     return `${getFormattedRangeDate(startDate.date(), startDate.month() + 1, endDate.date(), endDate.month() + 1)}`;
   }

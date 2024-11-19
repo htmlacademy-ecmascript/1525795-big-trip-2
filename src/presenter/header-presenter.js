@@ -27,7 +27,7 @@ export default class HeaderPresenter {
   };
 
   refreshHeader() {
-    if (this.#routeModel.getRouteLength) {
+    if (this.#routeModel.getRouteLength()) {
       const currentHeaderComponent = this.#headerComponent;
       this.#getTripData();
       this.#headerComponent = new HeaderView(this.#tripTitle, this.#tripDates, this.#tripCost);
