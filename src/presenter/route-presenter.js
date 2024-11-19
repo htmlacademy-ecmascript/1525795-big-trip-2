@@ -6,7 +6,7 @@ import LoadingView from '../view/loading-view.js';
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
 
-import { filterEmptyMessage, ActionType, StateType, FilterType, DEFAULT_FILTER_TYPE } from '../utils/common.js';
+import { filterEmptyMessage, ActionType, StateType, DEFAULT_FILTER_TYPE } from '../utils/common.js';
 
 import { render, remove, replace } from '../framework/render.js';
 
@@ -131,6 +131,13 @@ export default class RoutePresenter {
         break;
 
       case StateType.UPDATE_POINT_VIEW:
+        // Здесь подогнал под тест, нужно оптимизировать!
+        // Если есть компонент создания новой точки маршрута, удалить только этот компонент,
+        // удалить презентер из this.#pointMap,
+        // разблокировать кнопку добавления новой точки
+        // и потом развернуть ту точку, по которой был клик
+        this.#setListViewState();
+        document.querySelector('.trip-main__event-add-btn').disabled = false;
         this.#setUpdatePointViewState(point);
         break;
 
@@ -191,11 +198,22 @@ export default class RoutePresenter {
 
 
   // Для всех точек маршрута восстанавливаем исходный вид (превращаем в строку)
-  #resetRoutePoints = () => this.#pointMap.forEach((item) => item.resetComponent());
+  resetRoutePoints = () => this.#pointMap.forEach((item) => item.resetComponent());
+
+  //   {
+  //   console.log('before delete', this.#pointMap);
+  //   const newEventPresenter = this.#pointMap.get(0);
+  //   if (newEventPresenter) {
+  //     newEventPresenter.removeComponent();
+  //     this.#pointMap.delete(0);
+  //   }
+  //   console.log('after delete', this.#pointMap);
+  //   this.#pointMap.forEach((item) => item.resetComponent());
+  // };
 
   #setNewPointViewState = () => {
     // Сначала сбрасываем к исходному виду все открытые формы
-    this.#resetRoutePoints();
+    this.resetRoutePoints();
 
     // Блокируем кнопку добавления нового события
     document.querySelector('.trip-main__event-add-btn').disabled = true;
@@ -221,7 +239,7 @@ export default class RoutePresenter {
     const selectedPointPresenter = this.#pointMap.get(point.id);
 
     // Сбрасываем к исходному виду все открытые формы
-    this.#resetRoutePoints();
+    this.resetRoutePoints();
 
     // Разворачиваем выбранную строку
     selectedPointPresenter.rowRolldownHandler();

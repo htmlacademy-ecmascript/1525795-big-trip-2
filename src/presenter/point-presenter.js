@@ -1,6 +1,6 @@
 import RoutePointView from '../view/row-point-view.js';
 import UpdatePointView from '../view/update-point-view.js';
-import { ActionType } from '../utils/common.js';
+import { ActionType, StateType } from '../utils/common.js';
 
 import { render, replace, remove } from '../framework/render.js';
 

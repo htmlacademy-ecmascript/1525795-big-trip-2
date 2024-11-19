@@ -1,7 +1,7 @@
 import Observable from '../framework/observable.js';
 
 import { uiBlocker } from '../main.js';
-import { sortByDate } from '../utils/common.js';
+import { DEFAULT_SORT_METHOD, sortByDate } from '../utils/common.js';
 import { getFormattedRangeDate } from '../util.js';
 import { FilterType, SortMethods } from '../utils/common.js';
 
@@ -44,7 +44,7 @@ export default class RouteModel extends Observable {
 
   getRouteData(currentFilter, currentSortType) {
     // Получаем данные из модели
-    let routeData = this.#route;
+    let routeData = [...this.#route];
 
     // Фильтруем
     switch (currentFilter) {
@@ -161,8 +161,12 @@ export default class RouteModel extends Observable {
       return '';
     }
 
+    // Заголовок составляем по отсортированной копии маршрута (не отфильтрованной!)
+    const routeData = [...this.#route];
+    routeData.sort(DEFAULT_SORT_METHOD);
+
     const pointsList = new Array();
-    this.#route.forEach((item) =>
+    routeData.forEach((item) =>
       (destinationModel.getDestinationById(item.destination) === undefined ? '' : pointsList.push(destinationModel.getDestinationById(item.destination).name)));
 
     if (pointsList.length > 3) {

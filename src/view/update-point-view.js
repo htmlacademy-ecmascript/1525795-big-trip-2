@@ -251,10 +251,17 @@ export default class UpdatePointView extends AbstractStatefulView {
     // evt.preventDefault();
     const selectedOfferId = evt.target.dataset.offerId;
 
-    if (this.element.querySelector(`input[name="event-offer-${selectedOfferId}"]`).checked) {
-      this._state.offers.push(selectedOfferId);
-    } else {
+    // console.trace();
+    // console.log('click', selectedOfferId);
+    if (!selectedOfferId) {
+      return;
+    }
+
+    // if (this.element.querySelector(`input[name="event-offer-${selectedOfferId}"]`).checked) {
+    if (this._state.offers.includes(selectedOfferId)) {
       this._state.offers = this._state.offers.filter((item) => item !== selectedOfferId);
+    } else {
+      this._state.offers.push(selectedOfferId);
     }
     this.updateElement({offers: this._state.offers});
   };
@@ -342,7 +349,7 @@ export default class UpdatePointView extends AbstractStatefulView {
         // eslint-disable-next-line camelcase
         time_24hr: true,
         dateFormat: 'd/m/y H:i',
-        onChange: this.#startDateChangeHandler
+        onClose: this.#startDateChangeHandler
       }
     );
 
@@ -353,7 +360,7 @@ export default class UpdatePointView extends AbstractStatefulView {
         // eslint-disable-next-line camelcase
         time_24hr: true,
         dateFormat: 'd/m/y H:i',
-        onChange: this.#endDateChangeHandler
+        onClose: this.#endDateChangeHandler
       }
     );
   }
@@ -361,7 +368,7 @@ export default class UpdatePointView extends AbstractStatefulView {
   #startDateChangeHandler = ([startDate]) => {
     if (this._state.dateTo && startDate >= this._state.dateTo) {
       this.element.querySelector('input[name="event-start-time"]').value = '';
-      return;
+      //return;
     }
     this.updateElement({dateFrom: startDate});
   };

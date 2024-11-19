@@ -1,3 +1,7 @@
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc.js';
+
+
 const getEventLength = (dateFrom, dateTo) => {
   const startDateTime = new Date(dateFrom);
   const endDateTime = new Date(dateTo);
@@ -5,7 +9,8 @@ const getEventLength = (dateFrom, dateTo) => {
   return endDateTime - startDateTime;
 };
 
-const getEventStartDate = (dateFrom) => new Date(dateFrom);
+// const getEventStartDate = (dateFrom) => new Date(dateFrom);
+const getEventStartDate = (dateFrom) => dayjs(dateFrom).utc();
 export const sortByPrice = (a, b) => b.basePrice - a.basePrice;
 export const sortByDate = (a, b) => getEventStartDate(a.dateFrom) - getEventStartDate(b.dateFrom);
 export const sortByTime = (a, b) => getEventLength(b.dateFrom, b.dateTo) - getEventLength(a.dateFrom, a.dateTo);
@@ -23,7 +28,7 @@ export const SortMethods = {
   Price: sortByPrice
 };
 export const DEFAULT_SORT_TYPE = SortTypes.DAY;
-export const DEFAULT_SORT_METHOD = SortMethods.DAY;
+export const DEFAULT_SORT_METHOD = SortMethods.Day;
 
 export const capitalize = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 

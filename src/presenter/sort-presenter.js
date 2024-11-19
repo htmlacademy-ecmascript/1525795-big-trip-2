@@ -60,5 +60,6 @@ export default class SortPresenter extends Observable {
 
   #changeSortHandler = (newSortType) => {
     this.setSortType(newSortType);
+    this._notify();
   };
 }
