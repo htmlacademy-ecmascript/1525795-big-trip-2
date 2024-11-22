@@ -209,10 +209,6 @@ export default class UpdatePointView extends AbstractStatefulView {
     return createUpdatePointTemplate(this._state, this.#actionType);
   }
 
-  // replaceFormToRow(rowComponent, updateComponent) {
-  //   replace(rowComponent, updateComponent);
-  // }
-
   _restoreHandlers() {
     document.addEventListener('keydown', this.#escKeydownHandler);
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
@@ -220,7 +216,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     if (this.element.querySelector('.event__available-offers') !== null) {
-      this.element.querySelector('.event__available-offers').addEventListener('change', this.#offersChangeHandler);
+      this.element.querySelector('.event__available-offers').addEventListener('click', this.#offersChangeHandler);
     }
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deletePointHandler);
@@ -248,16 +244,11 @@ export default class UpdatePointView extends AbstractStatefulView {
   };
 
   #offersChangeHandler = (evt) => {
-    // evt.preventDefault();
     const selectedOfferId = evt.target.dataset.offerId;
-
-    // console.trace();
-    // console.log('click', selectedOfferId);
     if (!selectedOfferId) {
       return;
     }
 
-    // if (this.element.querySelector(`input[name="event-offer-${selectedOfferId}"]`).checked) {
     if (this._state.offers.includes(selectedOfferId)) {
       this._state.offers = this._state.offers.filter((item) => item !== selectedOfferId);
     } else {
@@ -368,7 +359,6 @@ export default class UpdatePointView extends AbstractStatefulView {
   #startDateChangeHandler = ([startDate]) => {
     if (this._state.dateTo && startDate >= this._state.dateTo) {
       this.element.querySelector('input[name="event-start-time"]').value = '';
-      //return;
     }
     this.updateElement({dateFrom: startDate});
   };

@@ -3,16 +3,18 @@ import utc from 'dayjs/plugin/utc.js';
 
 
 const getEventLength = (dateFrom, dateTo) => {
-  const startDateTime = new Date(dateFrom);
-  const endDateTime = new Date(dateTo);
+  // const startDateTime = new Date(dateFrom);
+  // const endDateTime = new Date(dateTo);
+
+  const startDateTime = dayjs(dateFrom).utc();
+  const endDateTime = dayjs(dateTo).utc();
 
   return endDateTime - startDateTime;
 };
 
-// const getEventStartDate = (dateFrom) => new Date(dateFrom);
-const getEventStartDate = (dateFrom) => dayjs(dateFrom).utc();
+const getEventDate = (dateFrom) => dayjs(dateFrom).utc();
 export const sortByPrice = (a, b) => b.basePrice - a.basePrice;
-export const sortByDate = (a, b) => getEventStartDate(a.dateFrom) - getEventStartDate(b.dateFrom);
+export const sortByDate = (a, b) => getEventDate(a.dateFrom) - getEventDate(b.dateFrom);
 export const sortByTime = (a, b) => getEventLength(b.dateFrom, b.dateTo) - getEventLength(a.dateFrom, a.dateTo);
 
 export const SortTypes = {
@@ -80,7 +82,8 @@ export const StateType = {
   LIST_VIEW: 'List view',
   NEW_POINT_VIEW: 'New point view',
   UPDATE_POINT_VIEW: 'Update point view',
-  NO_DATA: 'No data'
+  NO_DATA: 'No data',
+  FAILED_LOAD_DATA: 'Failed to load latest route information'
 };
 
 export const EventType = {
@@ -89,4 +92,9 @@ export const EventType = {
   DELETE_POINT: 'Delete point',
   FAVORITE_POINT: 'Favorite point',
   ROW_ROLLUP: 'Row rollup'
+};
+
+export const RouteState = {
+  SUCCESS: 'Success',
+  FAILED_LOAD: 'Failed to load latest route information'
 };

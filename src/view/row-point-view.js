@@ -27,7 +27,6 @@ function createRowPointTemplate(routePoint) {
     endTime = endDate.format('HH:mm');
     diffDate = dayjs(endDate - startDate).utc();
     const daysCount = Math.round((endDate - startDate) / 1000 / 60 / 60 / 24).toString().padStart(2, '0');
-    // formattedEventLength = `${diffDate.format('DD')}D ${diffDate.format('HH')}H ${diffDate.format('mm')}M`;
     formattedEventLength = `${daysCount}D ${diffDate.format('HH')}H ${diffDate.format('mm')}M`;
   }
 

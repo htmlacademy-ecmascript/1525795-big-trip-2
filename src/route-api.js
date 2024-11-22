@@ -9,7 +9,11 @@ const HttpMethod = {
 
 export default class RouteApi extends ApiService {
   get points() {
-    return this._load({url: 'points'}).then(ApiService.parseResponse);
+    try {
+      return this._load({url: 'points'}).then(ApiService.parseResponse);
+    } catch (err) {
+      return [];
+    }
   }
 
   get destinations() {

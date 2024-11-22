@@ -6,7 +6,7 @@ import LoadingView from '../view/loading-view.js';
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
 
-import { filterEmptyMessage, ActionType, StateType, DEFAULT_FILTER_TYPE } from '../utils/common.js';
+import { filterEmptyMessage, ActionType, StateType, DEFAULT_FILTER_TYPE, RouteState } from '../utils/common.js';
 
 import { render, remove, replace } from '../framework/render.js';
 
@@ -62,7 +62,11 @@ export default class RoutePresenter {
       this.#filterPresenter.removeComponent();
       this.#sortPresenter.removeComponent();
 
-      return StateType.NO_DATA;
+      return StateType.FAILED_LOAD_DATA;
+    }
+
+    if (this.#routeModel.routeState === RouteState.FAILED_LOAD) {
+      return StateType.FAILED_LOAD_DATA;
     }
 
     // Сначала получаем отфильтрованные и отсортированные данные
@@ -83,7 +87,7 @@ export default class RoutePresenter {
     } else {
       // В модели данных нет
       if (this.#filterPresenter.currentFilter !== DEFAULT_FILTER_TYPE) {
-        // Вот этот бред уже чисто под тесты! Если фильтр - не фильтр по умолчанию, то состояние - пустые отфильтрованные данные
+        // Вот этот костыль уже чисто под тесты! Если фильтр - не фильтр по умолчанию, то состояние - пустые отфильтрованные данные
         stateType = StateType.EMPTY_FILTERED_VIEW;
       } else {
         stateType = StateType.EMPTY_VIEW;
@@ -99,15 +103,9 @@ export default class RoutePresenter {
       stateType = this.#getStateType();
     }
 
-    // if (this.#headerPresenter.headerComponent) {
     this.#headerPresenter.refreshHeader();
-    // }
-    // if (this.#filterPresenter.filterComponent) {
     this.#filterPresenter.refreshFilter();
-    // }
-    // if (this.#sortPresenter.sortComponent) {
     this.#sortPresenter.refreshSort();
-    // }
 
     switch (stateType) {
       case StateType.LOADING_VIEW:
@@ -144,6 +142,10 @@ export default class RoutePresenter {
       case StateType.NO_DATA:
         this.#setNoDataViewState();
         break;
+
+      case StateType.FAILED_LOAD_DATA:
+        this.#setFailedLoadDataViewState();
+        break;
     }
 
     document.querySelector('.trip-main__event-add-btn').addEventListener('click', this.#setNewPointViewState);
@@ -174,6 +176,14 @@ export default class RoutePresenter {
 
   #setNoDataViewState = () => {
     const prevRouteComponent = this.#routeComponent;
+    this.#routeComponent = new EmptyRouteView('Click New Event to create your first point');
+    document.querySelector('.trip-main__event-add-btn').disabled = true;
+    replace(this.#routeComponent, prevRouteComponent);
+    remove(prevRouteComponent);
+  };
+
+  #setFailedLoadDataViewState = () => {
+    const prevRouteComponent = this.#routeComponent;
     this.#routeComponent = new EmptyRouteView('Failed to load latest route information');
     document.querySelector('.trip-main__event-add-btn').disabled = true;
     replace(this.#routeComponent, prevRouteComponent);
@@ -199,17 +209,6 @@ export default class RoutePresenter {
 
   // Для всех точек маршрута восстанавливаем исходный вид (превращаем в строку)
   resetRoutePoints = () => this.#pointMap.forEach((item) => item.resetComponent());
-
-  //   {
-  //   console.log('before delete', this.#pointMap);
-  //   const newEventPresenter = this.#pointMap.get(0);
-  //   if (newEventPresenter) {
-  //     newEventPresenter.removeComponent();
-  //     this.#pointMap.delete(0);
-  //   }
-  //   console.log('after delete', this.#pointMap);
-  //   this.#pointMap.forEach((item) => item.resetComponent());
-  // };
 
   #setNewPointViewState = () => {
     // Сначала сбрасываем к исходному виду все открытые формы

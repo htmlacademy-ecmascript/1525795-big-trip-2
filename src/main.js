@@ -11,7 +11,7 @@ import DestinationModel from './model/destination-model.js';
 import OfferModel from './model/offer-model.js';
 
 const ENDPOINT = 'https://22.objects.htmlacademy.pro/big-trip';
-const AUTHORIZATION = 'Basic abcfghijklmno';
+const AUTHORIZATION = 'Basic asdffghijklmno';
 
 export const routeApi = new RouteApi(ENDPOINT, AUTHORIZATION);
 const routeModel = new RouteModel(routeApi);
