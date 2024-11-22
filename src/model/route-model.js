@@ -9,7 +9,6 @@ import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
 
 import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc.js';
 import isBetween from 'dayjs/plugin/isBetween';
 
 

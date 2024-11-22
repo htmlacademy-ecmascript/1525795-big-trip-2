@@ -2,7 +2,6 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { PointTypes } from '../utils/common.js';
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
-import { replace } from '../framework/render.js';
 import { ActionType } from '../utils/common.js';
 
 import dayjs from 'dayjs';
