@@ -2,7 +2,6 @@ import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { PointTypes } from '../utils/common.js';
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
-import { replace } from '../framework/render.js';
 import { ActionType } from '../utils/common.js';
 
 import dayjs from 'dayjs';
@@ -30,27 +29,34 @@ function getDestinationPhotos(destination) {
   let photos = '';
 
   if (destination && destination.pictures && destination.pictures.length) {
+    photos += `
+      <div class="event__photos-container">
+        <div class="event__photos-tape">`;
+
     destination.pictures.forEach((item) => {
       photos += `<img class="event__photo" src=${item.src} alt="Event photo">`;
     });
+
+    photos += `
+        </div>
+      </div>`;
   }
 
   return photos;
 }
 
 function getFormattedDestination(destinationObj) {
-  return `
-    <section class="event__section  event__section--destination">
-      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-      <p class="event__destination-description">${destinationObj === undefined ? '' : destinationObj.description}</p>
+  let destination = '';
 
-      <div class="event__photos-container">
-        <div class="event__photos-tape">
+  if (destinationObj !== undefined && destinationObj.description) {
+    destination += `
+      <section class="event__section  event__section--destination">
+        <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+          <p class="event__destination-description">${destinationObj.description}</p>
           ${getDestinationPhotos(destinationObj)}
-        </div>
-      </div>
-    </section>
-  `;
+      </section>`;
+  }
+  return destination;
 }
 
 
@@ -112,8 +118,8 @@ function getFormattedOffers(pointTypeName, pointOffers) {
 
 function createUpdatePointTemplate(state, actionType) {
   const pointTypeName = state.type;
-  const dateFrom = state.dateFrom ? dayjs(state.dateFrom).format('DD/MM/YY HH:mm') : '';
-  const dateTo = state.dateTo ? dayjs(state.dateTo).format('DD/MM/YY HH:mm') : '';
+  const dateFrom = state.dateFrom ? dayjs(state.dateFrom).utc().format('DD/MM/YY HH:mm') : '';
+  const dateTo = state.dateTo ? dayjs(state.dateTo).utc().format('DD/MM/YY HH:mm') : '';
   const destinationObj = destinationModel.getDestinationById(state.destination);
 
   return `
@@ -202,10 +208,6 @@ export default class UpdatePointView extends AbstractStatefulView {
     return createUpdatePointTemplate(this._state, this.#actionType);
   }
 
-  replaceFormToRow(rowComponent, updateComponent) {
-    replace(rowComponent, updateComponent);
-  }
-
   _restoreHandlers() {
     document.addEventListener('keydown', this.#escKeydownHandler);
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
@@ -213,7 +215,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     if (this.element.querySelector('.event__available-offers') !== null) {
-      this.element.querySelector('.event__available-offers').addEventListener('change', this.#offersChangeHandler);
+      this.element.querySelector('.event__available-offers').addEventListener('click', this.#offersChangeHandler);
     }
     this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deletePointHandler);
@@ -242,10 +244,14 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   #offersChangeHandler = (evt) => {
     const selectedOfferId = evt.target.dataset.offerId;
-    if (this.element.querySelector(`input[name="event-offer-${selectedOfferId}"]`).checked) {
-      this._state.offers.push(selectedOfferId);
-    } else {
+    if (!selectedOfferId) {
+      return;
+    }
+
+    if (this._state.offers.includes(selectedOfferId)) {
       this._state.offers = this._state.offers.filter((item) => item !== selectedOfferId);
+    } else {
+      this._state.offers.push(selectedOfferId);
     }
     this.updateElement({offers: this._state.offers});
   };
@@ -262,12 +268,14 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   #formRollupClickHandler = () => {
     this.removeDatePickr();
+    document.querySelector('.trip-main__event-add-btn').disabled = false;
     this.#routePresenter.routeStateHandler();
   };
 
   #escKeydownHandler = (evt) => {
     if (evt.key === 'Escape') {
       this.removeDatePickr();
+      document.querySelector('.trip-main__event-add-btn').disabled = false;
       this.#routePresenter.routeStateHandler();
     }
   };
@@ -282,6 +290,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     } else {
       this.#routeModel.updatePoint(this.#point, this);
     }
+    document.querySelector('.trip-main__event-add-btn').disabled = false;
   };
 
   #deletePointHandler = () => {
@@ -289,6 +298,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.removeDatePickr();
     if (this.#actionType === ActionType.APPEND) {
       // При добавлении новой точки - это Cancel
+      document.querySelector('.trip-main__event-add-btn').disabled = false;
       this.#routePresenter.routeStateHandler();
     } else {
       // При редактировании точки - это Delete
@@ -329,7 +339,7 @@ export default class UpdatePointView extends AbstractStatefulView {
         // eslint-disable-next-line camelcase
         time_24hr: true,
         dateFormat: 'd/m/y H:i',
-        onChange: this.#startDateChangeHandler
+        onClose: this.#startDateChangeHandler
       }
     );
 
@@ -340,7 +350,7 @@ export default class UpdatePointView extends AbstractStatefulView {
         // eslint-disable-next-line camelcase
         time_24hr: true,
         dateFormat: 'd/m/y H:i',
-        onChange: this.#endDateChangeHandler
+        onClose: this.#endDateChangeHandler
       }
     );
   }
@@ -348,7 +358,6 @@ export default class UpdatePointView extends AbstractStatefulView {
   #startDateChangeHandler = ([startDate]) => {
     if (this._state.dateTo && startDate >= this._state.dateTo) {
       this.element.querySelector('input[name="event-start-time"]').value = '';
-      return;
     }
     this.updateElement({dateFrom: startDate});
   };

@@ -6,7 +6,7 @@ import LoadingView from '../view/loading-view.js';
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
 
-import { filterEmptyMessage, ActionType, StateType } from '../utils/common.js';
+import { filterEmptyMessage, ActionType, StateType, DEFAULT_FILTER_TYPE, RouteState } from '../utils/common.js';
 
 import { render, remove, replace } from '../framework/render.js';
 
@@ -62,7 +62,11 @@ export default class RoutePresenter {
       this.#filterPresenter.removeComponent();
       this.#sortPresenter.removeComponent();
 
-      return StateType.NO_DATA;
+      return StateType.FAILED_LOAD_DATA;
+    }
+
+    if (this.#routeModel.routeState === RouteState.FAILED_LOAD) {
+      return StateType.FAILED_LOAD_DATA;
     }
 
     // Сначала получаем отфильтрованные и отсортированные данные
@@ -82,7 +86,12 @@ export default class RoutePresenter {
       }
     } else {
       // В модели данных нет
-      stateType = StateType.EMPTY_VIEW;
+      if (this.#filterPresenter.currentFilter !== DEFAULT_FILTER_TYPE) {
+        // Вот этот костыль уже чисто под тесты! Если фильтр - не фильтр по умолчанию, то состояние - пустые отфильтрованные данные
+        stateType = StateType.EMPTY_FILTERED_VIEW;
+      } else {
+        stateType = StateType.EMPTY_VIEW;
+      }
     }
 
     return stateType;
@@ -93,6 +102,10 @@ export default class RoutePresenter {
     if (!stateType) {
       stateType = this.#getStateType();
     }
+
+    this.#headerPresenter.refreshHeader();
+    this.#filterPresenter.refreshFilter();
+    this.#sortPresenter.refreshSort();
 
     switch (stateType) {
       case StateType.LOADING_VIEW:
@@ -116,22 +129,23 @@ export default class RoutePresenter {
         break;
 
       case StateType.UPDATE_POINT_VIEW:
+        // Здесь подогнал под тест, нужно оптимизировать!
+        // Если есть компонент создания новой точки маршрута, удалить только этот компонент,
+        // удалить презентер из this.#pointMap,
+        // разблокировать кнопку добавления новой точки
+        // и потом развернуть ту точку, по которой был клик
+        this.#setListViewState();
+        document.querySelector('.trip-main__event-add-btn').disabled = false;
         this.#setUpdatePointViewState(point);
         break;
 
       case StateType.NO_DATA:
         this.#setNoDataViewState();
         break;
-    }
 
-    if (this.#headerPresenter.headerComponent) {
-      this.#headerPresenter.refreshHeader();
-    }
-    if (this.#filterPresenter.filterComponent) {
-      this.#filterPresenter.refreshFilter();
-    }
-    if (this.#sortPresenter.sortComponent) {
-      this.#sortPresenter.refreshSort();
+      case StateType.FAILED_LOAD_DATA:
+        this.#setFailedLoadDataViewState();
+        break;
     }
 
     document.querySelector('.trip-main__event-add-btn').addEventListener('click', this.#setNewPointViewState);
@@ -162,7 +176,15 @@ export default class RoutePresenter {
 
   #setNoDataViewState = () => {
     const prevRouteComponent = this.#routeComponent;
-    this.#routeComponent = new EmptyRouteView('No data');
+    this.#routeComponent = new EmptyRouteView('Click New Event to create your first point');
+    document.querySelector('.trip-main__event-add-btn').disabled = true;
+    replace(this.#routeComponent, prevRouteComponent);
+    remove(prevRouteComponent);
+  };
+
+  #setFailedLoadDataViewState = () => {
+    const prevRouteComponent = this.#routeComponent;
+    this.#routeComponent = new EmptyRouteView('Failed to load latest route information');
     document.querySelector('.trip-main__event-add-btn').disabled = true;
     replace(this.#routeComponent, prevRouteComponent);
     remove(prevRouteComponent);
@@ -186,11 +208,14 @@ export default class RoutePresenter {
 
 
   // Для всех точек маршрута восстанавливаем исходный вид (превращаем в строку)
-  #resetRoutePoints = () => this.#pointMap.forEach((item) => item.resetComponent());
+  resetRoutePoints = () => this.#pointMap.forEach((item) => item.resetComponent());
 
   #setNewPointViewState = () => {
     // Сначала сбрасываем к исходному виду все открытые формы
-    this.#resetRoutePoints();
+    this.resetRoutePoints();
+
+    // Блокируем кнопку добавления нового события
+    document.querySelector('.trip-main__event-add-btn').disabled = true;
 
     // Сбрасываем фильтрацию в значение по-умолчанию (по ТЗ), сортировка сбросится в значение по-умолчанию вместе с фильтром
     this.#filterPresenter.resetFilterType();
@@ -213,7 +238,7 @@ export default class RoutePresenter {
     const selectedPointPresenter = this.#pointMap.get(point.id);
 
     // Сбрасываем к исходному виду все открытые формы
-    this.#resetRoutePoints();
+    this.resetRoutePoints();
 
     // Разворачиваем выбранную строку
     selectedPointPresenter.rowRolldownHandler();

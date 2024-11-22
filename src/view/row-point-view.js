@@ -6,7 +6,9 @@ import { offerModel } from '../main.js';
 import { StateType } from '../utils/common.js';
 
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
+dayjs.extend(utc);
 
 function createRowPointTemplate(routePoint) {
   const { id, type: pointType, destination, dateFrom, dateTo, basePrice, isFavorite, offers } = routePoint;
@@ -18,13 +20,14 @@ function createRowPointTemplate(routePoint) {
   let diffDate = null;
   let formattedEventLength = '';
   if (id !== 0) {
-    startDate = dayjs(dateFrom);
-    endDate = dayjs(dateTo);
+    startDate = dayjs(dateFrom).utc();
+    endDate = dayjs(dateTo).utc();
     formattedStartDate = startDate.format('MMM DD');
     startTime = startDate.format('HH:mm');
     endTime = endDate.format('HH:mm');
-    diffDate = dayjs(endDate - startDate);
-    formattedEventLength = `${diffDate.format('DD')}D ${diffDate.format('HH')}H ${diffDate.format('mm')}M`;
+    diffDate = dayjs(endDate - startDate).utc();
+    const daysCount = Math.round((endDate - startDate) / 1000 / 60 / 60 / 24).toString().padStart(2, '0');
+    formattedEventLength = `${daysCount}D ${diffDate.format('HH')}H ${diffDate.format('mm')}M`;
   }
 
   const destinationItem = destinationModel.getDestinationById(destination);
