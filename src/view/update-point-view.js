@@ -170,7 +170,7 @@ function createUpdatePointTemplate(state, actionType) {
 
           <button class="event__save-btn btn btn--blue" type="submit">Save</button>
           <button class="event__reset-btn" type="reset">${ actionType === ActionType.APPEND ? 'Cancel' : 'Delete'}</button>
-          <button class="event__rollup-btn" type="button">
+          ${ actionType === ActionType.APPEND ? '' : '<button class="event__rollup-btn" type="button">' }
             <span class="visually-hidden">Open event</span>
           </button>
         </header>
@@ -210,7 +210,9 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   _restoreHandlers() {
     document.addEventListener('keydown', this.#escKeydownHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
+    if (this.#actionType !== ActionType.APPEND) {
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
+    }
     this.element.querySelector('.event--edit').addEventListener('submit', this.#submitClickHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
@@ -223,6 +225,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.#setDatePicker();
   }
 
+
   #eventTypeChangeHandler = () => {
     const newPointTypeName = this.element.querySelector('input[name="event-type"]:checked').value;
     this._state.offers = [];
@@ -234,11 +237,12 @@ export default class UpdatePointView extends AbstractStatefulView {
       const newDestination = this.element.querySelector('.event__input--destination').value;
       const destinationObj = destinationModel.getDestinationByName(newDestination);
       if (destinationObj === undefined) {
-        this.element.querySelector('.event__input--destination').value = '';
+        // Возвращаем исходное значение
+        this.element.querySelector('.event__input--destination').value = destinationModel.getDestinationById(this._state.destination).name;
         return null;
       }
 
-      this.updateElement({destination: destinationModel.getDestinationByName(newDestination).id});
+      this.updateElement({destination: destinationObj.id});
     }
   };
 
@@ -257,13 +261,13 @@ export default class UpdatePointView extends AbstractStatefulView {
   };
 
   #priceChangeHandler = (evt) => {
-    if (isNaN(parseInt(evt.target.value, 10)) || parseInt(evt.target.value, 10) <= 0) {
-      evt.target.value = 0;
-      this.updateElement({basePrice: 0});
-      return;
+    const price = Number(evt.target.value);
+    if (!price || price <= 0) {
+      evt.target.value = this._state.basePrice;
+      return false;
     }
-    evt.preventDefault();
-    this.updateElement({basePrice: parseInt(evt.target.value, 10)});
+
+    this._setState({basePrice: price});
   };
 
   #formRollupClickHandler = () => {
@@ -339,7 +343,7 @@ export default class UpdatePointView extends AbstractStatefulView {
         // eslint-disable-next-line camelcase
         time_24hr: true,
         dateFormat: 'd/m/y H:i',
-        onClose: this.#startDateChangeHandler
+        onChange: this.#startDateChangeHandler
       }
     );
 
@@ -350,7 +354,7 @@ export default class UpdatePointView extends AbstractStatefulView {
         // eslint-disable-next-line camelcase
         time_24hr: true,
         dateFormat: 'd/m/y H:i',
-        onClose: this.#endDateChangeHandler
+        onChange: this.#endDateChangeHandler
       }
     );
   }
@@ -359,7 +363,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     if (this._state.dateTo && startDate >= this._state.dateTo) {
       this.element.querySelector('input[name="event-start-time"]').value = '';
     }
-    this.updateElement({dateFrom: startDate});
+    this._setState({dateFrom: startDate});
   };
 
   #endDateChangeHandler = ([endDate]) => {
@@ -367,7 +371,7 @@ export default class UpdatePointView extends AbstractStatefulView {
       this.element.querySelector('input[name="event-end-time"]').value = '';
       return;
     }
-    this.updateElement({dateTo: endDate});
+    this._setState({dateTo: endDate});
   };
 
   static parsePointToState(point) {

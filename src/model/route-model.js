@@ -92,7 +92,7 @@ export default class RouteModel extends Observable {
 
       const response = await this.#routeApiService.addPoint(convertedPoint);
       this.#route.push(this.#convertToInnerFormat(response));
-      await uiBlocker.unblock();
+      uiBlocker.unblock();
       this._notify();
     } catch(err) {
       uiBlocker.unblock();
@@ -115,7 +115,7 @@ export default class RouteModel extends Observable {
       const response = await this.#routeApiService.updatePoint(convertedPoint);
       const updatedPoint = await this.#convertToInnerFormat(response);
       this.#route = [...this.#route.slice(0, idx), updatedPoint, ...this.#route.slice(idx + 1)];
-      await uiBlocker.unblock();
+      uiBlocker.unblock();
       this._notify();
     } catch(err) {
       uiBlocker.unblock();
@@ -136,7 +136,7 @@ export default class RouteModel extends Observable {
       uiBlocker.block();
       await this.#routeApiService.deletePoint(point.id);
       this.#route = [...this.#route.slice(0, idx), ...this.#route.slice(idx + 1)];
-      await uiBlocker.unblock();
+      uiBlocker.unblock();
       this._notify();
     } catch (err) {
       uiBlocker.unblock();
@@ -158,9 +158,10 @@ export default class RouteModel extends Observable {
       const response = await this.#routeApiService.updatePoint(convertedPoint);
       const updatedPoint = this.#convertToInnerFormat(response);
       this.#route = [...this.#route.slice(0, idx), updatedPoint, ...this.#route.slice(idx + 1)];
-      await uiBlocker.unblock();
+      uiBlocker.unblock();
       return updatedPoint;
     } catch (err) {
+      uiBlocker.unblock();
       return false;
     }
 

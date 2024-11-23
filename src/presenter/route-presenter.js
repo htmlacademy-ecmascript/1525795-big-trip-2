@@ -126,6 +126,7 @@ export default class RoutePresenter {
 
       case StateType.NEW_POINT_VIEW:
         this.#setNewPointViewState();
+        this.#sortPresenter.removeComponent();
         break;
 
       case StateType.UPDATE_POINT_VIEW:
@@ -141,10 +142,14 @@ export default class RoutePresenter {
 
       case StateType.NO_DATA:
         this.#setNoDataViewState();
+        this.#headerPresenter.removeComponent();
+        this.#sortPresenter.removeComponent();
         break;
 
       case StateType.FAILED_LOAD_DATA:
         this.#setFailedLoadDataViewState();
+        this.#headerPresenter.removeComponent();
+        this.#sortPresenter.removeComponent();
         break;
     }
 
