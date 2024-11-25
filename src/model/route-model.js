@@ -61,14 +61,14 @@ export default class RouteModel extends Observable {
       case FilterType.EVERYTHING:
         break;
       case FilterType.FUTURE:
-        routeData = routeData.filter((item) => dayjs(item.dateFrom).utc() > dayjs());
+        routeData = routeData.filter((item) => dayjs(item.dateFrom) > dayjs());
         break;
       case FilterType.PRESENT:
         dayjs.extend(isBetween);
         routeData = routeData.filter((item) => dayjs().isBetween(item.dateFrom, item.dateTo));
         break;
       case FilterType.PAST:
-        routeData = routeData.filter((item) => dayjs(item.dateTo).utc() <= dayjs());
+        routeData = routeData.filter((item) => dayjs(item.dateTo) <= dayjs());
         break;
     }
 
@@ -92,7 +92,7 @@ export default class RouteModel extends Observable {
 
       const response = await this.#routeApiService.addPoint(convertedPoint);
       this.#route.push(this.#convertToInnerFormat(response));
-      await uiBlocker.unblock();
+      uiBlocker.unblock();
       this._notify();
     } catch(err) {
       uiBlocker.unblock();
@@ -115,7 +115,7 @@ export default class RouteModel extends Observable {
       const response = await this.#routeApiService.updatePoint(convertedPoint);
       const updatedPoint = await this.#convertToInnerFormat(response);
       this.#route = [...this.#route.slice(0, idx), updatedPoint, ...this.#route.slice(idx + 1)];
-      await uiBlocker.unblock();
+      uiBlocker.unblock();
       this._notify();
     } catch(err) {
       uiBlocker.unblock();
@@ -136,7 +136,7 @@ export default class RouteModel extends Observable {
       uiBlocker.block();
       await this.#routeApiService.deletePoint(point.id);
       this.#route = [...this.#route.slice(0, idx), ...this.#route.slice(idx + 1)];
-      await uiBlocker.unblock();
+      uiBlocker.unblock();
       this._notify();
     } catch (err) {
       uiBlocker.unblock();
@@ -158,9 +158,10 @@ export default class RouteModel extends Observable {
       const response = await this.#routeApiService.updatePoint(convertedPoint);
       const updatedPoint = this.#convertToInnerFormat(response);
       this.#route = [...this.#route.slice(0, idx), updatedPoint, ...this.#route.slice(idx + 1)];
-      await uiBlocker.unblock();
+      uiBlocker.unblock();
       return updatedPoint;
     } catch (err) {
+      uiBlocker.unblock();
       return false;
     }
 
@@ -192,10 +193,10 @@ export default class RouteModel extends Observable {
     }
 
     const copyRoute = this.#route.slice().sort(sortByDate);
-    const startDate = dayjs(copyRoute[0].dateFrom).utc();
-    const endDate = dayjs(copyRoute.slice(-1)[0].dateTo).utc();
+    const startDate = new Date(copyRoute[0].dateFrom);
+    const endDate = new Date(copyRoute.slice(-1)[0].dateTo);
 
-    return `${getFormattedRangeDate(startDate.date(), startDate.month() + 1, endDate.date(), endDate.month() + 1)}`;
+    return `${getFormattedRangeDate(startDate.getUTCDate(), startDate.getUTCMonth() + 1, endDate.getUTCDate(), endDate.getUTCMonth() + 1)}`;
   }
 
   getRouteCost() {

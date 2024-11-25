@@ -58,10 +58,6 @@ export default class RoutePresenter {
 
     if (!destinations.length || !offers.length) {
       // Если не подгрузились точки назначения или доп.опции, то смысла работать с приложением нет
-      this.#headerPresenter.removeComponent();
-      this.#filterPresenter.removeComponent();
-      this.#sortPresenter.removeComponent();
-
       return StateType.FAILED_LOAD_DATA;
     }
 
@@ -103,6 +99,7 @@ export default class RoutePresenter {
       stateType = this.#getStateType();
     }
 
+    // Здесь нужно оптимизировать. Если StateType.FAILED_LOAD_DATA или StateType.NO_DATA, то нет смысла обновлять заголовок, сортировку, фильтры
     this.#headerPresenter.refreshHeader();
     this.#filterPresenter.refreshFilter();
     this.#sortPresenter.refreshSort();
@@ -126,6 +123,7 @@ export default class RoutePresenter {
 
       case StateType.NEW_POINT_VIEW:
         this.#setNewPointViewState();
+        this.#sortPresenter.removeComponent();
         break;
 
       case StateType.UPDATE_POINT_VIEW:
@@ -141,10 +139,14 @@ export default class RoutePresenter {
 
       case StateType.NO_DATA:
         this.#setNoDataViewState();
+        this.#headerPresenter.removeComponent();
+        this.#sortPresenter.removeComponent();
         break;
 
       case StateType.FAILED_LOAD_DATA:
         this.#setFailedLoadDataViewState();
+        this.#headerPresenter.removeComponent();
+        this.#sortPresenter.removeComponent();
         break;
     }
 

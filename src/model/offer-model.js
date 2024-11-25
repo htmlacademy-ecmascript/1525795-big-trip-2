@@ -19,16 +19,14 @@ export default class OfferModel {
   }
 
   getOfferById(pointType, id) {
-    if (this.#offers) {
-      const offerItem = this.#offers.find((item) => item.type === pointType);
+    if (!this.#offers || this.#offers.length === 0) {
+      return null;
+    }
 
-      if (offerItem.offers) {
-        for (const innerOffer of offerItem.offers) {
-          if (innerOffer.id === id) {
-            return innerOffer;
-          }
-        }
-      }
+    const offerItem = this.#offers.find((item) => item.type === pointType);
+
+    if (offerItem.offers) {
+      return offerItem.offers.find((item) => item.id === id);
     }
 
     return null;
