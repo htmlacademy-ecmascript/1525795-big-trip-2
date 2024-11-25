@@ -5,13 +5,13 @@ const getEventLength = (dateFrom, dateTo) => {
   // const startDateTime = new Date(dateFrom);
   // const endDateTime = new Date(dateTo);
 
-  const startDateTime = dayjs(dateFrom).utc();
-  const endDateTime = dayjs(dateTo).utc();
+  const startDateTime = dayjs(dateFrom);
+  const endDateTime = dayjs(dateTo);
 
   return endDateTime - startDateTime;
 };
 
-const getEventDate = (dateFrom) => dayjs(dateFrom).utc();
+const getEventDate = (dateFrom) => dayjs(dateFrom);
 export const sortByPrice = (a, b) => b.basePrice - a.basePrice;
 export const sortByDate = (a, b) => getEventDate(a.dateFrom) - getEventDate(b.dateFrom);
 export const sortByTime = (a, b) => getEventLength(b.dateFrom, b.dateTo) - getEventLength(a.dateFrom, a.dateTo);

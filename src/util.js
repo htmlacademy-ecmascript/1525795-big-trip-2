@@ -13,6 +13,9 @@ const months = {
   12: 'DEC',
 };
 
+const msecInMinute = 1000;
+const secInHour = 3600;
+const hourInDay = 24;
 
 export const getRandomInteger = (min, max) => {
   const lower = Math.ceil(Math.min(Math.abs(min), Math.abs(max)));
@@ -30,12 +33,13 @@ export const getRandomArrayItem = (itemsArray) => {
 };
 
 
-export const getFormattedRangeDate = (startDay, startMonth, endDay, endMonth) => {
-  if (startMonth === endMonth) {
-    return `${String(startDay).padStart(2, '0')} - ${String(endDay).padStart(2, '0')}
-            ${months[startMonth]}`;
-  }
-
-  return `${String(startDay).padStart(2, '0')} ${months[startMonth]} -
+export const getFormattedRangeDate = (startDay, startMonth, endDay, endMonth) => `${String(startDay).padStart(2, '0')} ${months[startMonth]} -
           ${String(endDay).padStart(2, '0')} ${months[endMonth]}`;
-};
+
+
+export const getFormattedDateMMMDD = (startDay, startMonth) => `${months[startMonth]} ${String(startDay).padStart(2, '0')}`;
+
+export const getFormattedTimeHHmm = (hours, minutes) => `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+// Только ради соблюдения критериев )
+export const getDayCountFromMs = (startDate, endDate) => Math.floor((endDate - startDate) / msecInMinute / secInHour / hourInDay);

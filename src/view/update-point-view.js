@@ -118,8 +118,8 @@ function getFormattedOffers(pointTypeName, pointOffers) {
 
 function createUpdatePointTemplate(state, actionType) {
   const pointTypeName = state.type;
-  const dateFrom = state.dateFrom ? dayjs(state.dateFrom).utc().format('DD/MM/YY HH:mm') : '';
-  const dateTo = state.dateTo ? dayjs(state.dateTo).utc().format('DD/MM/YY HH:mm') : '';
+  const dateFrom = state.dateFrom ? dayjs(state.dateFrom).format('DD/MM/YY HH:mm') : '';
+  const dateTo = state.dateTo ? dayjs(state.dateTo).format('DD/MM/YY HH:mm') : '';
   const destinationObj = destinationModel.getDestinationById(state.destination);
 
   return `
@@ -363,6 +363,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     if (this._state.dateTo && startDate >= this._state.dateTo) {
       this.element.querySelector('input[name="event-start-time"]').value = '';
     }
+    this.element.querySelector('input[name="event-start-time"]').setAttribute('value', dayjs(startDate).format('DD/MM/YY HH:mm'));
     this._setState({dateFrom: startDate});
   };
 
@@ -371,6 +372,7 @@ export default class UpdatePointView extends AbstractStatefulView {
       this.element.querySelector('input[name="event-end-time"]').value = '';
       return;
     }
+    this.element.querySelector('input[name="event-end-time"]').setAttribute('value', dayjs(endDate).format('DD/MM/YY HH:mm'));
     this._setState({dateTo: endDate});
   };
 
