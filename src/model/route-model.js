@@ -3,7 +3,7 @@ import Observable from '../framework/observable.js';
 import { uiBlocker } from '../main.js';
 import { DEFAULT_SORT_METHOD, sortByDate } from '../utils/common.js';
 import { getFormattedRangeDate } from '../util.js';
-import { FilterType, SortMethods, RouteState } from '../utils/common.js';
+import { FilterType, SortMethods, StateType } from '../utils/common.js';
 
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
@@ -13,7 +13,7 @@ import isBetween from 'dayjs/plugin/isBetween';
 
 
 export default class RouteModel extends Observable {
-  #routeState = RouteState.FAILED_LOAD;
+  #routeState = StateType.FAILED_LOAD;
   #routeApiService = null;
   #route = [];
   #emptyPoint = {
@@ -37,9 +37,9 @@ export default class RouteModel extends Observable {
     try {
       const points = await this.#routeApiService.points;
       this.#route = points.map(this.#convertToInnerFormat);
-      this.#routeState = RouteState.SUCCESS;
+      this.#routeState = StateType.SUCCESS;
     } catch (err) {
-      this.#routeState = RouteState.FAILED_LOAD;
+      this.#routeState = StateType.FAILED_LOAD;
       return false;
     }
   }

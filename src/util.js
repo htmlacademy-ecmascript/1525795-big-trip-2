@@ -1,4 +1,4 @@
-const months = {
+const Months = {
   1: 'JAN',
   2: 'FEB',
   3: 'MAR',
@@ -33,11 +33,11 @@ export const getRandomArrayItem = (itemsArray) => {
 };
 
 
-export const getFormattedRangeDate = (startDay, startMonth, endDay, endMonth) => `${String(startDay).padStart(2, '0')} ${months[startMonth]} -
-          ${String(endDay).padStart(2, '0')} ${months[endMonth]}`;
+export const getFormattedRangeDate = (startDay, startMonth, endDay, endMonth) => `${String(startDay).padStart(2, '0')} ${Months[startMonth]} -
+          ${String(endDay).padStart(2, '0')} ${Months[endMonth]}`;
 
 
-export const getFormattedDateMMMDD = (startDay, startMonth) => `${months[startMonth]} ${String(startDay).padStart(2, '0')}`;
+export const getFormattedDateMMMDD = (startDay, startMonth) => `${Months[startMonth]} ${String(startDay).padStart(2, '0')}`;
 
 export const getFormattedTimeHHmm = (hours, minutes) => `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 

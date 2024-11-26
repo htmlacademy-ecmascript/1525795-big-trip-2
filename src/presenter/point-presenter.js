@@ -1,4 +1,4 @@
-import RoutePointView from '../view/row-point-view.js';
+import RoutePointView from '../view/route-point-view.js';
 import UpdatePointView from '../view/update-point-view.js';
 import { ActionType } from '../utils/common.js';
 
@@ -13,7 +13,7 @@ export default class PointPresenter {
   #routePresenter = null;
   #routeModel = null;
   #routeComponent = null;
-  #rowComponent = null; // ??????? зачем передавать параметром?????
+  #rowComponent = null;
   #updateComponent = null;
   #point = null;
   #mode = null;
