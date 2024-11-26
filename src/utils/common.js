@@ -82,8 +82,16 @@ export const StateType = {
   NEW_POINT_VIEW: 'New point view',
   UPDATE_POINT_VIEW: 'Update point view',
   NO_DATA: 'No data',
-  FAILED_LOAD_DATA: 'Failed to load latest route information'
+  FAILED_LOAD_DATA: 'Failed load data',
+  SUCCESS: 'Success'
 };
+
+export const StateTypeMessage = {
+  NO_DATA: 'Click New Event to create your first point',
+  FAILED_LOAD_DATA: 'Failed to load latest route information',
+  SUCCESS: 'Success'
+};
+
 
 export const EventType = {
   ADD_POINT: 'Add point',
@@ -91,9 +99,4 @@ export const EventType = {
   DELETE_POINT: 'Delete point',
   FAVORITE_POINT: 'Favorite point',
   ROW_ROLLUP: 'Row rollup'
-};
-
-export const RouteState = {
-  SUCCESS: 'Success',
-  FAILED_LOAD: 'Failed to load latest route information'
 };

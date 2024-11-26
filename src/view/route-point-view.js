@@ -91,6 +91,11 @@ function createRowPointTemplate(routePoint) {
   `;
 }
 
+// По замечанию наставника (row-point-view.js - нет необходимости в _restoreHandlers,
+// не нужно наследоваться от AbstractStatefulView, достаточно AbstractView;):
+// здесь я не могу унаследоваться от AbstractView, так как строка с точкой маршрута - это фактически
+// форма редактирования с одним полем - признак Favorites (просто без кнопки submit),
+// после изменения которого происходит перерисовка компонента (метод UpdateElement для экземпляра класса) и восстановление хэндлеров
 export default class RoutePointView extends AbstractStatefulView {
   #routePresenter = null;
   #routeModel = null;
@@ -115,13 +120,17 @@ export default class RoutePointView extends AbstractStatefulView {
 
   replaceRowToForm(updateComponent, rowComponent) {
     replace(updateComponent, rowComponent);
+    this.addHandlers();
   }
 
   #favoriteClickHandler = async () => {
+    const originalPoint = this.#point;
     this.#point = await this.#routeModel.toggleFavorite(this.#point);
     if (this.#point) {
       await this.updateElement({isFaforite: this.#point.isFavorite});
     } else {
+      this.#point = originalPoint;
+      this.updateElement(this.#point);
       this.shake();
     }
   };

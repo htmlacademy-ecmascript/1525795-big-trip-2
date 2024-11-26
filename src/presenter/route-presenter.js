@@ -1,14 +1,17 @@
 import RouteView from '../view/route-view.js';
-import EmptyRouteView from '../view/empty-route.js';
+import EmptyRouteView from '../view/empty-route-view.js';
 import PointPresenter from './point-presenter.js';
-import LoadingView from '../view/loading-view.js';
 
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
+import NewEventView from '../view/new-event-view.js';
 
-import { filterEmptyMessage, ActionType, StateType, DEFAULT_FILTER_TYPE, RouteState } from '../utils/common.js';
+import { filterEmptyMessage, ActionType, StateType, StateTypeMessage, DEFAULT_FILTER_TYPE } from '../utils/common.js';
 
 import { render, remove, replace } from '../framework/render.js';
+
+const eventAddButton = new NewEventView();
+
 
 export default class RoutePresenter {
   routeContainer = null;
@@ -61,7 +64,7 @@ export default class RoutePresenter {
       return StateType.FAILED_LOAD_DATA;
     }
 
-    if (this.#routeModel.routeState === RouteState.FAILED_LOAD) {
+    if (this.#routeModel.routeState === StateType.FAILED_LOAD) {
       return StateType.FAILED_LOAD_DATA;
     }
 
@@ -83,7 +86,6 @@ export default class RoutePresenter {
     } else {
       // В модели данных нет
       if (this.#filterPresenter.currentFilter !== DEFAULT_FILTER_TYPE) {
-        // Вот этот костыль уже чисто под тесты! Если фильтр - не фильтр по умолчанию, то состояние - пустые отфильтрованные данные
         stateType = StateType.EMPTY_FILTERED_VIEW;
       } else {
         stateType = StateType.EMPTY_VIEW;
@@ -133,7 +135,7 @@ export default class RoutePresenter {
         // разблокировать кнопку добавления новой точки
         // и потом развернуть ту точку, по которой был клик
         this.#setListViewState();
-        document.querySelector('.trip-main__event-add-btn').disabled = false;
+        eventAddButton.enable();
         this.#setUpdatePointViewState(point);
         break;
 
@@ -150,7 +152,7 @@ export default class RoutePresenter {
         break;
     }
 
-    document.querySelector('.trip-main__event-add-btn').addEventListener('click', this.#setNewPointViewState);
+    eventAddButton.element.addEventListener('click', this.#setNewPointViewState);
   };
 
 
@@ -164,7 +166,8 @@ export default class RoutePresenter {
 
   #setLoadingViewState = () => {
     const prevRouteComponent = this.#routeComponent;
-    this.#routeComponent = new LoadingView();
+    // this.#routeComponent = new LoadingView();
+    this.#routeComponent = new EmptyRouteView('Loading...');
     replace(this.#routeComponent, prevRouteComponent);
     remove(prevRouteComponent);
   };
@@ -178,16 +181,16 @@ export default class RoutePresenter {
 
   #setNoDataViewState = () => {
     const prevRouteComponent = this.#routeComponent;
-    this.#routeComponent = new EmptyRouteView('Click New Event to create your first point');
-    document.querySelector('.trip-main__event-add-btn').disabled = true;
+    this.#routeComponent = new EmptyRouteView(StateTypeMessage.NO_DATA);
+    eventAddButton.disable();
     replace(this.#routeComponent, prevRouteComponent);
     remove(prevRouteComponent);
   };
 
   #setFailedLoadDataViewState = () => {
     const prevRouteComponent = this.#routeComponent;
-    this.#routeComponent = new EmptyRouteView('Failed to load latest route information');
-    document.querySelector('.trip-main__event-add-btn').disabled = true;
+    this.#routeComponent = new EmptyRouteView(StateTypeMessage.FAILED_LOAD_DATA);
+    eventAddButton.disable();
     replace(this.#routeComponent, prevRouteComponent);
     remove(prevRouteComponent);
   };
@@ -217,7 +220,7 @@ export default class RoutePresenter {
     this.resetRoutePoints();
 
     // Блокируем кнопку добавления нового события
-    document.querySelector('.trip-main__event-add-btn').disabled = true;
+    eventAddButton.disable();
 
     // Сбрасываем фильтрацию в значение по-умолчанию (по ТЗ), сортировка сбросится в значение по-умолчанию вместе с фильтром
     this.#filterPresenter.resetFilterType();

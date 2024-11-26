@@ -10,6 +10,8 @@ import RouteApi from './route-api.js';
 import DestinationModel from './model/destination-model.js';
 import OfferModel from './model/offer-model.js';
 
+import NewEventView from './view/new-event-view.js';
+
 const ENDPOINT = 'https://22.objects.htmlacademy.pro/big-trip';
 const AUTHORIZATION = 'Basic asdffghijklmno';
 
@@ -39,12 +41,17 @@ const TimeLimit = {
   UPPER_LIMIT: 1000
 };
 
+const newEventButton = new NewEventView();
+
 export const uiBlocker = new UiBlocker({
   lowerLimit: TimeLimit.LOWER_LIMIT,
   upperLimit: TimeLimit.UPPER_LIMIT
 });
 
-uiBlocker.block();
+// uiBlocker.block();
+// Блокируем кнопку добавления нового события
+newEventButton.disable();
+
 
 filterPresenter.init();
 sortPresenter.init();
@@ -55,7 +62,10 @@ destinationModel.init()
   .then(() => offerModel.init())
   .then(() => routeModel.init())
   .then(() => {
-    uiBlocker.unblock();
+    // uiBlocker.unblock();
+
+    newEventButton.enable();
+
     isLoadData = false;
     routePresenter.init(isLoadData);
   });

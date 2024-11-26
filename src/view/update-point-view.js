@@ -3,6 +3,7 @@ import { PointTypes } from '../utils/common.js';
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
 import { ActionType } from '../utils/common.js';
+import NewEventView from './new-event-view.js';
 
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
@@ -191,6 +192,7 @@ export default class UpdatePointView extends AbstractStatefulView {
   #startDatePicker = null;
   #endDatePicker = null;
   #actionType = null;
+  eventRollupButton = null;
 
   constructor(routePresenter, routeModel, point, actionType) {
     super();
@@ -209,18 +211,34 @@ export default class UpdatePointView extends AbstractStatefulView {
   }
 
   _restoreHandlers() {
+    // Получается, при каждом изменении в форме редактирования методом UpdateElement перерисовывается страница
+    // Соответственно, перед восстановлением хэндлеров необходимо заново инициализировать переменные с элементами формы
+    // Надеюсь, в React будет проще??
+    this.eventRollupButton = this.element.querySelector('.event__rollup-btn');
+    this.eventEdit = this.element.querySelector('.event--edit');
+    this.eventTypeGroup = this.element.querySelector('.event__type-group');
+    this.eventInputDestination = this.element.querySelector('.event__input--destination');
+    this.eventAvailableOffers = this.element.querySelector('.event__available-offers');
+    this.eventInputPrice = this.element.querySelector('.event__input--price');
+    this.eventSaveButton = this.element.querySelector('.event__save-btn');
+    this.eventResetButton = this.element.querySelector('.event__reset-btn');
+    this.eventAddButton = new NewEventView();
+    this.eventStartTime = this.element.querySelector('input[name="event-start-time"]');
+    this.eventEndTime = this.element.querySelector('input[name="event-end-time"]');
+
+
     document.addEventListener('keydown', this.#escKeydownHandler);
     if (this.#actionType !== ActionType.APPEND) {
-      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formRollupClickHandler);
+      this.eventRollupButton.addEventListener('click', this.#formRollupClickHandler);
     }
-    this.element.querySelector('.event--edit').addEventListener('submit', this.#submitClickHandler);
-    this.element.querySelector('.event__type-group').addEventListener('change', this.#eventTypeChangeHandler);
-    this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
-    if (this.element.querySelector('.event__available-offers') !== null) {
-      this.element.querySelector('.event__available-offers').addEventListener('click', this.#offersChangeHandler);
+    this.eventEdit.addEventListener('submit', this.#submitClickHandler);
+    this.eventTypeGroup.addEventListener('change', this.#eventTypeChangeHandler);
+    this.eventInputDestination.addEventListener('change', this.#destinationChangeHandler);
+    if (this.eventAvailableOffers !== null) {
+      this.eventAvailableOffers.addEventListener('click', this.#offersChangeHandler);
     }
-    this.element.querySelector('.event__input--price').addEventListener('change', this.#priceChangeHandler);
-    this.element.querySelector('.event__reset-btn').addEventListener('click', this.#deletePointHandler);
+    this.eventInputPrice.addEventListener('change', this.#priceChangeHandler);
+    this.eventResetButton.addEventListener('click', this.#deletePointHandler);
 
     this.#setDatePicker();
   }
@@ -233,12 +251,12 @@ export default class UpdatePointView extends AbstractStatefulView {
   };
 
   #destinationChangeHandler = () => {
-    if (this.element.querySelector('.event__input--destination').value) {
-      const newDestination = this.element.querySelector('.event__input--destination').value;
+    if (this.eventInputDestination.value) {
+      const newDestination = this.eventInputDestination.value;
       const destinationObj = destinationModel.getDestinationByName(newDestination);
       if (destinationObj === undefined) {
         // Возвращаем исходное значение
-        this.element.querySelector('.event__input--destination').value = destinationModel.getDestinationById(this._state.destination).name;
+        this.eventInputDestination.value = destinationModel.getDestinationById(this._state.destination).name;
         return null;
       }
 
@@ -272,14 +290,14 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   #formRollupClickHandler = () => {
     this.removeDatePickr();
-    document.querySelector('.trip-main__event-add-btn').disabled = false;
+    this.eventAddButton.enable();
     this.#routePresenter.routeStateHandler();
   };
 
   #escKeydownHandler = (evt) => {
     if (evt.key === 'Escape') {
       this.removeDatePickr();
-      document.querySelector('.trip-main__event-add-btn').disabled = false;
+      this.eventAddButton.enable();
       this.#routePresenter.routeStateHandler();
     }
   };
@@ -294,7 +312,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     } else {
       this.#routeModel.updatePoint(this.#point, this);
     }
-    document.querySelector('.trip-main__event-add-btn').disabled = false;
+    this.eventAddButton.enable();
   };
 
   #deletePointHandler = () => {
@@ -302,7 +320,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.removeDatePickr();
     if (this.#actionType === ActionType.APPEND) {
       // При добавлении новой точки - это Cancel
-      document.querySelector('.trip-main__event-add-btn').disabled = false;
+      this.eventAddButton.enable();
       this.#routePresenter.routeStateHandler();
     } else {
       // При редактировании точки - это Delete
@@ -311,11 +329,11 @@ export default class UpdatePointView extends AbstractStatefulView {
   };
 
   setSaveButtonText = (buttonText) => {
-    this.element.querySelector('.event__save-btn').textContent = buttonText;
+    this.eventSaveButton.textContent = buttonText;
   };
 
   setDeleteButtonText = (buttonText) => {
-    this.element.querySelector('.event__reset-btn').textContent = buttonText;
+    this.eventResetButton.textContent = buttonText;
   };
 
   removeElement() {
@@ -337,7 +355,7 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   #setDatePicker() {
     this.#startDatePicker = flatpickr(
-      this.element.querySelector('input[name="event-start-time"]'),
+      this.eventStartTime,
       {
         enableTime: true,
         // eslint-disable-next-line camelcase
@@ -348,7 +366,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     );
 
     this.#endDatePicker = flatpickr(
-      this.element.querySelector('input[name="event-end-time"]'),
+      this.eventEndTime,
       {
         enableTime: true,
         // eslint-disable-next-line camelcase
@@ -361,28 +379,22 @@ export default class UpdatePointView extends AbstractStatefulView {
 
   #startDateChangeHandler = ([startDate]) => {
     if (this._state.dateTo && startDate >= this._state.dateTo) {
-      this.element.querySelector('input[name="event-start-time"]').value = '';
+      this.eventStartTime.value = '';
     }
-    this.element.querySelector('input[name="event-start-time"]').setAttribute('value', dayjs(startDate).format('DD/MM/YY HH:mm'));
+    this.eventStartTime.setAttribute('value', dayjs(startDate).format('DD/MM/YY HH:mm'));
     this._setState({dateFrom: startDate});
   };
 
   #endDateChangeHandler = ([endDate]) => {
     if (this._state.dateFrom && endDate <= this._state.dateFrom) {
-      this.element.querySelector('input[name="event-end-time"]').value = '';
+      this.eventEndTime.value = '';
       return;
     }
-    this.element.querySelector('input[name="event-end-time"]').setAttribute('value', dayjs(endDate).format('DD/MM/YY HH:mm'));
+    this.eventEndTime.setAttribute('value', dayjs(endDate).format('DD/MM/YY HH:mm'));
     this._setState({dateTo: endDate});
   };
 
   static parsePointToState(point) {
     return {...point};
-  }
-
-  static parseStateToPoint(state) {
-    const point = {...state};
-
-    return point;
   }
 }
