@@ -27,9 +27,6 @@ const sortPresenter = new SortPresenter(routeModel, routeContainer);
 
 const headerContainer = document.querySelector('.trip-controls__filters');
 const filterPresenter = new FilterPresenter(headerContainer, sortPresenter, routeModel);
-
-// headerPresenter необходимо передать в routePresenter, так как своей модели у headerPresenter'а нет, он
-// только меняет и отображает свое состояние в зависимости от действий пользователя в других компонентах
 const headerPresenter = new HeaderPresenter(routeModel);
 
 const routePresenter = new RoutePresenter({
@@ -48,8 +45,6 @@ export const uiBlocker = new UiBlocker({
   upperLimit: TimeLimit.UPPER_LIMIT
 });
 
-// uiBlocker.block();
-// Блокируем кнопку добавления нового события
 newEventButton.disable();
 
 
@@ -62,7 +57,6 @@ destinationModel.init()
   .then(() => offerModel.init())
   .then(() => routeModel.init())
   .then(() => {
-    // uiBlocker.unblock();
 
     newEventButton.enable();
 

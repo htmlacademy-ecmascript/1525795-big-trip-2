@@ -4,7 +4,7 @@ import { ActionType } from '../utils/common.js';
 
 import { render, replace, remove } from '../framework/render.js';
 
-const Mode = {
+const DisplayMode = {
   VIEW: 'VIEW',
   EDIT: 'EDIT'
 };
@@ -24,48 +24,77 @@ export default class PointPresenter {
     this.#routeModel = routeModel;
     this.#routeComponent = routeComponent;
     this.#point = point;
-    this.#mode = Mode.VIEW;
+    this.#mode = DisplayMode.VIEW;
     this.#actionType = actionType;
 
-    // Два компонента
-    // Строка с точкой маршрута
-    this.#rowComponent = new RoutePointView(this.#routePresenter, this.#routeModel, this.#point);
-
-    // ... и форма редактирования точки маршрута
+    this.#rowComponent = new RoutePointView(this, this.#routePresenter, this.#point);
     this.#updateComponent = null;
   }
 
   init() {
     if (this.#actionType === ActionType.APPEND) {
-      // Отрисовываем строку с новой точкой маршрута первой строкой в маршруте
       render(this.#rowComponent, this.#routeComponent.element, 'afterbegin');
-
-      // И сразу преобразуем строку в форму редактирования
       this.rowRolldownHandler();
     } else {
-      // Обычная точка маршрута - рендерим следующей строкой в конце списка
       render(this.#rowComponent, this.#routeComponent.element);
     }
   }
 
-
-  // Развертывание строки в форму редактирования
   rowRolldownHandler = () => {
-    this.#updateComponent = new UpdatePointView(this.#routePresenter, this.#routeModel, this.#point, this.#actionType);
+    this.#updateComponent = new UpdatePointView(this, this.#routePresenter, this.#point, this.#actionType);
     replace(this.#updateComponent, this.#rowComponent);
 
-    this.#mode = Mode.EDIT;
+    this.#mode = DisplayMode.EDIT;
   };
 
   resetComponent = () => {
-    if (this.#mode === Mode.EDIT) {
+    if (this.#mode === DisplayMode.EDIT) {
       this.#updateComponent.removeDatePickr();
       replace(this.#rowComponent, this.#updateComponent);
-      this.#mode = Mode.VIEW;
+      this.#mode = DisplayMode.VIEW;
     }
   };
 
   removeComponent = () => {
     remove(this.#rowComponent);
+  };
+
+
+  toggleFavoriteHandler = async () => {
+    const prevComponent = this.#rowComponent;
+    const prevPoint = this.#point;
+
+    this.#point = await this.#routeModel.toggleFavorite(this.#point);
+    if (this.#point) {
+      this.#rowComponent = new RoutePointView(this, this.#routePresenter, this.#point);
+      replace(this.#rowComponent, prevComponent);
+    } else {
+      this.#point = prevPoint;
+      this.#rowComponent = new RoutePointView(this, this.#routePresenter, this.#point);
+      replace(this.#rowComponent, prevComponent);
+      this.#rowComponent.shake();
+    }
+  };
+
+  addPoint = (point) => {
+    this.#routeModel.addPoint(point, this);
+  };
+
+  updatePoint = (point) => {
+    this.#routeModel.updatePoint(point, this);
+  };
+
+  deletePoint = (point) => {
+    this.#routeModel.deletePoint(point, this);
+  };
+
+  updateError = () => {
+    this.#updateComponent.shake();
+    this.#updateComponent.setSaveButtonText();
+  };
+
+  deleteError = () => {
+    this.#updateComponent.shake();
+    this.#updateComponent.setDeleteButtonText();
   };
 }

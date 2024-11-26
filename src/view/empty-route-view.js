@@ -1,4 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
+import { StateTypeMessage } from '../utils/common.js';
 
 
 function createEmptyRouteTemplate(message) {
@@ -11,7 +12,7 @@ function createEmptyRouteTemplate(message) {
 export default class EmptyRouteView extends AbstractView {
   #displayMessage = '';
 
-  constructor(displayMessage = 'Click New Event to create your first point') {
+  constructor(displayMessage = StateTypeMessage.NO_DATA) {
     super();
     this.#displayMessage = displayMessage;
   }

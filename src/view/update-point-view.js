@@ -11,7 +11,6 @@ import 'flatpickr/dist/flatpickr.min.css';
 
 
 function getPointTypesList(defaultPointTypeName) {
-  // Список видов точек маршрута
   let pointTypesList = '';
   for (const item of Object.values(PointTypes)) {
     const checked = item.toLowerCase() === defaultPointTypeName.toLowerCase() ? 'checked' : '';
@@ -63,7 +62,6 @@ function getFormattedDestination(destinationObj) {
 
 function getDestinationsList() {
   const destinations = destinationModel.destinations;
-  // Список пунктов назначения для выпадающего списка в форме редактирования
   let destinationsList = '';
   for (const item of destinations) {
     destinationsList += `<option value="${item.name}"></option>`;
@@ -74,7 +72,6 @@ function getDestinationsList() {
 
 function getFormattedOffers(pointTypeName, pointOffers) {
   const offers = offerModel.offers;
-  // Список дополнительных опций для вида точки маршрута
   const offersItem = offers.find((item) => item['type'] === pointTypeName);
   if (offersItem === undefined) {
     return '';
@@ -186,18 +183,18 @@ function createUpdatePointTemplate(state, actionType) {
 }
 
 export default class UpdatePointView extends AbstractStatefulView {
+  #pointPresenter = null;
   #routePresenter = null;
-  #routeModel = null;
   #point = null;
   #startDatePicker = null;
   #endDatePicker = null;
   #actionType = null;
   eventRollupButton = null;
 
-  constructor(routePresenter, routeModel, point, actionType) {
+  constructor(pointPresenter, routePresenter, point, actionType) {
     super();
+    this.#pointPresenter = pointPresenter;
     this.#routePresenter = routePresenter;
-    this.#routeModel = routeModel;
     this.#point = point;
     this.#actionType = actionType;
 
@@ -211,9 +208,6 @@ export default class UpdatePointView extends AbstractStatefulView {
   }
 
   _restoreHandlers() {
-    // Получается, при каждом изменении в форме редактирования методом UpdateElement перерисовывается страница
-    // Соответственно, перед восстановлением хэндлеров необходимо заново инициализировать переменные с элементами формы
-    // Надеюсь, в React будет проще??
     this.eventRollupButton = this.element.querySelector('.event__rollup-btn');
     this.eventEdit = this.element.querySelector('.event--edit');
     this.eventTypeGroup = this.element.querySelector('.event__type-group');
@@ -244,18 +238,17 @@ export default class UpdatePointView extends AbstractStatefulView {
   }
 
 
-  #eventTypeChangeHandler = () => {
-    const newPointTypeName = this.element.querySelector('input[name="event-type"]:checked').value;
+  #eventTypeChangeHandler = (evt) => {
+    const newPointTypeName = evt.target.value;
     this._state.offers = [];
     this.updateElement({type: newPointTypeName, offers: []});
   };
 
-  #destinationChangeHandler = () => {
-    if (this.eventInputDestination.value) {
+  #destinationChangeHandler = (evt) => {
+    if (evt.target.value) {
       const newDestination = this.eventInputDestination.value;
       const destinationObj = destinationModel.getDestinationByName(newDestination);
       if (destinationObj === undefined) {
-        // Возвращаем исходное значение
         this.eventInputDestination.value = destinationModel.getDestinationById(this._state.destination).name;
         return null;
       }
@@ -308,32 +301,30 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.#point = this._state;
 
     if (this.#actionType === ActionType.APPEND) {
-      this.#routeModel.addPoint(this.#point, this);
+      this.#pointPresenter.addPoint(this.#point, this);
     } else {
-      this.#routeModel.updatePoint(this.#point, this);
+      this.#pointPresenter.updatePoint(this.#point, this);
     }
     this.eventAddButton.enable();
   };
 
-  #deletePointHandler = () => {
-    this.setDeleteButtonText('Deleting...');
+  #deletePointHandler = (evt) => {
+    evt.target.textContent = 'Deleting...';
     this.removeDatePickr();
     if (this.#actionType === ActionType.APPEND) {
-      // При добавлении новой точки - это Cancel
       this.eventAddButton.enable();
       this.#routePresenter.routeStateHandler();
     } else {
-      // При редактировании точки - это Delete
-      this.#routeModel.deletePoint(this.#point, this);
+      this.#pointPresenter.deletePoint(this.#point, this);
     }
   };
 
-  setSaveButtonText = (buttonText) => {
-    this.eventSaveButton.textContent = buttonText;
+  setSaveButtonText = (text = 'Save') => {
+    this.eventSaveButton.textContent = text;
   };
 
-  setDeleteButtonText = (buttonText) => {
-    this.eventResetButton.textContent = buttonText;
+  setDeleteButtonText = (text = 'Delete') => {
+    this.eventResetButton.textContent = text;
   };
 
   removeElement() {

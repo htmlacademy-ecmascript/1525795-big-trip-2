@@ -53,12 +53,10 @@ export default class FilterPresenter extends Observable {
 
   resetFilterType = () => {
     this.#changeFilterHandler(DEFAULT_FILTER_TYPE);
-    // После сброса фильтра в default, нужно его перерисовать
     this.refreshFilter();
   };
 
   #changeFilterHandler = (newFilter) => {
-    // Здесь сброс сортировки в Day (в соответствии с ТЗ: при изменении фильтра сбрасывать сортировку в Day)
     this.#sortPresenter.resetSortType();
     this.setFilter(newFilter);
   };
