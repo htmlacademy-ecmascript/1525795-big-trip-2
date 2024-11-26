@@ -1,5 +1,4 @@
-import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import { replace } from '../framework/render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 import { destinationModel } from '../main.js';
 import { offerModel } from '../main.js';
@@ -26,7 +25,6 @@ function createRowPointTemplate(routePoint) {
     startDate = new Date(dateFrom);
     endDate = new Date(dateTo);
 
-    // Здесь вперемешку dayjs и нативный Date - такой костыль сугубо под тесты, иначе не могу понять, когда использовать дату-время UTC, а когда локальную
     formattedStartDate = getFormattedDateMMMDD(startDate.getUTCDate(), startDate.getUTCMonth() + 1);
     startTime = getFormattedTimeHHmm(startDate.getHours(), startDate.getMinutes());
     endTime = getFormattedTimeHHmm(endDate.getHours(), endDate.getMinutes());
@@ -91,50 +89,25 @@ function createRowPointTemplate(routePoint) {
   `;
 }
 
-// По замечанию наставника (row-point-view.js - нет необходимости в _restoreHandlers,
-// не нужно наследоваться от AbstractStatefulView, достаточно AbstractView;):
-// здесь я не могу унаследоваться от AbstractView, так как строка с точкой маршрута - это фактически
-// форма редактирования с одним полем - признак Favorites (просто без кнопки submit),
-// после изменения которого происходит перерисовка компонента (метод UpdateElement для экземпляра класса) и восстановление хэндлеров
-export default class RoutePointView extends AbstractStatefulView {
+export default class RoutePointView extends AbstractView {
+  #pointPresenter = null;
   #routePresenter = null;
-  #routeModel = null;
   #point = null;
 
-  constructor(routePresenter, routeModel, point) {
+  constructor(pointPresenter, routePresenter, point) {
     super();
+    this.#pointPresenter = pointPresenter;
     this.#routePresenter = routePresenter;
-    this.#routeModel = routeModel;
     this.#point = point;
-    this._restoreHandlers();
-  }
-
-  _restoreHandlers() {
-    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#rowRolldownClickHandler);
+    this.element.querySelector('.event__favorite-btn')
+      .addEventListener('click', this.#pointPresenter.toggleFavoriteHandler);
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#rowRolldownClickHandler);
   }
 
   get template() {
     return createRowPointTemplate(this.#point);
   }
-
-  replaceRowToForm(updateComponent, rowComponent) {
-    replace(updateComponent, rowComponent);
-    this.addHandlers();
-  }
-
-  #favoriteClickHandler = async () => {
-    const originalPoint = this.#point;
-    this.#point = await this.#routeModel.toggleFavorite(this.#point);
-    if (this.#point) {
-      await this.updateElement({isFaforite: this.#point.isFavorite});
-    } else {
-      this.#point = originalPoint;
-      this.updateElement(this.#point);
-      this.shake();
-    }
-  };
-
 
   #rowRolldownClickHandler = () => {
     this.#routePresenter.routeStateHandler(StateType.UPDATE_POINT_VIEW, this.#point);

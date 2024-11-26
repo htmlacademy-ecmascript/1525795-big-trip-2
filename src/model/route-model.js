@@ -53,10 +53,8 @@ export default class RouteModel extends Observable {
   }
 
   getRouteData(currentFilter, currentSortType) {
-    // Получаем данные из модели
     let routeData = [...this.#route];
 
-    // Фильтруем
     switch (currentFilter) {
       case FilterType.EVERYTHING:
         break;
@@ -72,7 +70,6 @@ export default class RouteModel extends Observable {
         break;
     }
 
-    // Сортируем
     if (currentSortType) {
       routeData.sort(SortMethods[currentSortType]);
     }
@@ -84,7 +81,7 @@ export default class RouteModel extends Observable {
 
   getEmptyPoint = () => this.#emptyPoint;
 
-  async addPoint(point, updateComponent) {
+  async addPoint(point, pointPresenter) {
     try {
       uiBlocker.block();
       const convertedPoint = this.#convertToOuterFormat(point);
@@ -96,16 +93,14 @@ export default class RouteModel extends Observable {
       this._notify();
     } catch(err) {
       uiBlocker.unblock();
-      updateComponent.shake();
-      updateComponent.setSaveButtonText('Save');
+      pointPresenter.updateError();
     }
   }
 
-  async updatePoint(point, updateComponent) {
+  async updatePoint(point, pointPresenter) {
     const idx = this.#route.findIndex((routePoint) => routePoint.id === point.id);
 
     if (idx === -1) {
-      // Nothing to update
       return false;
     }
 
@@ -119,16 +114,14 @@ export default class RouteModel extends Observable {
       this._notify();
     } catch(err) {
       uiBlocker.unblock();
-      updateComponent.shake();
-      updateComponent.setSaveButtonText('Save');
+      await pointPresenter.updateError();
     }
   }
 
-  async deletePoint(point, updateComponent) {
+  async deletePoint(point, pointPresenter) {
     const idx = this.#route.findIndex((routePoint) => routePoint.id === point.id);
 
     if (idx === -1) {
-      // Nothing to delete
       return false;
     }
 
@@ -140,15 +133,13 @@ export default class RouteModel extends Observable {
       this._notify();
     } catch (err) {
       uiBlocker.unblock();
-      updateComponent.shake();
-      updateComponent.setDeleteButtonText('Delete');
+      await pointPresenter.deleteError();
     }
   }
 
   async toggleFavorite(point) {
     const idx = this.#route.findIndex((routePoint) => routePoint.id === point.id);
     if (idx === -1) {
-      // Nothing to update
       return false;
     }
 
@@ -172,7 +163,6 @@ export default class RouteModel extends Observable {
       return '';
     }
 
-    // Заголовок составляем по отсортированной копии маршрута (не отфильтрованной!)
     const routeData = [...this.#route];
     routeData.sort(DEFAULT_SORT_METHOD);
 
@@ -204,7 +194,6 @@ export default class RouteModel extends Observable {
       return 0;
     }
 
-    // Здесь подсчет стоимости маршрута. Суммируется стоимость каждой точки маршрута плюс стоимость offers  для точки маршрута
     let cost = 0;
     for (const point of this.#route) {
       cost += point.basePrice;

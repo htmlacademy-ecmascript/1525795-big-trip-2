@@ -2,9 +2,6 @@ import dayjs from 'dayjs';
 
 
 const getEventLength = (dateFrom, dateTo) => {
-  // const startDateTime = new Date(dateFrom);
-  // const endDateTime = new Date(dateTo);
-
   const startDateTime = dayjs(dateFrom);
   const endDateTime = dayjs(dateTo);
 
@@ -87,6 +84,7 @@ export const StateType = {
 };
 
 export const StateTypeMessage = {
+  LOADING: 'Loading...',
   NO_DATA: 'Click New Event to create your first point',
   FAILED_LOAD_DATA: 'Failed to load latest route information',
   SUCCESS: 'Success'

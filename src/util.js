@@ -41,5 +41,4 @@ export const getFormattedDateMMMDD = (startDay, startMonth) => `${Months[startMo
 
 export const getFormattedTimeHHmm = (hours, minutes) => `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 
-// Только ради соблюдения критериев )
 export const getDayCountFromMs = (startDate, endDate) => Math.floor((endDate - startDate) / msecInMinute / secInHour / hourInDay);
