@@ -15,7 +15,7 @@ import isBetween from 'dayjs/plugin/isBetween';
 export default class RouteModel extends Observable {
   #routeState = StateType.FAILED_LOAD;
   #routeApiService = null;
-  #route = [];
+  #points = [];
   #emptyPoint = {
     id: 0,
     basePrice: 0,
@@ -36,7 +36,7 @@ export default class RouteModel extends Observable {
   async init() {
     try {
       const points = await this.#routeApiService.points;
-      this.#route = points.map(this.#convertToInnerFormat);
+      this.#points = points.map(this.#convertToInnerFormat);
       this.#routeState = StateType.SUCCESS;
     } catch (err) {
       this.#routeState = StateType.FAILED_LOAD;
@@ -49,11 +49,11 @@ export default class RouteModel extends Observable {
   }
 
   get route() {
-    return this.#route;
+    return this.#points;
   }
 
   getRouteData(currentFilter, currentSortType) {
-    let routeData = [...this.#route];
+    let routeData = [...this.#points];
 
     switch (currentFilter) {
       case FilterType.EVERYTHING:
@@ -88,7 +88,7 @@ export default class RouteModel extends Observable {
       delete convertedPoint.id;
 
       const response = await this.#routeApiService.addPoint(convertedPoint);
-      this.#route.push(this.#convertToInnerFormat(response));
+      this.#points.push(this.#convertToInnerFormat(response));
       uiBlocker.unblock();
       this._notify();
     } catch(err) {
@@ -98,7 +98,7 @@ export default class RouteModel extends Observable {
   }
 
   async updatePoint(point, pointPresenter) {
-    const idx = this.#route.findIndex((routePoint) => routePoint.id === point.id);
+    const idx = this.#points.findIndex((routePoint) => routePoint.id === point.id);
 
     if (idx === -1) {
       return false;
@@ -109,7 +109,7 @@ export default class RouteModel extends Observable {
       const convertedPoint = this.#convertToOuterFormat({...point});
       const response = await this.#routeApiService.updatePoint(convertedPoint);
       const updatedPoint = await this.#convertToInnerFormat(response);
-      this.#route = [...this.#route.slice(0, idx), updatedPoint, ...this.#route.slice(idx + 1)];
+      this.#points = [...this.#points.slice(0, idx), updatedPoint, ...this.#points.slice(idx + 1)];
       uiBlocker.unblock();
       this._notify();
     } catch(err) {
@@ -119,7 +119,7 @@ export default class RouteModel extends Observable {
   }
 
   async deletePoint(point, pointPresenter) {
-    const idx = this.#route.findIndex((routePoint) => routePoint.id === point.id);
+    const idx = this.#points.findIndex((routePoint) => routePoint.id === point.id);
 
     if (idx === -1) {
       return false;
@@ -128,7 +128,7 @@ export default class RouteModel extends Observable {
     try {
       uiBlocker.block();
       await this.#routeApiService.deletePoint(point.id);
-      this.#route = [...this.#route.slice(0, idx), ...this.#route.slice(idx + 1)];
+      this.#points = [...this.#points.slice(0, idx), ...this.#points.slice(idx + 1)];
       uiBlocker.unblock();
       this._notify();
     } catch (err) {
@@ -138,7 +138,7 @@ export default class RouteModel extends Observable {
   }
 
   async toggleFavorite(point) {
-    const idx = this.#route.findIndex((routePoint) => routePoint.id === point.id);
+    const idx = this.#points.findIndex((routePoint) => routePoint.id === point.id);
     if (idx === -1) {
       return false;
     }
@@ -148,22 +148,21 @@ export default class RouteModel extends Observable {
       const convertedPoint = this.#convertToOuterFormat({...point, isFavorite: !point.isFavorite});
       const response = await this.#routeApiService.updatePoint(convertedPoint);
       const updatedPoint = this.#convertToInnerFormat(response);
-      this.#route = [...this.#route.slice(0, idx), updatedPoint, ...this.#route.slice(idx + 1)];
+      this.#points = [...this.#points.slice(0, idx), updatedPoint, ...this.#points.slice(idx + 1)];
       uiBlocker.unblock();
       return updatedPoint;
     } catch (err) {
       uiBlocker.unblock();
       return false;
     }
-
   }
 
   getRouteTitle() {
-    if (!this.#route.length) {
+    if (!this.getRouteLength()) {
       return '';
     }
 
-    const routeData = [...this.#route];
+    const routeData = [...this.#points];
     routeData.sort(DEFAULT_SORT_METHOD);
 
     const pointsList = new Array();
@@ -178,11 +177,11 @@ export default class RouteModel extends Observable {
   }
 
   getRouteDates() {
-    if (!this.#route.length) {
+    if (!this.getRouteLength()) {
       return '';
     }
 
-    const copyRoute = this.#route.slice().sort(sortByDate);
+    const copyRoute = this.#points.slice().sort(sortByDate);
     const startDate = new Date(copyRoute[0].dateFrom);
     const endDate = new Date(copyRoute.slice(-1)[0].dateTo);
 
@@ -190,12 +189,12 @@ export default class RouteModel extends Observable {
   }
 
   getRouteCost() {
-    if (!this.#route.length) {
+    if (!this.getRouteLength()) {
       return 0;
     }
 
     let cost = 0;
-    for (const point of this.#route) {
+    for (const point of this.#points) {
       cost += point.basePrice;
 
       if (point.offers) {

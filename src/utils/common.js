@@ -9,9 +9,9 @@ const getEventLength = (dateFrom, dateTo) => {
 };
 
 const getEventDate = (dateFrom) => dayjs(dateFrom);
-export const sortByPrice = (a, b) => b.basePrice - a.basePrice;
-export const sortByDate = (a, b) => getEventDate(a.dateFrom) - getEventDate(b.dateFrom);
-export const sortByTime = (a, b) => getEventLength(b.dateFrom, b.dateTo) - getEventLength(a.dateFrom, a.dateTo);
+export const sortByPrice = (aPoint, bPoint) => bPoint.basePrice - aPoint.basePrice;
+export const sortByDate = (aPoint, bPoint) => getEventDate(aPoint.dateFrom) - getEventDate(bPoint.dateFrom);
+export const sortByTime = (aPoint, bPoint) => getEventLength(bPoint.dateFrom, bPoint.dateTo) - getEventLength(aPoint.dateFrom, aPoint.dateTo);
 
 export const SortTypes = {
   DAY: 'Day',
@@ -28,7 +28,7 @@ export const SortMethods = {
 export const DEFAULT_SORT_TYPE = SortTypes.DAY;
 export const DEFAULT_SORT_METHOD = SortMethods.Day;
 
-export const capitalize = (string) => string.charAt(0).toUpperCase() + string.slice(1);
+export const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 export const UpdateType = {
   HEADER: 'HEADER',
