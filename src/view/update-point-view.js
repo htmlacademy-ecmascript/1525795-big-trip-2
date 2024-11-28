@@ -225,14 +225,14 @@ export default class UpdatePointView extends AbstractStatefulView {
     if (this.#actionType !== ActionType.APPEND) {
       this.eventRollupButton.addEventListener('click', this.#formRollupClickHandler);
     }
-    this.eventEdit.addEventListener('submit', this.#submitClickHandler);
+    this.eventEdit.addEventListener('submit', this.#formSubmitHandler);
     this.eventTypeGroup.addEventListener('change', this.#eventTypeChangeHandler);
     this.eventInputDestination.addEventListener('change', this.#destinationChangeHandler);
     if (this.eventAvailableOffers !== null) {
-      this.eventAvailableOffers.addEventListener('click', this.#offersChangeHandler);
+      this.eventAvailableOffers.addEventListener('change', this.#offerChangeHandler);
     }
     this.eventInputPrice.addEventListener('change', this.#priceChangeHandler);
-    this.eventResetButton.addEventListener('click', this.#deletePointHandler);
+    this.eventResetButton.addEventListener('click', this.#deleteClickHandler);
 
     this.#setDatePicker();
   }
@@ -257,7 +257,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     }
   };
 
-  #offersChangeHandler = (evt) => {
+  #offerChangeHandler = (evt) => {
     const selectedOfferId = evt.target.dataset.offerId;
     if (!selectedOfferId) {
       return;
@@ -291,11 +291,12 @@ export default class UpdatePointView extends AbstractStatefulView {
     if (evt.key === 'Escape') {
       this.removeDatePickr();
       this.eventAddButton.enable();
+      document.removeEventListener('keydown', this.#escKeydownHandler);
       this.#routePresenter.routeStateHandler();
     }
   };
 
-  #submitClickHandler = (evt) => {
+  #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this.setSaveButtonText('Saving...');
     this.#point = this._state;
@@ -308,7 +309,7 @@ export default class UpdatePointView extends AbstractStatefulView {
     this.eventAddButton.enable();
   };
 
-  #deletePointHandler = (evt) => {
+  #deleteClickHandler = (evt) => {
     evt.target.textContent = 'Deleting...';
     this.removeDatePickr();
     if (this.#actionType === ActionType.APPEND) {

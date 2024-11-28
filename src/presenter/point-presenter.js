@@ -60,7 +60,7 @@ export default class PointPresenter {
   };
 
 
-  toggleFavoriteHandler = async () => {
+  favoriteClickHandler = async () => {
     const prevComponent = this.#rowComponent;
     const prevPoint = this.#point;
 

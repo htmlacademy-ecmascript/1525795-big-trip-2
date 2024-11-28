@@ -100,7 +100,7 @@ export default class RoutePointView extends AbstractView {
     this.#routePresenter = routePresenter;
     this.#point = point;
     this.element.querySelector('.event__favorite-btn')
-      .addEventListener('click', this.#pointPresenter.toggleFavoriteHandler);
+      .addEventListener('click', this.#pointPresenter.favoriteClickHandler);
     this.element.querySelector('.event__rollup-btn')
       .addEventListener('click', this.#rowRolldownClickHandler);
   }
