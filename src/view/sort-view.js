@@ -39,12 +39,12 @@ export default class SortView extends AbstractView {
     this.#currentSortType = currentSortType;
     this.#changeSortHandler = changeSortHandler;
 
-    this.element.addEventListener('change', this.#onChangeSortType);
+    this.element.addEventListener('change', this.#sortTypeChangeHandler);
   }
 
   get template() {
     return createSortTemplate(this.#currentSortType);
   }
 
-  #onChangeSortType = (evt) => this.#changeSortHandler(SortTypes[evt.target.dataset.sortType.toUpperCase()]);
+  #sortTypeChangeHandler = (evt) => this.#changeSortHandler(SortTypes[evt.target.dataset.sortType.toUpperCase()]);
 }
