@@ -44,12 +44,12 @@ export default class FilterView extends AbstractView {
     this.#changeFilterHandler = changeFilterHandler;
     this.#routeModel = routeModel;
 
-    this.element.addEventListener('change', this.#onChangeFilter);
+    this.element.addEventListener('change', this.#filterChangeHandler);
   }
 
   get template() {
     return createFilterTemplate(this.#currentFilter, this.#routeModel);
   }
 
-  #onChangeFilter = (evt) => this.#changeFilterHandler(FilterType[evt.target.dataset.filterType.toUpperCase()]);
+  #filterChangeHandler = (evt) => this.#changeFilterHandler(FilterType[evt.target.dataset.filterType.toUpperCase()]);
 }

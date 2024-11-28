@@ -116,7 +116,7 @@ export default class RoutePresenter {
         break;
 
       case StateType.NEW_POINT_VIEW:
-        this.#setNewPointViewState();
+        this.#newPointClickHandler();
         this.#sortPresenter.removeComponent();
         break;
 
@@ -139,7 +139,7 @@ export default class RoutePresenter {
         break;
     }
 
-    eventAddButton.element.addEventListener('click', this.#setNewPointViewState);
+    eventAddButton.element.addEventListener('click', this.#newPointClickHandler);
   };
 
 
@@ -199,7 +199,7 @@ export default class RoutePresenter {
 
   resetRoutePoints = () => this.#pointMap.forEach((item) => item.resetComponent());
 
-  #setNewPointViewState = () => {
+  #newPointClickHandler = () => {
     this.resetRoutePoints();
     eventAddButton.disable();
     this.#filterPresenter.resetFilterType();
